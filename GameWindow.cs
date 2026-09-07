@@ -5,21 +5,16 @@ using System.Windows.Forms;
 public class GameWindow : Form
 {
     private readonly Server server;
+    private readonly SharedInputState input;
 
     private readonly Timer timer;
 
-    private DateTime lastFrameTime;
-    private double accumulatedTime;
+    private WorldSnapshot snapshot;
 
-    private bool left;
-    private bool right;
-
-    public GameWindow(Server server)
+    public GameWindow(Server server, SharedInputState input)
     {
         this.server = server;
-
-        lastFrameTime = DateTime.UtcNow;
-        accumulatedTime = 0.0;
+        this.input = input;
 
         Text = "Terraria Prototype";
         ClientSize = new Size(800, 600);
@@ -28,9 +23,14 @@ public class GameWindow : Form
 
         KeyDown += OnKeyDown;
         KeyUp += OnKeyUp;
+        FormClosed += OnFormClosed;
+
+        snapshot = server.GetSnapshot();
 
         timer = new Timer();
-        timer.Interval = (int)(1000.0 / GameConstants.TargetFrameRate);
+        timer.Interval =
+        (int)(1000.0 / GameConstants.TargetFrameRate);
+
         timer.Tick += OnFrame;
         timer.Start();
     }
@@ -38,48 +38,30 @@ public class GameWindow : Form
     private void OnKeyDown(object sender, KeyEventArgs e)
     {
         if (e.KeyCode == Keys.Left)
-            left = true;
+            input.Press(InputState.Left);
 
         if (e.KeyCode == Keys.Right)
-            right = true;
+            input.Press(InputState.Right);
+
+        if (e.KeyCode == Keys.Up)
+            input.Press(InputState.Up);
     }
 
     private void OnKeyUp(object sender, KeyEventArgs e)
     {
         if (e.KeyCode == Keys.Left)
-            left = false;
+            input.Release(InputState.Left);
 
         if (e.KeyCode == Keys.Right)
-            right = false;
+            input.Release(InputState.Right);
+
+        if (e.KeyCode == Keys.Up)
+            input.Release(InputState.Up);
     }
 
     private void OnFrame(object sender, EventArgs e)
     {
-        DateTime now = DateTime.UtcNow;
-
-        double frameTime = (now - lastFrameTime).TotalSeconds;
-
-        lastFrameTime = now;
-
-        // Prevent a huge catch-up if the window
-        // was suspended or the debugger stopped.
-        if (frameTime > 0.25)
-            frameTime = 0.25;
-
-        accumulatedTime += frameTime;
-
-        while (accumulatedTime >= GameConstants.SimulationTickDuration)
-        {
-            InputState input = new InputState
-            {
-                Left = left,
-                Right = right
-            };
-
-            server.Tick(input);
-
-            accumulatedTime -= GameConstants.SimulationTickDuration;
-        }
+        snapshot = server.GetSnapshot();
 
         Invalidate();
     }
@@ -90,7 +72,7 @@ public class GameWindow : Form
 
         g.Clear(Color.Black);
 
-        Player player = server.World.Player;
+        Player player = snapshot.Player;
 
         g.FillEllipse(
             Brushes.Red,
@@ -99,5 +81,11 @@ public class GameWindow : Form
             20,
             20
         );
+    }
+
+    private void OnFormClosed(object sender, FormClosedEventArgs e)
+    {
+        timer.Stop();
+        server.Stop();
     }
 }

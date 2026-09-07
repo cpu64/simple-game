@@ -1,14 +1,17 @@
-using System;
 using System.Windows.Forms;
 
 public static class Client
 {
     public static void Main()
     {
-        Server localServer = new Server();
+        SharedInputState input = new SharedInputState();
+
+        Server localServer = new Server(input);
+
+        localServer.Start();
 
         Application.Run(
-            new GameWindow(localServer)
+            new GameWindow(localServer, input)
         );
     }
 }
