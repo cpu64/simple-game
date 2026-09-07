@@ -8,22 +8,18 @@ public class GameWindow : Form
 
     private readonly Timer timer;
 
-    private const double TickDuration = 1.0 / 120.0;
-
     private DateTime lastFrameTime;
     private double accumulatedTime;
 
     private bool left;
     private bool right;
 
-    private DateTime lastTick;
-
     public GameWindow(Server server)
     {
+        this.server = server;
+
         lastFrameTime = DateTime.UtcNow;
         accumulatedTime = 0.0;
-
-        this.server = server;
 
         Text = "Terraria Prototype";
         ClientSize = new Size(800, 600);
@@ -34,11 +30,8 @@ public class GameWindow : Form
         KeyUp += OnKeyUp;
 
         timer = new Timer();
-        timer.Interval = 8;
+        timer.Interval = (int)(1000.0 / GameConstants.TargetFrameRate);
         timer.Tick += OnFrame;
-
-        lastTick = DateTime.UtcNow;
-
         timer.Start();
     }
 
@@ -64,8 +57,7 @@ public class GameWindow : Form
     {
         DateTime now = DateTime.UtcNow;
 
-        double frameTime =
-        (now - lastFrameTime).TotalSeconds;
+        double frameTime = (now - lastFrameTime).TotalSeconds;
 
         lastFrameTime = now;
 
@@ -76,7 +68,7 @@ public class GameWindow : Form
 
         accumulatedTime += frameTime;
 
-        while (accumulatedTime >= TickDuration)
+        while (accumulatedTime >= GameConstants.SimulationTickDuration)
         {
             InputState input = new InputState
             {
@@ -86,7 +78,7 @@ public class GameWindow : Form
 
             server.Tick(input);
 
-            accumulatedTime -= TickDuration;
+            accumulatedTime -= GameConstants.SimulationTickDuration;
         }
 
         Invalidate();
@@ -102,8 +94,8 @@ public class GameWindow : Form
 
         g.FillEllipse(
             Brushes.Red,
-            player.X - 10,
-            player.Y - 10,
+            (float)player.X - 10,
+            (float)player.Y - 10,
             20,
             20
         );

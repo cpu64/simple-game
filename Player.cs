@@ -1,9 +1,9 @@
 public class Player
 {
-    public float X;
-    public float Y;
+    public double X;
+    public double Y;
 
-    public Player(float x, float y)
+    public Player(double x, double y)
     {
         X = x;
         Y = y;

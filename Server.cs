@@ -5,7 +5,6 @@ public class Server
     public long TickNumber { get; private set; }
 
     private const float PlayerSpeed = 200.0f;
-    private const float TickDuration = 1.0f / 120.0f;
 
     public Server()
     {
@@ -16,10 +15,10 @@ public class Server
     public void Tick(InputState input)
     {
         if (input.Left)
-            World.Player.X -= PlayerSpeed * TickDuration;
+            World.Player.X -= PlayerSpeed * GameConstants.SimulationTickDuration;
 
         if (input.Right)
-            World.Player.X += PlayerSpeed * TickDuration;
+            World.Player.X += PlayerSpeed * GameConstants.SimulationTickDuration;
 
         TickNumber++;
     }

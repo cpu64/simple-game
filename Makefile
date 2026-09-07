@@ -1,7 +1,7 @@
 MCS = mcs
 MONO = mono
 
-COMMON = Server.cs World.cs Player.cs InputState.cs
+COMMON = Server.cs World.cs Player.cs InputState.cs GameConstants.cs
 
 CLIENT_SOURCES = Client.cs GameWindow.cs $(COMMON)
 SERVER_SOURCES = ServerMain.cs $(COMMON)
