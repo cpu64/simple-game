@@ -6,7 +6,8 @@ public static class RemoteServerMain
     {
         int port = 1234;
 
-        if (args.Length > 0 && (!int.TryParse(args[0], out port) || port < 1 || port > 65535)) {
+        if (args.Length > 0 && (!int.TryParse(args[0], out port) || port < 1 || port > 65535))
+        {
             Console.WriteLine("Invalid port: " + args[0]);
             return;
         }

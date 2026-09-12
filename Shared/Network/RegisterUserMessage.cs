@@ -4,9 +4,7 @@ public class RegisterUserMessage : IMessage
 {
     public Guid ClientId { get; set; }
 
-    public RegisterUserMessage()
-    {
-    }
+    public RegisterUserMessage() { }
 
     public RegisterUserMessage(Guid clientId)
     {

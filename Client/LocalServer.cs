@@ -1,24 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using System.Net;
+using System.Threading;
 
 public class LocalServer
 {
     private readonly SharedInputState input;
     private readonly RemoteServerConnection remoteServer;
 
+    private readonly RingBuffer<World> authoritativeWorlds = new RingBuffer<World>(GameConstants.InterpolationBufferSize);
+
     private readonly object worldLock = new object();
+
     private readonly Guid playerId;
 
-    // Commands generated locally that are not yet included in the latest
-    // authoritative world.
+    // Commands generated locally that have not yet been
+    // acknowledged by the authoritative server.
     //
-    // For now we assume there is exactly one command per tick and that
-    // commands are added in tick order.
-    private readonly Queue<InputCommand> pendingCommands =
-    new Queue<InputCommand>();
+    // Commands are kept in sequence order.
+    private readonly Queue<InputCommand> pendingCommands = new Queue<InputCommand>();
+
+    // Monotonically increasing sequence number owned by this player.
+    private long nextCommandSequence;
 
     private World world;
 
@@ -32,22 +36,25 @@ public class LocalServer
 
         remoteServer = null;
 
+        nextCommandSequence = 0;
+
         world = new World();
+
         world.Players.Add(playerId, new Player(playerId, 400, 300));
     }
 
-    public LocalServer(
-        SharedInputState input,
-        Guid playerId,
-        IPEndPoint endpoint)
+    public LocalServer(SharedInputState input, Guid playerId, IPEndPoint endpoint)
     {
         this.input = input;
         this.playerId = playerId;
 
         remoteServer = new RemoteServerConnection(endpoint);
+
         remoteServer.Connect();
 
         remoteServer.Send(new RegisterUserMessage(playerId));
+
+        nextCommandSequence = 0;
 
         IMessage message;
 
@@ -60,6 +67,8 @@ public class LocalServer
                 if (worldMessage != null)
                 {
                     world = worldMessage.World;
+
+                    AddAuthoritativeWorld(worldMessage.World);
                 }
             }
 
@@ -75,6 +84,7 @@ public class LocalServer
         running = true;
 
         simulationThread = new Thread(Run);
+
         simulationThread.IsBackground = true;
         simulationThread.Start();
     }
@@ -93,6 +103,7 @@ public class LocalServer
     private void Run()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
+
         double nextTick = stopwatch.Elapsed.TotalSeconds;
 
         while (running)
@@ -113,49 +124,43 @@ public class LocalServer
                 double remaining = nextTick - now;
 
                 if (remaining > 0.001)
+                {
                     Thread.Sleep((int)(remaining * 1000.0));
+                }
                 else
+                {
                     Thread.Sleep(0);
+                }
             }
         }
     }
 
     private void Tick()
     {
-        // world.Print();
-
-        if (remoteServer != null)
+        lock (worldLock)
         {
-            ReceiveLatestAuthoritativeWorld();
+            if (remoteServer != null)
+            {
+                ReceiveLatestAuthoritativeWorld();
+            }
+
+            InputCommand command = new InputCommand(nextCommandSequence++, world.Tick + 1, playerId, input.Read());
+
+            pendingCommands.Enqueue(command);
+
+            if (remoteServer != null)
+            {
+                remoteServer.Send(new InputCommandMessage(command));
+            }
+
+            ApplyCommand(command);
         }
+    }
 
-        // A command advances the world by one tick.
-        //
-        // Therefore:
-        //
-        //     World @ 3 + Command @ 4 -> World @ 4
-        //
-        // The important invariant is:
-        //
-        //     Command.Tick == World.Tick
-        //
-        // means that command has already been applied to that world.
-        //
-        // Therefore the next command is always one tick ahead of the
-        // current world.
-        InputCommand command = new InputCommand(
-            world.Tick + 1,
-            playerId,
-            input.Read());
-
-        pendingCommands.Enqueue(command);
-
-        if (remoteServer != null)
-        {
-            remoteServer.Send(new InputCommandMessage(command));
-        }
-
+    private void ApplyCommand(InputCommand command)
+    {
         List<InputCommand> commands = new List<InputCommand>();
+
         commands.Add(command);
 
         world = Simulation.Tick(world, commands);
@@ -164,54 +169,83 @@ public class LocalServer
     private void ReceiveLatestAuthoritativeWorld()
     {
         IMessage received;
+
         World latestAuthoritativeWorld = null;
 
         while (remoteServer.TryReceive(out received))
         {
             WorldMessage worldMessage = received as WorldMessage;
 
-            if (worldMessage != null)
-            {
-                worldMessage.World.Print();
-                latestAuthoritativeWorld = worldMessage.World;
-            }
+            if (worldMessage == null)
+                continue;
+
+            World authoritativeWorld = worldMessage.World;
+
+            AddAuthoritativeWorld(authoritativeWorld);
+
+            latestAuthoritativeWorld = authoritativeWorld;
         }
 
         if (latestAuthoritativeWorld == null)
             return;
 
-        lock (worldLock)
+        Reconcile(latestAuthoritativeWorld);
+    }
+
+    private void Reconcile(World authoritativeWorld)
+    {
+        world = authoritativeWorld;
+
+        long lastAcknowledgedSequence = GetLastAcknowledgedSequence(authoritativeWorld);
+
+        // Remove commands that the authoritative server
+        // has already processed.
+        while (pendingCommands.Count > 0 && pendingCommands.Peek().Sequence <= lastAcknowledgedSequence)
         {
-            world = latestAuthoritativeWorld;
+            pendingCommands.Dequeue();
+        }
 
-            // The authoritative world already contains every command
-            // through its tick.
-            //
-            // Since Command.Tick == World.Tick means the command has
-            // already been applied, commands <= world.Tick are no
-            // longer needed for prediction/replay.
-            while (pendingCommands.Count > 0 &&
-                pendingCommands.Peek().Tick <= world.Tick)
-            {
-                pendingCommands.Dequeue();
-            }
-
-            // Replay every unacknowledged command in tick order.
-            foreach (InputCommand command in pendingCommands)
-            {
-                List<InputCommand> commands = new List<InputCommand>();
-                commands.Add(command);
-
-                world = Simulation.Tick(world, commands);
-            }
+        // Replay every command that the authoritative server
+        // has not processed yet.
+        foreach (InputCommand command in pendingCommands)
+        {
+            ApplyCommand(command);
         }
     }
 
-    public RenderWorldSnapshot GetRenderWorldSnapshot()
+    private long GetLastAcknowledgedSequence(World authoritativeWorld)
+    {
+        if (!authoritativeWorld.Players.TryGetValue(playerId, out Player player))
+        {
+            return -1;
+        }
+
+        return player.LastCommand;
+    }
+
+    private void AddAuthoritativeWorld(World authoritativeWorld)
+    {
+        if (authoritativeWorld == null)
+            return;
+
+        if (authoritativeWorlds.Count > 0)
+        {
+            World latest = authoritativeWorlds.Get(authoritativeWorlds.Count - 1);
+
+            if (authoritativeWorld.Tick <= latest.Tick)
+            {
+                return;
+            }
+        }
+
+        authoritativeWorlds.Add(new World(authoritativeWorld));
+    }
+
+    public RenderInput GetRenderInput()
     {
         lock (worldLock)
         {
-            return new RenderWorldSnapshot(world);
+            return new RenderInput(world, authoritativeWorlds);
         }
     }
 }

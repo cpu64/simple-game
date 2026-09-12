@@ -21,10 +21,7 @@ public class RenderWorldSnapshot
         {
             Player player = entry.Value;
 
-            Players.Add(
-                entry.Key,
-                new Player(player.Id, player.X, player.Y)
-            );
+            Players.Add(entry.Key, new Player(player.Id, player.X, player.Y));
         }
     }
 }

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 public class World
 {
-    // World @ N means that all commands through tick N
-    // have already been applied to this world.
     public long Tick { get; set; }
 
     public Dictionary<Guid, Player> Players { get; set; }
@@ -27,12 +25,7 @@ public class World
         {
             Player player = entry.Value;
 
-            Players.Add(
-                entry.Key,
-                new Player(
-                    player.Id,
-                    player.X,
-                    player.Y));
+            Players.Add(entry.Key, new Player(entry.Value));
         }
     }
 
@@ -46,15 +39,7 @@ public class World
         {
             Player player = entry.Value;
 
-            Console.WriteLine(
-                "  Player " +
-                player.Id +
-                " @ (" +
-                player.X +
-                ", " +
-                player.Y +
-                ")");
+            Console.WriteLine("  Player " + player.Id + " @ (" + player.X + ", " + player.Y + ")");
         }
     }
-
 }

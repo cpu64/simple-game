@@ -23,23 +23,15 @@ public class MessageRegistry
 
             if (!type.IsClass || type.IsAbstract || type.IsInterface)
             {
-                throw new InvalidOperationException(
-                    $"All types implementing IMessage " +
-                    $"must be concrete classes. " +
-                    $"Invalid type: '{type.FullName}'."
-                );
+                throw new InvalidOperationException($"All types implementing IMessage " + $"must be concrete classes. " + $"Invalid type: '{type.FullName}'.");
             }
 
             ulong id = GetId(type);
 
-            if (messages.TryGetValue(
-                id,
-                out Type? existingType))
+            if (messages.TryGetValue(id, out Type? existingType))
             {
                 throw new InvalidOperationException(
-                    $"Message ID collision detected: " +
-                    $"'{existingType.FullName}' and " +
-                    $"'{type.FullName}' both have ID {id}."
+                    $"Message ID collision detected: " + $"'{existingType.FullName}' and " + $"'{type.FullName}' both have ID {id}."
                 );
             }
 
@@ -49,19 +41,16 @@ public class MessageRegistry
 
     public Type GetType(ulong id)
     {
-        if (!messages.TryGetValue(
-            id,
-            out Type? type))
+        if (!messages.TryGetValue(id, out Type? type))
         {
-            throw new InvalidOperationException(
-                $"Unknown message ID: {id}."
-            );
+            throw new InvalidOperationException($"Unknown message ID: {id}.");
         }
 
         return type;
     }
 
-    public ulong GetId<T>() where T : IMessage
+    public ulong GetId<T>()
+        where T : IMessage
     {
         return GetId(typeof(T));
     }
@@ -75,18 +64,12 @@ public class MessageRegistry
 
         if (!typeof(IMessage).IsAssignableFrom(type))
         {
-            throw new InvalidOperationException(
-                $"Network message type '{type.FullName}' " +
-                $"does not implement IMessage."
-            );
+            throw new InvalidOperationException($"Network message type '{type.FullName}' " + $"does not implement IMessage.");
         }
 
         if (type.FullName == null)
         {
-            throw new InvalidOperationException(
-                $"Network message type '{type}' " +
-                $"does not have a full name."
-            );
+            throw new InvalidOperationException($"Network message type '{type}' " + $"does not have a full name.");
         }
 
         return Hash(type.FullName);
@@ -94,16 +77,13 @@ public class MessageRegistry
 
     private static ulong Hash(string value)
     {
-        const ulong offsetBasis =
-        14695981039346656037UL;
+        const ulong offsetBasis = 14695981039346656037UL;
 
-        const ulong prime =
-        1099511628211UL;
+        const ulong prime = 1099511628211UL;
 
         ulong hash = offsetBasis;
 
-        byte[] bytes =
-        Encoding.UTF8.GetBytes(value);
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
 
         foreach (byte b in bytes)
         {

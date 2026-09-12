@@ -15,26 +15,32 @@ public static class Client
 
         LocalServer localServer = null;
 
-        if (string.IsNullOrEmpty(serverAddress)) {
+        if (string.IsNullOrEmpty(serverAddress))
+        {
             localServer = new LocalServer(input, playerId);
-        } else {
+        }
+        else
+        {
             string[] parts = serverAddress.Split(':');
 
-            if (parts.Length != 2) {
-                Console.WriteLine( "Invalid server address. " + "Expected ip:port." );
+            if (parts.Length != 2)
+            {
+                Console.WriteLine("Invalid server address. " + "Expected ip:port.");
                 return;
             }
 
             IPAddress address;
 
-            if (!IPAddress.TryParse(parts[0], out address)) {
-                Console.WriteLine( "Invalid IP address: " + parts[0]);
+            if (!IPAddress.TryParse(parts[0], out address))
+            {
+                Console.WriteLine("Invalid IP address: " + parts[0]);
                 return;
             }
 
             int port;
 
-            if (!int.TryParse(parts[1], out port) || port < 1 || port > 65535) {
+            if (!int.TryParse(parts[1], out port) || port < 1 || port > 65535)
+            {
                 Console.WriteLine("Invalid port: " + parts[1]);
                 return;
             }
@@ -44,6 +50,6 @@ public static class Client
 
         localServer.Start();
 
-        GameWindow.Run(localServer, input);
+        GameWindow.Run(localServer, input, playerId);
     }
 }

@@ -14,11 +14,11 @@ public class SharedInputState
         int oldValue;
         int newValue;
 
-        do {
+        do
+        {
             oldValue = Volatile.Read(ref value);
             newValue = oldValue | (int)input;
-        }
-        while (Interlocked.CompareExchange(ref value, newValue, oldValue) != oldValue);
+        } while (Interlocked.CompareExchange(ref value, newValue, oldValue) != oldValue);
     }
 
     public void Release(InputState input)
@@ -26,10 +26,10 @@ public class SharedInputState
         int oldValue;
         int newValue;
 
-        do {
+        do
+        {
             oldValue = Volatile.Read(ref value);
             newValue = oldValue & ~(int)input;
-        }
-        while (Interlocked.CompareExchange(ref value, newValue, oldValue) != oldValue);
+        } while (Interlocked.CompareExchange(ref value, newValue, oldValue) != oldValue);
     }
 }

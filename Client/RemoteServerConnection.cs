@@ -12,17 +12,13 @@ public sealed class RemoteServerConnection : IDisposable
     private readonly IPEndPoint endpoint;
     private readonly MessageRegistry messageRegistry;
 
-    private readonly ConcurrentQueue<IMessage> sendQueue =
-    new ConcurrentQueue<IMessage>();
+    private readonly ConcurrentQueue<IMessage> sendQueue = new ConcurrentQueue<IMessage>();
 
-    private readonly ConcurrentQueue<IMessage> receiveQueue =
-    new ConcurrentQueue<IMessage>();
+    private readonly ConcurrentQueue<IMessage> receiveQueue = new ConcurrentQueue<IMessage>();
 
-    private readonly SemaphoreSlim sendSignal =
-    new SemaphoreSlim(0);
+    private readonly SemaphoreSlim sendSignal = new SemaphoreSlim(0);
 
-    private readonly object stateLock =
-    new object();
+    private readonly object stateLock = new object();
 
     private TcpClient client;
     private NetworkStream stream;
@@ -52,18 +48,16 @@ public sealed class RemoteServerConnection : IDisposable
         lock (stateLock)
         {
             if (connected)
-                throw new InvalidOperationException(
-                    "Already connected.");
+                throw new InvalidOperationException("Already connected.");
 
-                client = new TcpClient();
+            client = new TcpClient();
 
             try
             {
                 client.Connect(endpoint);
                 stream = client.GetStream();
 
-                cancellation =
-                new CancellationTokenSource();
+                cancellation = new CancellationTokenSource();
 
                 connected = true;
 
@@ -115,33 +109,25 @@ public sealed class RemoteServerConnection : IDisposable
         {
             cts?.Cancel();
         }
-        catch
-        {
-        }
+        catch { }
 
         try
         {
             sendSignal.Release();
         }
-        catch
-        {
-        }
+        catch { }
 
         try
         {
             stream?.Close();
         }
-        catch
-        {
-        }
+        catch { }
 
         try
         {
             client?.Close();
         }
-        catch
-        {
-        }
+        catch { }
 
         stream = null;
         client = null;
@@ -161,17 +147,15 @@ public sealed class RemoteServerConnection : IDisposable
             throw new ArgumentNullException(nameof(message));
 
         if (!connected)
-            throw new InvalidOperationException(
-                "Not connected.");
+            throw new InvalidOperationException("Not connected.");
 
-            sendQueue.Enqueue(message);
+        sendQueue.Enqueue(message);
         sendSignal.Release();
     }
 
     private void SendLoop()
     {
-        CancellationToken token =
-        cancellation?.Token ?? default(CancellationToken);
+        CancellationToken token = cancellation?.Token ?? default(CancellationToken);
 
         try
         {
@@ -188,9 +172,7 @@ public sealed class RemoteServerConnection : IDisposable
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         catch (Exception exception)
         {
             HandleNetworkError(exception);
@@ -199,37 +181,26 @@ public sealed class RemoteServerConnection : IDisposable
 
     private void SendMessage(IMessage message)
     {
-        NetworkStream currentStream =
-        stream ?? throw new IOException(
-            "Network stream is unavailable.");
+        NetworkStream currentStream = stream ?? throw new IOException("Network stream is unavailable.");
 
-        ulong messageId =
-        messageRegistry.GetId(message.GetType());
+        ulong messageId = messageRegistry.GetId(message.GetType());
 
-        byte[] data =
-        BinaryMessageSerializer.Serialize(message);
+        byte[] data = BinaryMessageSerializer.Serialize(message);
 
         // Console.WriteLine(
         //     System.Text.Encoding.UTF8.GetString(data));
 
-
-        int messageLength =
-        sizeof(ulong) + data.Length;
+        int messageLength = sizeof(ulong) + data.Length;
 
         if (messageLength > MaxMessageSize)
         {
-            throw new InvalidDataException(
-                "Message is too large: " +
-                messageLength + " bytes.");
+            throw new InvalidDataException("Message is too large: " + messageLength + " bytes.");
         }
 
-        byte[] packet =
-        new byte[sizeof(int) + messageLength];
+        byte[] packet = new byte[sizeof(int) + messageLength];
 
-        using (MemoryStream packetStream =
-        new MemoryStream(packet))
-        using (BinaryWriter writer =
-        new BinaryWriter(packetStream))
+        using (MemoryStream packetStream = new MemoryStream(packet))
+        using (BinaryWriter writer = new BinaryWriter(packetStream))
         {
             writer.Write(messageLength);
             writer.Write(messageId);
@@ -241,97 +212,66 @@ public sealed class RemoteServerConnection : IDisposable
 
     private void ReceiveLoop()
     {
-        CancellationToken token =
-        cancellation?.Token ?? default(CancellationToken);
+        CancellationToken token = cancellation?.Token ?? default(CancellationToken);
 
         try
         {
-            NetworkStream currentStream =
-            stream ?? throw new IOException(
-                "Network stream is unavailable.");
+            NetworkStream currentStream = stream ?? throw new IOException("Network stream is unavailable.");
 
-            byte[] lengthBuffer =
-            new byte[sizeof(int)];
+            byte[] lengthBuffer = new byte[sizeof(int)];
 
             while (!token.IsCancellationRequested)
             {
-                ReadExactly(
-                    currentStream,
-                    lengthBuffer,
-                    token);
+                ReadExactly(currentStream, lengthBuffer, token);
 
-                int messageLength =
-                BitConverter.ToInt32(lengthBuffer, 0);
+                int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
 
                 if (messageLength < sizeof(ulong))
                 {
-                    throw new InvalidDataException(
-                        "Invalid message length: " +
-                        messageLength + ".");
+                    throw new InvalidDataException("Invalid message length: " + messageLength + ".");
                 }
 
                 if (messageLength > MaxMessageSize)
                 {
-                    throw new InvalidDataException(
-                        "Message exceeds maximum size: " +
-                        messageLength + " bytes.");
+                    throw new InvalidDataException("Message exceeds maximum size: " + messageLength + " bytes.");
                 }
 
-                byte[] messageBuffer =
-                new byte[messageLength];
+                byte[] messageBuffer = new byte[messageLength];
 
-                ReadExactly(
-                    currentStream,
-                    messageBuffer,
-                    token);
+                ReadExactly(currentStream, messageBuffer, token);
 
-                using (MemoryStream messageStream =
-                new MemoryStream(messageBuffer))
-                using (BinaryReader reader =
-                new BinaryReader(messageStream))
+                using (MemoryStream messageStream = new MemoryStream(messageBuffer))
+                using (BinaryReader reader = new BinaryReader(messageStream))
                 {
-                    ulong messageId =
-                    reader.ReadUInt64();
+                    ulong messageId = reader.ReadUInt64();
 
-                    int dataLength =
-                    messageLength - sizeof(ulong);
+                    int dataLength = messageLength - sizeof(ulong);
 
-                    byte[] data =
-                    reader.ReadBytes(dataLength);
+                    byte[] data = reader.ReadBytes(dataLength);
 
                     if (data.Length != dataLength)
                     {
-                        throw new EndOfStreamException(
-                            "Incomplete message payload.");
+                        throw new EndOfStreamException("Incomplete message payload.");
                     }
 
                     Type messageType;
 
                     try
                     {
-                        messageType =
-                        messageRegistry.GetType(messageId);
+                        messageType = messageRegistry.GetType(messageId);
                     }
                     catch (Exception exception)
                     {
-                        throw new InvalidDataException(
-                            "Unknown message ID: " +
-                            messageId + ".",
-                            exception);
+                        throw new InvalidDataException("Unknown message ID: " + messageId + ".", exception);
                     }
 
-                    IMessage message =
-                    BinaryMessageSerializer.Deserialize(
-                        data,
-                        messageType);
+                    IMessage message = BinaryMessageSerializer.Deserialize(data, messageType);
 
                     receiveQueue.Enqueue(message);
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-        }
+        catch (OperationCanceledException) { }
         catch (EndOfStreamException)
         {
             HandleDisconnected();
@@ -352,10 +292,7 @@ public sealed class RemoteServerConnection : IDisposable
         return receiveQueue.TryDequeue(out message);
     }
 
-    private static void ReadExactly(
-        NetworkStream stream,
-        byte[] buffer,
-        CancellationToken cancellationToken)
+    private static void ReadExactly(NetworkStream stream, byte[] buffer, CancellationToken cancellationToken)
     {
         int offset = 0;
 
@@ -363,16 +300,11 @@ public sealed class RemoteServerConnection : IDisposable
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            int read =
-            stream.Read(
-                buffer,
-                offset,
-                buffer.Length - offset);
+            int read = stream.Read(buffer, offset, buffer.Length - offset);
 
             if (read == 0)
             {
-                throw new EndOfStreamException(
-                    "Remote endpoint disconnected.");
+                throw new EndOfStreamException("Remote endpoint disconnected.");
             }
 
             offset += read;
@@ -387,17 +319,13 @@ public sealed class RemoteServerConnection : IDisposable
         {
             stream?.Close();
         }
-        catch
-        {
-        }
+        catch { }
 
         try
         {
             client?.Close();
         }
-        catch
-        {
-        }
+        catch { }
     }
 
     private void HandleNetworkError(Exception exception)
@@ -405,8 +333,7 @@ public sealed class RemoteServerConnection : IDisposable
         if (!connected)
             return;
 
-        Console.WriteLine(
-            "Network error: " + exception);
+        Console.WriteLine("Network error: " + exception);
 
         HandleDisconnected();
     }

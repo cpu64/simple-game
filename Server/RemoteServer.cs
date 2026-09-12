@@ -9,14 +9,11 @@ public class RemoteServer
 {
     private readonly CommandQueue commandQueue;
 
-    private readonly object worldLock =
-    new object();
+    private readonly object worldLock = new object();
 
-    private readonly object clientsLock =
-    new object();
+    private readonly object clientsLock = new object();
 
-    private readonly List<ClientConnection> clients =
-    new List<ClientConnection>();
+    private readonly List<ClientConnection> clients = new List<ClientConnection>();
 
     private World world;
 
@@ -40,32 +37,25 @@ public class RemoteServer
 
         running = true;
 
-        listener =
-        new TcpListener(
-            IPAddress.Any,
-            port);
+        listener = new TcpListener(IPAddress.Any, port);
 
         listener.Start();
 
-        simulationThread =
-        new Thread(RunSimulation);
+        simulationThread = new Thread(RunSimulation);
 
         simulationThread.IsBackground = true;
         simulationThread.Name = "Simulation";
 
         simulationThread.Start();
 
-        networkThread =
-        new Thread(RunNetwork);
+        networkThread = new Thread(RunNetwork);
 
         networkThread.IsBackground = true;
         networkThread.Name = "Network";
 
         networkThread.Start();
 
-        Console.WriteLine(
-            "Remote server listening on port " +
-            port + ".");
+        Console.WriteLine("Remote server listening on port " + port + ".");
     }
 
     public void Stop()
@@ -100,11 +90,9 @@ public class RemoteServer
             {
                 Console.WriteLine("Waiting for client...");
 
-                TcpClient tcpClient =
-                listener.AcceptTcpClient();
+                TcpClient tcpClient = listener.AcceptTcpClient();
 
-                ClientConnection client =
-                new ClientConnection(tcpClient);
+                ClientConnection client = new ClientConnection(tcpClient);
 
                 lock (clientsLock)
                 {
@@ -113,8 +101,7 @@ public class RemoteServer
 
                 Console.WriteLine("Client connected.");
 
-                Thread clientThread =
-                new Thread(() => HandleClient(client));
+                Thread clientThread = new Thread(() => HandleClient(client));
 
                 clientThread.IsBackground = true;
                 clientThread.Name = "Client";
@@ -130,9 +117,7 @@ public class RemoteServer
             {
                 if (running)
                 {
-                    Console.WriteLine(
-                        "Network error: " +
-                        exception.Message);
+                    Console.WriteLine("Network error: " + exception.Message);
                 }
             }
         }
@@ -144,36 +129,24 @@ public class RemoteServer
         {
             while (running && client.IsConnected)
             {
-                IMessage message =
-                client.Receive();
+                IMessage message = client.Receive();
 
-                Console.WriteLine(
-                    "Received message: " +
-                    message.GetType().Name);
+                Console.WriteLine("Received message: " + message.GetType().Name);
 
-
-                RegisterUserMessage registerMessage =
-                message as RegisterUserMessage;
+                RegisterUserMessage registerMessage = message as RegisterUserMessage;
 
                 if (registerMessage != null)
                 {
-                    RegisterPlayer(
-                        client,
-                        registerMessage.ClientId);
+                    RegisterPlayer(client, registerMessage.ClientId);
 
                     continue;
                 }
 
-                InputCommandMessage commandMessage =
-                message as InputCommandMessage;
+                InputCommandMessage commandMessage = message as InputCommandMessage;
 
                 if (commandMessage != null)
                 {
-                    InputCommand command =
-                    new InputCommand(
-                        commandMessage.Command.Tick,
-                        commandMessage.Command.PlayerId,
-                        commandMessage.Command.Input);
+                    InputCommand command = new InputCommand(commandMessage.Command.Tick, commandMessage.Command.PlayerId, commandMessage.Command.Input);
 
                     commandQueue.Add(command);
                 }
@@ -183,9 +156,7 @@ public class RemoteServer
         {
             if (running)
             {
-                Console.WriteLine(
-                    "Client disconnected: " +
-                    exception.Message);
+                Console.WriteLine("Client disconnected: " + exception.Message);
             }
         }
         finally
@@ -199,14 +170,9 @@ public class RemoteServer
         }
     }
 
-    private void RegisterPlayer(
-        ClientConnection client,
-        Guid playerId)
+    private void RegisterPlayer(ClientConnection client, Guid playerId)
     {
-        Console.WriteLine(
-            "Registering player: " + playerId);
-
-        client.RegisterPlayer(playerId);
+        Console.WriteLine("Registering player: " + playerId);
 
         World snapshot;
 
@@ -214,56 +180,43 @@ public class RemoteServer
         {
             if (!world.Players.ContainsKey(playerId))
             {
-                world.Players.Add(
-                    playerId,
-                    new Player(
-                        playerId,
-                        400,
-                        300));
+                world.Players.Add(playerId, new Player(playerId, 400, 300));
             }
 
             snapshot = new World(world);
         }
         Console.WriteLine("Sending initial world.");
 
-        client.Send(
-            new WorldMessage(snapshot));
+        client.Send(new WorldMessage(snapshot));
         Console.WriteLine("Initial world sent.");
-
     }
 
     private void RunSimulation()
     {
-        Stopwatch stopwatch =
-        Stopwatch.StartNew();
+        Stopwatch stopwatch = Stopwatch.StartNew();
 
-        double nextTick =
-        stopwatch.Elapsed.TotalSeconds;
+        double nextTick = stopwatch.Elapsed.TotalSeconds;
 
         while (running)
         {
-            double now =
-            stopwatch.Elapsed.TotalSeconds;
+            double now = stopwatch.Elapsed.TotalSeconds;
 
             if (now >= nextTick)
             {
                 Tick();
 
-                nextTick +=
-                GameConstants.SimulationTickDuration;
+                nextTick += GameConstants.SimulationTickDuration;
 
                 if (now - nextTick > 0.25)
                     nextTick = now;
             }
             else
             {
-                double remaining =
-                nextTick - now;
+                double remaining = nextTick - now;
 
                 if (remaining > 0.001)
                 {
-                    Thread.Sleep(
-                        (int)(remaining * 1000.0));
+                    Thread.Sleep((int)(remaining * 1000.0));
                 }
                 else
                 {
@@ -279,20 +232,12 @@ public class RemoteServer
 
         lock (worldLock)
         {
-            long nextTick =
-            world.Tick + 1;
+            commands = commandQueue.TakeAll();
 
-            commands =
-            commandQueue.Take(nextTick);
-
-            world =
-            Simulation.Tick(
-                world,
-                commands);
+            world = Simulation.Tick(world, commands);
         }
 
-        if (world.Tick %
-            GameConstants.SnapshotIntervalTicks == 0)
+        if (world.Tick % GameConstants.SnapshotIntervalTicks == 0)
         {
             SendSnapshot();
         }
@@ -304,9 +249,7 @@ public class RemoteServer
 
         lock (worldLock)
         {
-            message =
-            new WorldMessage(
-                new World(world));
+            message = new WorldMessage(new World(world));
         }
 
         lock (clientsLock)
@@ -323,19 +266,9 @@ public class RemoteServer
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(
-                        "Failed to send snapshot: " +
-                        exception.Message);
+                    Console.WriteLine("Failed to send snapshot: " + exception.Message);
                 }
             }
-        }
-    }
-
-    public World GetSnapshot()
-    {
-        lock (worldLock)
-        {
-            return new World(world);
         }
     }
 }

@@ -1,46 +1,30 @@
 using System;
+using System.Collections.Generic;
 using Raylib_cs;
 
 public static class GameWindow
 {
-    public static void Run(
-        LocalServer server,
-        SharedInputState input)
+    public static void Run(LocalServer server, SharedInputState input, Guid playerId)
     {
-        Raylib.InitWindow(
-            800,
-            600,
-            "Terraria Prototype");
+        Raylib.InitWindow(800, 600, "Terraria Prototype");
 
-        Raylib.SetTargetFPS(
-            GameConstants.TargetFrameRate);
+        Raylib.SetTargetFPS(GameConstants.TargetFrameRate);
 
         try
         {
-            RenderWorldSnapshot snapshot =
-            server.GetRenderWorldSnapshot();
-
             while (!Raylib.WindowShouldClose())
             {
                 UpdateInput(input);
 
-                snapshot =
-                server.GetRenderWorldSnapshot();
+                RenderInput renderInput = server.GetRenderInput();
 
                 Raylib.BeginDrawing();
 
-                Raylib.ClearBackground(
-                    Color.Black);
+                Raylib.ClearBackground(Color.Black);
 
-                foreach (Player player in
-                    snapshot.Players.Values)
-                {
-                    Raylib.DrawCircle(
-                        (int)player.X,
-                                      (int)player.Y,
-                                      10,
-                                      Color.Red);
-                }
+                RenderLocalPlayer(renderInput.World, playerId);
+
+                RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick);
 
                 Raylib.EndDrawing();
             }
@@ -52,8 +36,122 @@ public static class GameWindow
         }
     }
 
-    private static void UpdateInput(
-        SharedInputState input)
+    private static void RenderLocalPlayer(World world, Guid playerId)
+    {
+        if (!world.Players.TryGetValue(playerId, out Player player))
+        {
+            return;
+        }
+
+        Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
+    }
+
+    private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick)
+    {
+        if (snapshots.Count == 0)
+            return;
+
+        // The local simulated world is the render clock.
+        //
+        // With:
+        //
+        //     SnapshotIntervalTicks = 10
+        //     InterpolationBufferTicks = 5
+        //
+        // InterpolationDelayTicks is 15.
+        //
+        // If the local world is tick 1010:
+        //
+        //     renderTick = 1010 - 15 = 995
+        //
+        // The render tick therefore advances naturally with the
+        // local simulation. No separate render cursor is required.
+        long renderTick = worldTick - GameConstants.InterpolationDelayTicks;
+
+        FindSnapshots(snapshots, renderTick, out World before, out World after);
+
+        if (before.Tick == after.Tick)
+        {
+            RenderRemoteWorld(before);
+            return;
+        }
+
+        double alpha = (renderTick - before.Tick) / (double)(after.Tick - before.Tick);
+
+        alpha = Math.Clamp(alpha, 0.0, 1.0);
+
+        RenderInterpolatedRemotePlayers(before, after, alpha);
+    }
+
+    private static void FindSnapshots(IReadOnlyList<World> snapshots, long renderTick, out World before, out World after)
+    {
+        // RenderInput guarantees that snapshots are sorted by Tick.
+
+        if (renderTick <= snapshots[0].Tick)
+        {
+            before = snapshots[0];
+            after = snapshots[0];
+            return;
+        }
+
+        for (int i = 0; i < snapshots.Count - 1; i++)
+        {
+            World current = snapshots[i];
+            World next = snapshots[i + 1];
+
+            if (current.Tick <= renderTick && renderTick <= next.Tick)
+            {
+                before = current;
+                after = next;
+                return;
+            }
+        }
+
+        // There is no later authoritative snapshot yet.
+        //
+        // Do not extrapolate. Render the newest authoritative state
+        // until another snapshot arrives.
+        World latest = snapshots[snapshots.Count - 1];
+
+        before = latest;
+        after = latest;
+    }
+
+    private static void RenderInterpolatedRemotePlayers(World before, World after, double alpha)
+    {
+        foreach (KeyValuePair<Guid, Player> entry in before.Players)
+        {
+            Guid playerId = entry.Key;
+
+            if (!after.Players.TryGetValue(playerId, out Player afterPlayer))
+            {
+                continue;
+            }
+
+            Player beforePlayer = entry.Value;
+
+            double x = Lerp(beforePlayer.X, afterPlayer.X, alpha);
+
+            double y = Lerp(beforePlayer.Y, afterPlayer.Y, alpha);
+
+            Raylib.DrawCircle((int)Math.Round(x), (int)Math.Round(y), 10, Color.Red);
+        }
+    }
+
+    private static void RenderRemoteWorld(World world)
+    {
+        foreach (Player player in world.Players.Values)
+        {
+            Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
+        }
+    }
+
+    private static double Lerp(double from, double to, double amount)
+    {
+        return from + (to - from) * amount;
+    }
+
+    private static void UpdateInput(SharedInputState input)
     {
         if (Raylib.IsKeyDown(KeyboardKey.Left))
             input.Press(InputState.Left);
