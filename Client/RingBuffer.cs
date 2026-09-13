@@ -1,3 +1,5 @@
+using System;
+
 public class RingBuffer<T>
 {
     private readonly T[] buffer;
@@ -19,7 +21,7 @@ public class RingBuffer<T>
             buffer[i] = defaultValue;
         }
 
-        count = capacity;
+        count = 0;
     }
 
     public void Add(T item)

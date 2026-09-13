@@ -24,7 +24,7 @@ public static class GameWindow
 
                 RenderLocalPlayer(renderInput.World, playerId);
 
-                RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick);
+                RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
 
                 Raylib.EndDrawing();
             }
@@ -46,7 +46,7 @@ public static class GameWindow
         Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
     }
 
-    private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick)
+    private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick, Guid localPlayerId)
     {
         if (snapshots.Count == 0)
             return;
@@ -72,7 +72,7 @@ public static class GameWindow
 
         if (before.Tick == after.Tick)
         {
-            RenderRemoteWorld(before);
+            RenderRemoteWorld(before, localPlayerId);
             return;
         }
 
@@ -80,7 +80,7 @@ public static class GameWindow
 
         alpha = Math.Clamp(alpha, 0.0, 1.0);
 
-        RenderInterpolatedRemotePlayers(before, after, alpha);
+        RenderInterpolatedRemotePlayers(before, after, alpha, localPlayerId);
     }
 
     private static void FindSnapshots(IReadOnlyList<World> snapshots, long renderTick, out World before, out World after)
@@ -117,11 +117,19 @@ public static class GameWindow
         after = latest;
     }
 
-    private static void RenderInterpolatedRemotePlayers(World before, World after, double alpha)
+    private static void RenderInterpolatedRemotePlayers(World before, World after, double alpha, Guid localPlayerId)
     {
         foreach (KeyValuePair<Guid, Player> entry in before.Players)
         {
             Guid playerId = entry.Key;
+
+            // The local player is rendered separately from the
+            // predicted local world. Do not render its authoritative
+            // snapshot here.
+            if (playerId == localPlayerId)
+            {
+                continue;
+            }
 
             if (!after.Players.TryGetValue(playerId, out Player afterPlayer))
             {
@@ -131,17 +139,26 @@ public static class GameWindow
             Player beforePlayer = entry.Value;
 
             double x = Lerp(beforePlayer.X, afterPlayer.X, alpha);
-
             double y = Lerp(beforePlayer.Y, afterPlayer.Y, alpha);
 
             Raylib.DrawCircle((int)Math.Round(x), (int)Math.Round(y), 10, Color.Red);
         }
     }
 
-    private static void RenderRemoteWorld(World world)
+    private static void RenderRemoteWorld(World world, Guid localPlayerId)
     {
-        foreach (Player player in world.Players.Values)
+        foreach (KeyValuePair<Guid, Player> entry in world.Players)
         {
+            Guid playerId = entry.Key;
+
+            // The local player is rendered from the predicted local world.
+            if (playerId == localPlayerId)
+            {
+                continue;
+            }
+
+            Player player = entry.Value;
+
             Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
         }
     }

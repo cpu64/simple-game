@@ -1,12 +1,14 @@
 using System;
+using System.Text.Json.Serialization;
 
 public class Player
 {
     public Guid Id { get; private set; }
     public double X { get; set; }
     public double Y { get; set; }
-    public long LastCommand { get; private set; }
+    public long LastCommand { get; set; }
 
+    [JsonConstructor]
     public Player(Guid id, double x, double y)
     {
         Id = id;

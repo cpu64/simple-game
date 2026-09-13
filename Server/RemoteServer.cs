@@ -146,7 +146,12 @@ public class RemoteServer
 
                 if (commandMessage != null)
                 {
-                    InputCommand command = new InputCommand(commandMessage.Command.Tick, commandMessage.Command.PlayerId, commandMessage.Command.Input);
+                    InputCommand command = new InputCommand(
+                        commandMessage.Command.Sequence,
+                        commandMessage.Command.LocalTick,
+                        commandMessage.Command.PlayerId,
+                        commandMessage.Command.Input
+                    );
 
                     commandQueue.Add(command);
                 }
