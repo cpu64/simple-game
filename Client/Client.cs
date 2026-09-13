@@ -17,7 +17,7 @@ public static class Client
 
         if (string.IsNullOrEmpty(serverAddress))
         {
-            localServer = new LocalServer(input, playerId);
+            localServer = new LocalServer(input, playerId, "world.json");
         }
         else
         {

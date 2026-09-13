@@ -24,10 +24,10 @@ public class RemoteServer
 
     private TcpListener listener;
 
-    public RemoteServer()
+    public RemoteServer(string worldPath)
     {
         commandQueue = new CommandQueue();
-        world = new World();
+        world = new World(worldPath);
     }
 
     public void Start(int port)
@@ -177,7 +177,7 @@ public class RemoteServer
         {
             if (!world.Players.ContainsKey(playerId))
             {
-                world.Players.Add(playerId, new Player(playerId, 400, 300));
+                world.Players.Add(playerId, new Player(playerId, 20, 18));
             }
 
             snapshot = new World(world);

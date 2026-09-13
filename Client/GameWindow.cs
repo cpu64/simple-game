@@ -22,6 +22,8 @@ public static class GameWindow
 
                 Raylib.ClearBackground(Color.Black);
 
+                RenderWorld(renderInput.World);
+
                 RenderLocalPlayer(renderInput.World, playerId);
 
                 RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
@@ -36,6 +38,14 @@ public static class GameWindow
         }
     }
 
+    private static void RenderWorld(World world)
+    {
+        foreach (Block block in world.Blocks)
+        {
+            Raylib.DrawRectangle((int)Math.Round(block.X * 20.0), (int)Math.Round(block.Y * 20.0), 20, 20, Color.Green);
+        }
+    }
+
     private static void RenderLocalPlayer(World world, Guid playerId)
     {
         if (!world.Players.TryGetValue(playerId, out Player player))
@@ -43,7 +53,7 @@ public static class GameWindow
             return;
         }
 
-        Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
+        Raylib.DrawRectangle((int)Math.Round(player.X * 20.0), (int)Math.Round(player.Y * 20.0), 20, 20, Color.Red);
     }
 
     private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick, Guid localPlayerId)
@@ -138,7 +148,7 @@ public static class GameWindow
             double x = Lerp(beforePlayer.X, afterPlayer.X, alpha);
             double y = Lerp(beforePlayer.Y, afterPlayer.Y, alpha);
 
-            Raylib.DrawCircle((int)Math.Round(x), (int)Math.Round(y), 10, Color.Red);
+            Raylib.DrawRectangle((int)Math.Round(x * 20.0), (int)Math.Round(y * 20.0), 20, 20, Color.Red);
         }
     }
 
@@ -156,7 +166,7 @@ public static class GameWindow
 
             Player player = entry.Value;
 
-            Raylib.DrawCircle((int)Math.Round(player.X), (int)Math.Round(player.Y), 10, Color.Red);
+            Raylib.DrawRectangle((int)Math.Round(player.X * 20.0), (int)Math.Round(player.Y * 20.0), 20, 20, Color.Red);
         }
     }
 

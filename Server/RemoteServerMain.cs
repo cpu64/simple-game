@@ -12,7 +12,7 @@ public static class RemoteServerMain
             return;
         }
 
-        RemoteServer server = new RemoteServer();
+        RemoteServer server = new RemoteServer("world.json");
 
         server.Start(port);
         Console.WriteLine("Press Enter to stop.");

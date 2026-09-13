@@ -27,7 +27,7 @@ public class LocalServer
     private Thread simulationThread;
     private volatile bool running;
 
-    public LocalServer(SharedInputState input, Guid playerId)
+    public LocalServer(SharedInputState input, Guid playerId, string worldPath)
     {
         this.input = input;
         this.playerId = playerId;
@@ -36,9 +36,9 @@ public class LocalServer
 
         nextCommandSequence = 0;
 
-        world = new World();
+        world = new World(worldPath);
 
-        world.Players.Add(playerId, new Player(playerId, 400, 300));
+        world.Players.Add(playerId, new Player(playerId, 20, 18));
     }
 
     public LocalServer(SharedInputState input, Guid playerId, IPEndPoint endpoint)
