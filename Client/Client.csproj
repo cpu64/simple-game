@@ -7,11 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Shared/*.cs" />
-    <Compile Include="../Shared/Network/*.cs" />
+    <PackageReference Include="Raylib-cs" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Raylib-cs" Version="8.1.0" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\world.json">
+      <Link>world.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>
