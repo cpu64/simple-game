@@ -9,7 +9,6 @@ public sealed class ClientConnection : IDisposable
 
     private readonly TcpClient client;
     private readonly NetworkStream stream;
-    private readonly MessageRegistry messageRegistry;
 
     private readonly object sendLock = new object();
 
@@ -22,11 +21,10 @@ public sealed class ClientConnection : IDisposable
 
         this.client = client;
         stream = client.GetStream();
-        messageRegistry = new MessageRegistry();
         Connected = true;
     }
 
-    public void Send(IMessage message)
+    public void Send(IBinarySerializable message)
     {
         if (message == null)
             throw new ArgumentNullException(nameof(message));
@@ -40,96 +38,102 @@ public sealed class ClientConnection : IDisposable
         }
     }
 
-    private void SendMessage(IMessage message)
+    private void SendMessage(IBinarySerializable message)
     {
-        ulong messageId = messageRegistry.GetId(message.GetType());
-
-        byte[] data = BinaryMessageSerializer.Serialize(message);
-
-        int messageLength = sizeof(ulong) + data.Length;
-
-        if (messageLength > MaxMessageSize)
-        {
-            throw new InvalidDataException("Message is too large: " + messageLength + " bytes.");
-        }
-
-        byte[] packet = new byte[sizeof(int) + messageLength];
-
-        BinaryPrimitives.WriteInt32LittleEndian(packet.AsSpan(0, sizeof(int)), messageLength);
-        BinaryPrimitives.WriteUInt64LittleEndian(packet.AsSpan(sizeof(int), sizeof(ulong)), messageId);
-        Buffer.BlockCopy(data, 0, packet, sizeof(int) + sizeof(ulong), data.Length);
-
-        stream.Write(packet, 0, packet.Length);
+        // ulong messageId = messageRegistry.GetId(message.GetType());
+        //
+        // byte[] data = BinaryMessageSerializer.Serialize(message);
+        //
+        // int messageLength = sizeof(ulong) + data.Length;
+        //
+        // if (messageLength > MaxMessageSize)
+        // {
+        //     throw new InvalidDataException("Message is too large: " + messageLength + " bytes.");
+        // }
+        //
+        // byte[] packet = new byte[sizeof(int) + messageLength];
+        //
+        // BinaryPrimitives.WriteInt32LittleEndian(packet.AsSpan(0, sizeof(int)), messageLength);
+        // BinaryPrimitives.WriteUInt64LittleEndian(packet.AsSpan(sizeof(int), sizeof(ulong)), messageId);
+        // Buffer.BlockCopy(data, 0, packet, sizeof(int) + sizeof(ulong), data.Length);
+        //
+        // stream.Write(packet, 0, packet.Length);
+        BinaryStreamHandler io = new BinaryStreamHandler();
+        io.Write(stream, message);
     }
 
-    public IMessage Receive()
+    public IBinarySerializable Receive()
     {
         if (!Connected)
             throw new InvalidOperationException("Client is not connected.");
 
-        byte[] lengthBuffer = new byte[sizeof(int)];
+        // byte[] lengthBuffer = new byte[sizeof(int)];
+        //
+        // ReadExactly(stream, lengthBuffer);
+        //
+        // int messageLength = BinaryPrimitives.ReadInt32LittleEndian(lengthBuffer);
+        //
+        // if (messageLength < sizeof(ulong))
+        // {
+        //     throw new InvalidDataException("Invalid message length: " + messageLength);
+        // }
+        //
+        // if (messageLength > MaxMessageSize)
+        // {
+        //     throw new InvalidDataException("Message exceeds maximum size: " + messageLength);
+        // }
+        //
+        // byte[] messageBuffer = new byte[messageLength];
+        //
+        // ReadExactly(stream, messageBuffer);
+        //
+        // ulong messageId = BinaryPrimitives.ReadUInt64LittleEndian(messageBuffer.AsSpan(0, sizeof(ulong)));
+        //
+        // int dataLength = messageLength - sizeof(ulong);
+        //
+        // byte[] data = new byte[dataLength];
+        //
+        // Buffer.BlockCopy(messageBuffer, sizeof(ulong), data, 0, dataLength);
+        //
+        // Type messageType;
+        //
+        // try
+        // {
+        //     messageType = messageRegistry.GetType(messageId);
+        // }
+        // catch (Exception exception)
+        // {
+        //     throw new InvalidDataException("Unknown message ID: " + messageId, exception);
+        // }
+        //
+        // if (!typeof(IMessage).IsAssignableFrom(messageType))
+        // {
+        //     throw new InvalidDataException("Registered type '" + messageType.FullName + "' does not implement IMessage.");
+        // }
 
-        ReadExactly(stream, lengthBuffer);
+        BinaryStreamHandler io = new BinaryStreamHandler();
 
-        int messageLength = BinaryPrimitives.ReadInt32LittleEndian(lengthBuffer);
+        return io.Read(stream);
 
-        if (messageLength < sizeof(ulong))
-        {
-            throw new InvalidDataException("Invalid message length: " + messageLength);
-        }
-
-        if (messageLength > MaxMessageSize)
-        {
-            throw new InvalidDataException("Message exceeds maximum size: " + messageLength);
-        }
-
-        byte[] messageBuffer = new byte[messageLength];
-
-        ReadExactly(stream, messageBuffer);
-
-        ulong messageId = BinaryPrimitives.ReadUInt64LittleEndian(messageBuffer.AsSpan(0, sizeof(ulong)));
-
-        int dataLength = messageLength - sizeof(ulong);
-
-        byte[] data = new byte[dataLength];
-
-        Buffer.BlockCopy(messageBuffer, sizeof(ulong), data, 0, dataLength);
-
-        Type messageType;
-
-        try
-        {
-            messageType = messageRegistry.GetType(messageId);
-        }
-        catch (Exception exception)
-        {
-            throw new InvalidDataException("Unknown message ID: " + messageId, exception);
-        }
-
-        if (!typeof(IMessage).IsAssignableFrom(messageType))
-        {
-            throw new InvalidDataException("Registered type '" + messageType.FullName + "' does not implement IMessage.");
-        }
-
-        return BinaryMessageSerializer.Deserialize(data, messageType);
+        // return BinaryMessageSerializer.Deserialize(data, messageType);
     }
 
-    private static void ReadExactly(NetworkStream stream, byte[] buffer)
-    {
-        int offset = 0;
-
-        while (offset < buffer.Length)
-        {
-            int read = stream.Read(buffer, offset, buffer.Length - offset);
-
-            if (read == 0)
-            {
-                throw new EndOfStreamException("Client disconnected.");
-            }
-
-            offset += read;
-        }
-    }
+    // private static void ReadExactly(NetworkStream stream, byte[] buffer)
+    // {
+    //     int offset = 0;
+    //
+    //     while (offset < buffer.Length)
+    //     {
+    //         int read = stream.Read(buffer, offset, buffer.Length - offset);
+    //
+    //         if (read == 0)
+    //         {
+    //             throw new EndOfStreamException("Client disconnected.");
+    //         }
+    //
+    //         offset += read;
+    //     }
+    // }
 
     public void Dispose()
     {

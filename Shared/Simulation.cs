@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 public class Simulation
 {
@@ -13,164 +15,211 @@ public class Simulation
     {
         foreach (InputCommand command in commands)
         {
-            Player player;
+            Player? player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == command.PlayerId);
 
-            if (!world.Players.TryGetValue(command.PlayerId, out player))
-            {
+            if (player == null)
                 continue;
-            }
 
             if (player.LastCommand >= command.Sequence)
                 continue;
 
             player.LastCommand = command.Sequence;
 
-            InputState input = command.Input;
+            KeyState keys = command.Keys;
 
             double deltaTime = GameConstants.SimulationTickDuration;
 
             double moveX = 0.0;
             double moveY = 0.0;
 
-            if ((input & InputState.Left) != 0)
+            if ((keys & KeyState.Left) != 0)
                 moveX -= PlayerSpeed * deltaTime;
 
-            if ((input & InputState.Right) != 0)
+            if ((keys & KeyState.Right) != 0)
                 moveX += PlayerSpeed * deltaTime;
 
-            if ((input & InputState.Up) != 0)
+            if ((keys & KeyState.Up) != 0)
                 moveY -= PlayerSpeed * deltaTime;
             else
                 moveY += Gravity * deltaTime;
 
-            MovePlayer(player, world.Blocks, moveX, moveY);
+            MovePlayer(player, world.Blocks, new Vector2((float)moveX, (float)moveY));
+
+            if ((keys & KeyState.MouseLeft) != 0 && command.Pointer is Vector2 pointer)
+            {
+                CreateBullet(world, player, pointer);
+            }
         }
+
+        UpdateBullets(world);
 
         world.Tick++;
 
         return world;
     }
 
-    private static void MovePlayer(Player player, List<Block> blocks, double moveX, double moveY)
+    private static void CreateBullet(World world, Player player, Vector2 clickPosition)
     {
-        MoveHorizontal(player, blocks, moveX);
-        MoveVertical(player, blocks, moveY);
+        Vector2 direction = clickPosition - player.Position;
+
+        // Ignore clicks directly on the player.
+        if (direction.LengthSquared() <= 0.0001f)
+            return;
+
+        direction = Vector2.Normalize(direction);
+
+        Entity bullet = new SimpleBullet(world.NextEntityId++, player.Position, player.Id, direction, 300);
+
+        world.Entities.Add(bullet);
     }
 
-    private static void MoveHorizontal(Player player, List<Block> blocks, double amount)
+    private static void UpdateBullets(World world)
+    {
+        if (world.Entities == null)
+            return;
+
+        float deltaTime = (float)GameConstants.SimulationTickDuration;
+
+        for (int i = world.Entities.Count - 1; i >= 0; i--)
+        {
+            if (world.Entities[i] is not SimpleBullet bullet)
+                continue;
+
+            bullet.Position += bullet.Velocity * deltaTime;
+
+            // Consume one tick of lifespan.
+            bullet.TicksLeft--;
+
+            // Remove when the remaining lifespan is exhausted.
+            if (bullet.TicksLeft <= 0)
+            {
+                world.Entities.RemoveAt(i);
+            }
+        }
+    }
+
+    private static void MovePlayer(Player player, List<Block> blocks, Vector2 movement)
+    {
+        MoveHorizontal(player, blocks, movement.X);
+        MoveVertical(player, blocks, movement.Y);
+    }
+
+    private static void MoveHorizontal(Player player, List<Block> blocks, float amount)
     {
         if (amount == 0)
             return;
 
-        double newX = player.X + amount;
+        float newX = player.Position.X + amount;
 
-        if (!CollidesWithBlock(newX, player.Y, PlayerWidth, PlayerHeight, blocks))
+        if (!CollidesWithBlock(newX, player.Position.Y, PlayerWidth, PlayerHeight, blocks))
         {
-            player.X = newX;
+            player.Position = new Vector2(newX, player.Position.Y);
             return;
         }
 
         if (amount > 0)
         {
-            double right = newX + PlayerWidth;
-            double correctedX = newX;
+            // Moving right.
+            float right = newX + (float)PlayerWidth;
+            float correctedX = newX;
 
             foreach (Block block in blocks)
             {
-                if (!OverlapsVertically(player.Y, player.Y + PlayerHeight, block.Y, block.Y + 1.0))
+                if (!OverlapsVertically(player.Position.Y, player.Position.Y + (float)PlayerHeight, block.Position.Y, block.Position.Y + 1.0f))
                 {
                     continue;
                 }
 
-                double blockLeft = block.X;
+                float blockLeft = block.Position.X;
 
-                if (right > blockLeft && player.X + PlayerWidth <= blockLeft)
+                if (right > blockLeft && player.Position.X + (float)PlayerWidth <= blockLeft)
                 {
-                    correctedX = Math.Min(correctedX, blockLeft - PlayerWidth);
+                    correctedX = Math.Min(correctedX, blockLeft - (float)PlayerWidth);
                 }
             }
 
-            player.X = correctedX;
+            player.Position = new Vector2(correctedX, player.Position.Y);
         }
         else
         {
-            double correctedX = newX;
+            // Moving left.
+            float correctedX = newX;
 
             foreach (Block block in blocks)
             {
-                if (!OverlapsVertically(player.Y, player.Y + PlayerHeight, block.Y, block.Y + 1.0))
+                if (!OverlapsVertically(player.Position.Y, player.Position.Y + (float)PlayerHeight, block.Position.Y, block.Position.Y + 1.0f))
                 {
                     continue;
                 }
 
-                double blockRight = block.X + 1.0;
+                float blockRight = block.Position.X + 1.0f;
 
-                if (newX < blockRight && player.X >= blockRight)
+                if (newX < blockRight && player.Position.X >= blockRight)
                 {
                     correctedX = Math.Max(correctedX, blockRight);
                 }
             }
 
-            player.X = correctedX;
+            player.Position = new Vector2(correctedX, player.Position.Y);
         }
     }
 
-    private static void MoveVertical(Player player, List<Block> blocks, double amount)
+    private static void MoveVertical(Player player, List<Block> blocks, float amount)
     {
         if (amount == 0)
             return;
 
-        double newY = player.Y + amount;
+        float newY = player.Position.Y + amount;
 
-        if (!CollidesWithBlock(player.X, newY, PlayerWidth, PlayerHeight, blocks))
+        if (!CollidesWithBlock(player.Position.X, newY, PlayerWidth, PlayerHeight, blocks))
         {
-            player.Y = newY;
+            player.Position = new Vector2(player.Position.X, newY);
             return;
         }
 
         if (amount > 0)
         {
             // Moving down: stand on top of the block.
-            double correctedY = newY;
+            float correctedY = newY;
 
             foreach (Block block in blocks)
             {
-                if (!OverlapsHorizontally(player.X, player.X + PlayerWidth, block.X, block.X + 1.0))
+                if (!OverlapsHorizontally(player.Position.X, player.Position.X + (float)PlayerWidth, block.Position.X, block.Position.X + 1.0f))
                 {
                     continue;
                 }
 
-                double blockTop = block.Y;
+                float blockTop = block.Position.Y;
 
-                if (newY + PlayerHeight > blockTop && player.Y + PlayerHeight <= blockTop)
+                if (newY + (float)PlayerHeight > blockTop && player.Position.Y + (float)PlayerHeight <= blockTop)
                 {
-                    correctedY = Math.Min(correctedY, blockTop - PlayerHeight);
+                    correctedY = Math.Min(correctedY, blockTop - (float)PlayerHeight);
                 }
             }
 
-            player.Y = correctedY;
+            player.Position = new Vector2(player.Position.X, correctedY);
         }
         else
         {
             // Moving up: hit the underside of the block.
-            double correctedY = newY;
+            float correctedY = newY;
 
             foreach (Block block in blocks)
             {
-                if (!OverlapsHorizontally(player.X, player.X + PlayerWidth, block.X, block.X + 1.0))
+                if (!OverlapsHorizontally(player.Position.X, player.Position.X + (float)PlayerWidth, block.Position.X, block.Position.X + 1.0f))
                 {
                     continue;
                 }
 
-                double blockBottom = block.Y + 1.0;
+                float blockBottom = block.Position.Y + 1.0f;
 
-                if (newY < blockBottom && player.Y >= blockBottom)
+                if (newY < blockBottom && player.Position.Y >= blockBottom)
                 {
                     correctedY = Math.Max(correctedY, blockBottom);
                 }
             }
 
-            player.Y = correctedY;
+            player.Position = new Vector2(player.Position.X, correctedY);
         }
     }
 
@@ -183,10 +232,10 @@ public class Simulation
 
         foreach (Block block in blocks)
         {
-            double blockLeft = block.X;
-            double blockRight = block.X + 1.0;
-            double blockTop = block.Y;
-            double blockBottom = block.Y + 1.0;
+            double blockLeft = block.Position.X;
+            double blockRight = block.Position.X + 1.0;
+            double blockTop = block.Position.Y;
+            double blockBottom = block.Position.Y + 1.0;
 
             if (playerRight > blockLeft && playerLeft < blockRight && playerBottom > blockTop && playerTop < blockBottom)
             {

@@ -3,18 +3,39 @@ using System.Threading;
 public class SharedInputState
 {
     private int value;
+    private readonly object sync = new();
 
-    public InputState Read()
+    private float x;
+    private float y;
+
+    public (float X, float Y) ReadXY()
     {
-        return (InputState)Volatile.Read(ref value);
+        lock (sync)
+        {
+            return (x, y);
+        }
     }
 
-    public void Press(InputState input)
+    public void Write(float x, float y)
+    {
+        lock (sync)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    public KeyState Read()
+    {
+        return (KeyState)Volatile.Read(ref value);
+    }
+
+    public void Press(KeyState input)
     {
         Interlocked.Or(ref value, (int)input);
     }
 
-    public void Release(InputState input)
+    public void Release(KeyState input)
     {
         Interlocked.And(ref value, ~(int)input);
     }
