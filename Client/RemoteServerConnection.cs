@@ -13,11 +13,10 @@ public sealed class RemoteServerConnection : IDisposable
     private const int ReconnectDelayMilliseconds = 100;
 
     private readonly IPEndPoint endpoint;
-    private readonly MessageRegistry messageRegistry;
 
-    private readonly ConcurrentQueue<IMessage> sendQueue = new ConcurrentQueue<IMessage>();
+    private readonly ConcurrentQueue<object> sendQueue = new ConcurrentQueue<object>();
 
-    private readonly ConcurrentQueue<IMessage> receiveQueue = new ConcurrentQueue<IMessage>();
+    private readonly ConcurrentQueue<object> receiveQueue = new ConcurrentQueue<object>();
 
     private readonly SemaphoreSlim sendSignal = new SemaphoreSlim(0);
 
@@ -35,7 +34,7 @@ public sealed class RemoteServerConnection : IDisposable
     private volatile bool stopping;
 
     // This message is required after every successful TCP connection.
-    private IMessage reconnectMessage;
+    private IBinarySerializable reconnectMessage;
 
     public bool IsConnected
     {
@@ -48,10 +47,9 @@ public sealed class RemoteServerConnection : IDisposable
             throw new ArgumentNullException(nameof(endpoint));
 
         this.endpoint = endpoint;
-        messageRegistry = new MessageRegistry();
     }
 
-    public void Connect(IMessage registrationMessage)
+    public void Connect(IBinarySerializable registrationMessage)
     {
         if (registrationMessage == null)
             throw new ArgumentNullException(nameof(registrationMessage));
@@ -150,7 +148,7 @@ public sealed class RemoteServerConnection : IDisposable
         sendSignal.Dispose();
     }
 
-    public void Send(IMessage message)
+    public void Send(IBinarySerializable message)
     {
         if (message == null)
             throw new ArgumentNullException(nameof(message));
@@ -198,8 +196,7 @@ public sealed class RemoteServerConnection : IDisposable
 
         newClient.NoDelay = true;
 
-        // Connect() itself can block indefinitely, so use BeginConnect
-        // with our own timeout.
+        // Connect() itself can block indefinitely, so use BeginConnect with our own timeout.
         IAsyncResult asyncResult = newClient.BeginConnect(endpoint.Address, endpoint.Port, null, null);
 
         try
@@ -251,14 +248,19 @@ public sealed class RemoteServerConnection : IDisposable
             {
                 sendSignal.Wait(token);
 
-                while (sendQueue.TryDequeue(out IMessage message))
+                Object obj = null;
+
+                IBinarySerializable message = obj as IBinarySerializable;
+
+                while (sendQueue.TryDequeue(out obj))
                 {
+                    message = obj as IBinarySerializable;
+
                     token.ThrowIfCancellationRequested();
 
                     if (!connected)
                     {
-                        // Put it back. It must not disappear during
-                        // a transient disconnect.
+                        // Put it back. It must not disappear during a transient disconnect.
                         sendQueue.Enqueue(message);
                         break;
                     }
@@ -274,7 +276,7 @@ public sealed class RemoteServerConnection : IDisposable
         }
     }
 
-    private void SendMessage(IMessage message)
+    private void SendMessage(IBinarySerializable message)
     {
         NetworkStream currentStream;
 
@@ -286,26 +288,10 @@ public sealed class RemoteServerConnection : IDisposable
                 throw new IOException("Network stream is unavailable.");
         }
 
-        ulong messageId = messageRegistry.GetId(message.GetType());
-
-        byte[] data = BinaryMessageSerializer.Serialize(message);
-
-        int messageLength = sizeof(ulong) + data.Length;
-
-        if (messageLength > MaxMessageSize)
-        {
-            throw new InvalidDataException("Message is too large: " + messageLength + " bytes.");
-        }
-
-        byte[] packet = new byte[sizeof(int) + messageLength];
-
-        BinaryPrimitives.WriteInt32LittleEndian(packet.AsSpan(0, sizeof(int)), messageLength);
-        BinaryPrimitives.WriteUInt64LittleEndian(packet.AsSpan(sizeof(int), sizeof(ulong)), messageId);
-        Buffer.BlockCopy(data, 0, packet, sizeof(int) + sizeof(ulong), data.Length);
-
         try
         {
-            currentStream.Write(packet, 0, packet.Length);
+            BinaryStreamHandler io = new BinaryStreamHandler();
+            io.Write(stream, message);
         }
         catch (Exception exception)
         {
@@ -342,55 +328,24 @@ public sealed class RemoteServerConnection : IDisposable
         }
     }
 
-    public bool TryReceive(out IMessage message)
+    public bool TryReceive(out IBinarySerializable message)
     {
-        return receiveQueue.TryDequeue(out message);
+        Object obj = null;
+
+        bool ret = receiveQueue.TryDequeue(out obj);
+
+        message = obj as IBinarySerializable;
+
+        return ret;
     }
 
     private void ReceiveMessages(NetworkStream currentStream, CancellationToken token)
     {
-        byte[] lengthBuffer = new byte[sizeof(int)];
-
         while (!token.IsCancellationRequested)
         {
-            ReadExactly(currentStream, lengthBuffer, token);
+            BinaryStreamHandler io = new BinaryStreamHandler();
 
-            int messageLength = BinaryPrimitives.ReadInt32LittleEndian(lengthBuffer);
-
-            if (messageLength < sizeof(ulong))
-            {
-                throw new InvalidDataException("Invalid message length: " + messageLength + ".");
-            }
-
-            if (messageLength > MaxMessageSize)
-            {
-                throw new InvalidDataException("Message exceeds maximum size: " + messageLength + " bytes.");
-            }
-
-            byte[] messageBuffer = new byte[messageLength];
-
-            ReadExactly(currentStream, messageBuffer, token);
-
-            ulong messageId = BinaryPrimitives.ReadUInt64LittleEndian(messageBuffer.AsSpan(0, sizeof(ulong)));
-
-            int dataLength = messageLength - sizeof(ulong);
-
-            byte[] data = new byte[dataLength];
-
-            Buffer.BlockCopy(messageBuffer, sizeof(ulong), data, 0, dataLength);
-
-            Type messageType;
-
-            try
-            {
-                messageType = messageRegistry.GetType(messageId);
-            }
-            catch (Exception exception)
-            {
-                throw new InvalidDataException("Unknown message ID: " + messageId + ".", exception);
-            }
-
-            IMessage message = BinaryMessageSerializer.Deserialize(data, messageType);
+            IBinarySerializable message = io.Read(currentStream);
 
             receiveQueue.Enqueue(message);
         }
@@ -459,34 +414,16 @@ public sealed class RemoteServerConnection : IDisposable
 
     private void SendRegistration()
     {
-        ulong messageId = messageRegistry.GetId(reconnectMessage.GetType());
-
-        byte[] data = BinaryMessageSerializer.Serialize(reconnectMessage);
-
-        int messageLength = sizeof(ulong) + data.Length;
-
-        if (messageLength > MaxMessageSize)
+        try
         {
-            throw new InvalidDataException("Registration message is too large.");
+            BinaryStreamHandler io = new BinaryStreamHandler();
+            io.Write(stream, reconnectMessage);
         }
-
-        byte[] packet = new byte[sizeof(int) + messageLength];
-
-        BinaryPrimitives.WriteInt32LittleEndian(packet.AsSpan(0, sizeof(int)), messageLength);
-        BinaryPrimitives.WriteUInt64LittleEndian(packet.AsSpan(sizeof(int), sizeof(ulong)), messageId);
-        Buffer.BlockCopy(data, 0, packet, sizeof(int) + sizeof(ulong), data.Length);
-
-        NetworkStream currentStream;
-
-        lock (stateLock)
+        catch (Exception exception)
         {
-            currentStream = stream;
-
-            if (currentStream == null)
-                throw new IOException("Network stream is unavailable.");
+            HandleConnectionFailure(exception);
+            throw;
         }
-
-        currentStream.Write(packet, 0, packet.Length);
     }
 
     private void CloseSocket()

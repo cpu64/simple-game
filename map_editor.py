@@ -12,13 +12,26 @@ OUTPUT_FILE = "world.json"
 class MapEditor:
     def __init__(self, root):
         self.root = root
-        self.root.title("40x40 Map Editor")
+        self.root.title("40x30 Map Editor")
 
-        # Set of (x, y) coordinates containing blocks
+        # Set of (x, y) coordinates containing blocks.
         self.blocks = set()
+
+        # Block type for each (x, y).
+        self.block_types = {}
 
         # Keeps track of tiles already affected during the current drag.
         self.dragged_tiles = set()
+
+        # Keep the rest of world.json intact when saving.
+        self.world_data = {
+            "Tick": 0,
+            "Blocks": [],
+            "Entities": [],
+            "NextEntityId": {
+                "Value": 0
+            }
+        }
 
         self.canvas = tk.Canvas(
             root,
@@ -83,23 +96,40 @@ class MapEditor:
             with open(OUTPUT_FILE, "r", encoding="utf-8") as file:
                 data = json.load(file)
 
+            # Keep the complete world structure so saving doesn't
+            # remove Tick, Entities, NextEntityId, etc.
+            self.world_data = data
+
             for block in data.get("Blocks", []):
-                x = block.get("X")
-                y = block.get("Y")
+                position = block.get("Position", {})
+
+                x = position.get("X")
+                y = position.get("Y")
+                block_type = block.get("Type", 0)
 
                 if (
-                    isinstance(x, int)
-                    and isinstance(y, int)
-                    and 0 <= x < GRID_X
-                    and 0 <= y < GRID_Y
+                    isinstance(x, (int, float))
+                    and isinstance(y, (int, float))
+                    and int(x) == x
+                    and int(y) == y
                 ):
-                    self.blocks.add((x, y))
+                    x = int(x)
+                    y = int(y)
+
+                    if (
+                        0 <= x < GRID_X
+                        and 0 <= y < GRID_Y
+                    ):
+                        self.blocks.add((x, y))
+                        self.block_types[(x, y)] = block_type
 
             # Update the visual grid.
             for x, y in self.blocks:
                 self.set_tile_color(x, y, "#4a90e2")
 
-            print(f"Loaded {len(self.blocks)} blocks from {OUTPUT_FILE}")
+            print(
+                f"Loaded {len(self.blocks)} blocks from {OUTPUT_FILE}"
+            )
 
         except (json.JSONDecodeError, OSError) as e:
             print(f"Could not load {OUTPUT_FILE}: {e}")
@@ -125,12 +155,18 @@ class MapEditor:
         """Place a block at x,y."""
         if (x, y) not in self.blocks:
             self.blocks.add((x, y))
+
+            # New blocks use Grass / BlockType 0.
+            self.block_types[(x, y)] = 0
+
             self.set_tile_color(x, y, "#4a90e2")
 
     def remove(self, x, y):
         """Remove a block at x,y."""
         if (x, y) in self.blocks:
             self.blocks.remove((x, y))
+            self.block_types.pop((x, y), None)
+
             self.set_tile_color(x, y, "white")
 
     def start_place(self, event):
@@ -148,6 +184,7 @@ class MapEditor:
     def drag_place(self, event):
         """Place blocks while dragging with the left mouse button."""
         tile = self.get_tile(event)
+
         if tile is None or tile in self.dragged_tiles:
             return
 
@@ -171,6 +208,7 @@ class MapEditor:
     def drag_remove(self, event):
         """Remove blocks while dragging with the right mouse button."""
         tile = self.get_tile(event)
+
         if tile is None or tile in self.dragged_tiles:
             return
 
@@ -184,30 +222,37 @@ class MapEditor:
         self.dragged_tiles.clear()
 
     def save(self, event=None):
-        """Save the current map to world_new.json."""
+        """Save the edited blocks while preserving the rest of world.json."""
+
         sorted_blocks = sorted(
             self.blocks,
             key=lambda pos: (pos[1], pos[0])
         )
 
-        data = {
-            "Blocks": [
-                {
+        self.world_data["Blocks"] = [
+            {
+                "Position": {
                     "X": x,
-                    "Y": y,
-                    "Type": 0
-                }
-                for x, y in sorted_blocks
-            ]
-        }
+                    "Y": y
+                },
+                "Type": self.block_types.get((x, y), 0)
+            }
+            for x, y in sorted_blocks
+        ]
 
         with open(OUTPUT_FILE, "w", encoding="utf-8") as file:
-            json.dump(data, file, indent=2)
+            json.dump(
+                self.world_data,
+                file,
+                indent=2
+            )
 
-        print(f"Saved {len(sorted_blocks)} blocks to {OUTPUT_FILE}")
+        print(
+            f"Saved {len(sorted_blocks)} blocks to {OUTPUT_FILE}"
+        )
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    editor = MapEditor(root)
+    MapEditor(root)
     root.mainloop()

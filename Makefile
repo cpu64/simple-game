@@ -1,4 +1,4 @@
-.PHONY: all client server run-client run-server clean
+.PHONY: all client server run-client run-server  clean
 
 all: client server
 

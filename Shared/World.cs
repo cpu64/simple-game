@@ -1,23 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-public class World
+public class World : IBinarySerializable
 {
     public long Tick { get; set; }
-
-    [JsonInclude]
-    public Dictionary<Guid, Player> Players { get; private set; }
-
     public List<Block> Blocks { get; set; }
+    public List<Entity> Entities { get; }
+    public EntityId NextEntityId { get; set; }
+
+    public IEnumerable<T> Get<T>()
+        where T : Entity => Entities.OfType<T>();
 
     public World()
     {
         Tick = 0;
-        Players = new Dictionary<Guid, Player>();
         Blocks = new List<Block>();
+        Entities = new List<Entity>();
+        NextEntityId = new EntityId(0);
+    }
+
+    public World(long tick, List<Block> blocks, List<Entity> entities, EntityId nextEntityId)
+    {
+        Tick = tick;
+        Blocks = blocks;
+        Entities = entities;
+        NextEntityId = nextEntityId;
     }
 
     public World(string path)
@@ -27,36 +37,36 @@ public class World
 
         string json = File.ReadAllText(path);
 
-        World? loaded = JsonSerializer.Deserialize<World>(json);
+        JsonSerializerOptions options = new JsonSerializerOptions { IncludeFields = true };
+
+        World? loaded = JsonSerializer.Deserialize<World>(json, options);
 
         if (loaded == null)
             throw new InvalidOperationException("Failed to load world from JSON.");
 
         Tick = loaded.Tick;
-        Players = loaded.Players ?? new Dictionary<Guid, Player>();
         Blocks = loaded.Blocks ?? new List<Block>();
+        Entities = loaded.Entities ?? new List<Entity>();
+        NextEntityId = loaded.NextEntityId;
     }
 
-    public World(World other)
+    public World Copy()
     {
-        if (other == null)
-            throw new ArgumentNullException(nameof(other));
+        List<Block> blocks = new List<Block>(Blocks.Count);
 
-        Tick = other.Tick;
-
-        Players = new Dictionary<Guid, Player>();
-
-        foreach (KeyValuePair<Guid, Player> entry in other.Players)
+        foreach (Block block in Blocks)
         {
-            Players.Add(entry.Key, new Player(entry.Value));
+            blocks.Add(block);
         }
 
-        Blocks = new List<Block>();
+        List<Entity> entities = new List<Entity>(Entities.Count);
 
-        foreach (Block block in other.Blocks)
+        foreach (Entity entity in Entities)
         {
-            Blocks.Add(new Block(block.X, block.Y, block.Type));
+            entities.Add(entity.Copy());
         }
+
+        return new World(Tick, blocks, entities, NextEntityId);
     }
 
     public void Save(string path)
@@ -64,10 +74,64 @@ public class World
         if (string.IsNullOrWhiteSpace(path))
             throw new ArgumentException("Path cannot be empty.", nameof(path));
 
-        JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
+        JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true };
 
-        string json = JsonSerializer.Serialize(this, options);
+        File.WriteAllText(path, JsonSerializer.Serialize(this, options));
+    }
 
-        File.WriteAllText(path, json);
+    public override string ToString()
+    {
+        string str = $"World: Tick={Tick}, NextEntityId={NextEntityId}";
+
+        str += $"Blocks ({Blocks.Count}): ";
+
+        foreach (Block block in Blocks)
+        {
+            str += $"{block}, ";
+        }
+
+        str += $"Entities ({Entities.Count}): ";
+
+        foreach (Entity entity in Entities)
+        {
+            str += $"{entity}, ";
+        }
+        return str;
+    }
+
+    public void Serialize(BinaryStreamHandler writer)
+    {
+        writer.Write(Tick);
+        writer.Write(Blocks.Count);
+        foreach (Block block in Blocks)
+        {
+            writer.Write(block);
+        }
+        writer.Write(Entities.Count);
+        foreach (Entity entity in Entities)
+        {
+            writer.WriteTagged((IBinarySerializable)entity);
+        }
+        writer.Write(NextEntityId);
+    }
+
+    public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
+    {
+        var tick = reader.Read<long>();
+        var count = reader.Read<int>();
+        var blocks = new List<Block>();
+        for (int i = 0; i < count; i++)
+        {
+            blocks.Add(reader.Read<Block>());
+        }
+        count = reader.Read<int>();
+        var entities = new List<Entity>();
+        for (int i = 0; i < count; i++)
+        {
+            entities.Add((Entity)reader.ReadTagged());
+        }
+        var nextEntityId = reader.Read<EntityId>();
+
+        return new World(tick, blocks, entities, nextEntityId);
     }
 }

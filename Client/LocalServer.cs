@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Numerics;
 using System.Threading;
 
 public class LocalServer
@@ -38,7 +40,7 @@ public class LocalServer
 
         world = new World(worldPath);
 
-        world.Players.Add(playerId, new Player(playerId, 20, 18));
+        world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId));
     }
 
     public LocalServer(SharedInputState input, Guid playerId, IPEndPoint endpoint)
@@ -52,7 +54,7 @@ public class LocalServer
 
         nextCommandSequence = 0;
 
-        IMessage message;
+        IBinarySerializable message;
 
         while (world == null)
         {
@@ -61,13 +63,13 @@ public class LocalServer
 
             if (remoteServer.TryReceive(out message))
             {
-                WorldMessage worldMessage = message as WorldMessage;
+                World worldMessage = message as World;
 
                 if (worldMessage != null)
                 {
-                    world = worldMessage.World;
+                    world = worldMessage;
 
-                    AddAuthoritativeWorld(worldMessage.World);
+                    AddAuthoritativeWorld(worldMessage);
                 }
             }
 
@@ -143,13 +145,15 @@ public class LocalServer
                 ReceiveLatestAuthoritativeWorld();
             }
 
-            InputCommand command = new InputCommand(nextCommandSequence++, playerId, input.Read());
+            (KeyState Keys, Vector2 Pointer) = input.Read();
+
+            InputCommand command = new InputCommand(nextCommandSequence++, playerId, Keys, Pointer);
 
             pendingCommands.Enqueue(command);
 
             if (remoteServer != null)
             {
-                remoteServer.Send(new InputCommandMessage(command));
+                remoteServer.Send(command);
             }
 
             ApplyCommand(command);
@@ -167,18 +171,17 @@ public class LocalServer
 
     private void ReceiveLatestAuthoritativeWorld()
     {
-        IMessage received;
+        IBinarySerializable received;
 
         World authoritativeWorld = null;
 
         while (remoteServer.TryReceive(out received))
         {
-            WorldMessage worldMessage = received as WorldMessage;
+            authoritativeWorld = received as World;
 
-            if (worldMessage == null)
+            if (authoritativeWorld == null)
                 continue;
 
-            authoritativeWorld = worldMessage.World;
             AddAuthoritativeWorld(authoritativeWorld);
         }
 
@@ -207,10 +210,10 @@ public class LocalServer
 
     private long GetLastAcknowledgedSequence(World authoritativeWorld)
     {
-        if (!authoritativeWorld.Players.TryGetValue(playerId, out Player player))
-        {
+        Player? player = authoritativeWorld.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
+
+        if (player == null)
             return -1;
-        }
 
         return player.LastCommand;
     }
@@ -230,14 +233,14 @@ public class LocalServer
             }
         }
 
-        authoritativeWorlds.Add(new World(authoritativeWorld));
+        authoritativeWorlds.Add(authoritativeWorld.Copy());
     }
 
     public RenderInput GetRenderInput()
     {
         lock (worldLock)
         {
-            return new RenderInput(world, authoritativeWorlds);
+            return new RenderInput(world.Copy(), authoritativeWorlds);
         }
     }
 }

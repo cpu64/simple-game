@@ -1,21 +1,20 @@
+using System.Numerics;
 using System.Threading;
 
 public class SharedInputState
 {
-    private int value;
+    private sealed record Snapshot(KeyState Keys, Vector2 Pointer);
 
-    public InputState Read()
+    private Snapshot state = new(KeyState.None, default);
+
+    public (KeyState Keys, Vector2 Pointer) Read()
     {
-        return (InputState)Volatile.Read(ref value);
+        var snapshot = Volatile.Read(ref state);
+        return (snapshot.Keys, snapshot.Pointer);
     }
 
-    public void Press(InputState input)
+    public void Write(KeyState keys, Vector2 pointer)
     {
-        Interlocked.Or(ref value, (int)input);
-    }
-
-    public void Release(InputState input)
-    {
-        Interlocked.And(ref value, ~(int)input);
+        Volatile.Write(ref state, new Snapshot(keys, pointer));
     }
 }

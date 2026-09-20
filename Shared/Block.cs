@@ -1,1 +1,23 @@
-public record Block(int X, int Y, BlockType Type);
+using System.Numerics;
+
+public readonly record struct Block(Vector2 Position, BlockType Type) : IBinarySerializable
+{
+    public override string ToString()
+    {
+        return $"Block: Position={Position}, Type={Type}";
+    }
+
+    public void Serialize(BinaryStreamHandler writer)
+    {
+        writer.Write(Position);
+        writer.Write(Type);
+    }
+
+    public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
+    {
+        var position = reader.Read<Vector2>();
+        var type = reader.Read<BlockType>();
+
+        return new Block(position, type);
+    }
+}

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Threading;
 
 public class RemoteServer
@@ -129,9 +131,7 @@ public class RemoteServer
         {
             while (running && client.Connected)
             {
-                IMessage message = client.Receive();
-
-                Console.WriteLine("Received message: " + message.GetType().Name);
+                IBinarySerializable message = client.Receive();
 
                 RegisterUserMessage registerMessage = message as RegisterUserMessage;
 
@@ -141,11 +141,10 @@ public class RemoteServer
                     continue;
                 }
 
-                InputCommandMessage commandMessage = message as InputCommandMessage;
-
-                if (commandMessage != null)
+                if (message is InputCommand command)
                 {
-                    commandQueue.Add(commandMessage.Command);
+                    commandQueue.Add(command);
+                    continue;
                 }
             }
         }
@@ -175,16 +174,20 @@ public class RemoteServer
 
         lock (worldLock)
         {
-            if (!world.Players.ContainsKey(playerId))
+            Player? player = world.Get<Player>().FirstOrDefault(p => p.UserId == playerId);
+
+            if (player == null)
             {
-                world.Players.Add(playerId, new Player(playerId, 20, 18));
+                world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId));
             }
 
-            snapshot = new World(world);
+            snapshot = world.Copy();
         }
+
         Console.WriteLine("Sending initial world.");
 
-        client.Send(new WorldMessage(snapshot));
+        client.Send(snapshot);
+
         Console.WriteLine("Initial world sent.");
     }
 
@@ -235,11 +238,11 @@ public class RemoteServer
 
     private void SendSnapshot()
     {
-        WorldMessage message;
+        World snapshot;
 
         lock (worldLock)
         {
-            message = new WorldMessage(new World(world));
+            snapshot = world.Copy();
         }
 
         lock (clientsLock)
@@ -251,7 +254,7 @@ public class RemoteServer
 
                 try
                 {
-                    client.Send(message);
+                    client.Send(snapshot);
                 }
                 catch (Exception exception)
                 {

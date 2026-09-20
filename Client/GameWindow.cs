@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 using Raylib_cs;
 
 public static class GameWindow
@@ -24,6 +26,8 @@ public static class GameWindow
 
                 RenderWorld(renderInput.World);
 
+                RenderBullets(renderInput.World);
+
                 RenderLocalPlayer(renderInput.World, playerId);
 
                 RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
@@ -38,22 +42,30 @@ public static class GameWindow
         }
     }
 
+    private static void RenderBullets(World world)
+    {
+        foreach (SimpleBullet bullet in world.Entities.OfType<SimpleBullet>())
+        {
+            Raylib.DrawRectangle((int)Math.Round(bullet.Position.X * 20.0), (int)Math.Round(bullet.Position.Y * 20.0), 5, 5, Color.Green);
+        }
+    }
+
     private static void RenderWorld(World world)
     {
         foreach (Block block in world.Blocks)
         {
-            Raylib.DrawRectangle((int)Math.Round(block.X * 20.0), (int)Math.Round(block.Y * 20.0), 20, 20, Color.Green);
+            Raylib.DrawRectangle((int)Math.Round(block.Position.X * 20.0), (int)Math.Round(block.Position.Y * 20.0), 20, 20, Color.Green);
         }
     }
 
     private static void RenderLocalPlayer(World world, Guid playerId)
     {
-        if (!world.Players.TryGetValue(playerId, out Player player))
-        {
-            return;
-        }
+        Player? player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
 
-        Raylib.DrawRectangle((int)Math.Round(player.X * 20.0), (int)Math.Round(player.Y * 20.0), 20, 20, Color.Red);
+        if (player == null)
+            return;
+
+        Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);
     }
 
     private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick, Guid localPlayerId)
@@ -128,68 +140,54 @@ public static class GameWindow
 
     private static void RenderInterpolatedRemotePlayers(World before, World after, double alpha, Guid localPlayerId)
     {
-        foreach (KeyValuePair<Guid, Player> entry in before.Players)
+        foreach (Player beforePlayer in before.Entities.OfType<Player>())
         {
-            Guid playerId = entry.Key;
-
             // The local player is rendered from the predicted local world.
-            if (playerId == localPlayerId)
-            {
+            if (beforePlayer.UserId == localPlayerId)
                 continue;
-            }
 
-            if (!after.Players.TryGetValue(playerId, out Player afterPlayer))
-            {
+            Player? afterPlayer = after.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == beforePlayer.UserId);
+
+            if (afterPlayer == null)
                 continue;
-            }
 
-            Player beforePlayer = entry.Value;
+            Vector2 position = Vector2.Lerp(beforePlayer.Position, afterPlayer.Position, (float)alpha);
 
-            double x = Lerp(beforePlayer.X, afterPlayer.X, alpha);
-            double y = Lerp(beforePlayer.Y, afterPlayer.Y, alpha);
-
-            Raylib.DrawRectangle((int)Math.Round(x * 20.0), (int)Math.Round(y * 20.0), 20, 20, Color.Red);
+            Raylib.DrawRectangle((int)Math.Round(position.X * 20.0), (int)Math.Round(position.Y * 20.0), 20, 20, Color.Red);
         }
     }
 
     private static void RenderRemoteWorld(World world, Guid localPlayerId)
     {
-        foreach (KeyValuePair<Guid, Player> entry in world.Players)
+        foreach (Player player in world.Entities.OfType<Player>())
         {
-            Guid playerId = entry.Key;
-
             // The local player is rendered from the predicted local world.
-            if (playerId == localPlayerId)
-            {
+            if (player.UserId == localPlayerId)
                 continue;
-            }
 
-            Player player = entry.Value;
-
-            Raylib.DrawRectangle((int)Math.Round(player.X * 20.0), (int)Math.Round(player.Y * 20.0), 20, 20, Color.Red);
+            Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);
         }
-    }
-
-    private static double Lerp(double from, double to, double amount)
-    {
-        return from + (to - from) * amount;
     }
 
     private static void UpdateInput(SharedInputState input)
     {
+        KeyState keys = KeyState.None;
+
         if (Raylib.IsKeyDown(KeyboardKey.Left))
-            input.Press(InputState.Left);
-        else
-            input.Release(InputState.Left);
+            keys |= KeyState.Left;
 
         if (Raylib.IsKeyDown(KeyboardKey.Right))
-            input.Press(InputState.Right);
-        else
-            input.Release(InputState.Right);
+            keys |= KeyState.Right;
 
         if (Raylib.IsKeyDown(KeyboardKey.Up))
-            input.Press(InputState.Up);
-        else
-            input.Release(InputState.Up);
+            keys |= KeyState.Up;
+
+        if (Raylib.IsMouseButtonDown(MouseButton.Left))
+            keys |= KeyState.MouseLeft;
+
+        Vector2 mouseScreen = Raylib.GetMousePosition();
+        Vector2 pointer = mouseScreen / 20f;
+
+        input.Write(keys, pointer);
     }
 }
