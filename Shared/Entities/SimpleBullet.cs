@@ -26,6 +26,7 @@ public class SimpleBullet : Bullet, ICollidable, ILifespan, IMoving, IBinarySeri
     {
         writer.Write(Id);
         writer.Write(Position);
+        writer.Write(FiredBy);
         writer.Write(Velocity);
         writer.Write(TicksLeft);
     }

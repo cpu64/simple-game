@@ -241,7 +241,7 @@ public class LocalServer
     {
         lock (worldLock)
         {
-            return new RenderInput(world, authoritativeWorlds);
+            return new RenderInput(world.Copy(), authoritativeWorlds);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Text;
 
 public class BinaryStreamHandler
 {
-    public readonly ClassRegistry ClassRegistry = new ClassRegistry();
+    public static readonly ClassRegistry ClassRegistry = new ClassRegistry();
 
     private BinaryWriter writer = null!;
     private BinaryReader reader = null!;

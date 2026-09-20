@@ -133,8 +133,6 @@ public class RemoteServer
             {
                 IBinarySerializable message = client.Receive();
 
-                Console.WriteLine("Received message: " + message.GetType().Name);
-
                 RegisterUserMessage registerMessage = message as RegisterUserMessage;
 
                 if (registerMessage != null)
