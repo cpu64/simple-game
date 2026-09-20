@@ -1,0 +1,25 @@
+name: CSharpier
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  csharpier:
+    name: csharpier
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Install CSharpier
+        run: dotnet tool install --global csharpier
+
+      - name: Check formatting
+        run: csharpier check .
