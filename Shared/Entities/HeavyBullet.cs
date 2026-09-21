@@ -26,6 +26,7 @@ public class HeavyBullet : Bullet, ICollidable, IGravityAffected, IMoving, ILife
     {
         writer.Write(Id);
         writer.Write(Position);
+        writer.Write(FiredBy);
         writer.Write(Velocity);
         writer.Write(TicksLeft);
     }
