@@ -25,7 +25,22 @@ public static class CombatSystem
 
             Vector2 candidatePos = bullet.Position + bullet.Velocity * dt;
 
+            bool hitBlock =
+                bullet.CollidesWithBlocks && PhysicsSystem.CollidesWithBlock(candidatePos.X, candidatePos.Y, bullet.Size.X, bullet.Size.Y, world.Blocks);
+
             IDamageable? hitEntity = FindHitEntity(bullet, candidatePos, world);
+
+            if (hitEntity != null && hitBlock)
+            {
+                Entity targetEntity = (Entity)hitEntity;
+                float entityDistSq = Vector2.DistanceSquared(bullet.Position, targetEntity.Position);
+                float blockDistSq = Vector2.DistanceSquared(bullet.Position, candidatePos);
+
+                if (entityDistSq > blockDistSq)
+                {
+                    hitEntity = null;
+                }
+            }
 
             if (hitEntity != null)
             {
@@ -33,7 +48,7 @@ public static class CombatSystem
                 {
                     if (hitEntity is IMoving moving && bullet.Velocity.LengthSquared() > 0.001f)
                     {
-                        Vector2 knockback = Vector2.Normalize(bullet.Velocity) * 3.0f;
+                        Vector2 knockback = Vector2.Normalize(bullet.Velocity) * bullet.KnockbackForce;
                         moving.Velocity += knockback;
                     }
 
@@ -45,7 +60,7 @@ public static class CombatSystem
 
                 bullet.TicksLeft = 0;
             }
-            else if (bullet.CollidesWithBlocks && PhysicsSystem.CollidesWithBlock(candidatePos.X, candidatePos.Y, bullet.Size.X, bullet.Size.Y, world.Blocks))
+            else if (hitBlock)
             {
                 bullet.TicksLeft = 0;
             }
@@ -58,10 +73,25 @@ public static class CombatSystem
 
     private static IDamageable? FindHitEntity(Bullet bullet, Vector2 candidatePos, World world)
     {
+        bool firedByPlayer = false;
+        for (int i = 0; i < world.Entities.Count; i++)
+        {
+            if (world.Entities[i].Id == bullet.FiredBy)
+            {
+                firedByPlayer = world.Entities[i] is Player;
+                break;
+            }
+        }
+
         for (int i = 0; i < world.Entities.Count; i++)
         {
             Entity entity = world.Entities[i];
             if (entity.Id == bullet.FiredBy)
+                continue;
+
+            if (firedByPlayer && entity is Player)
+                continue;
+            if (!firedByPlayer && entity is Enemy)
                 continue;
 
             if (entity is not (IDamageable damageable and ICollidable collidable))
@@ -82,7 +112,7 @@ public static class CombatSystem
         return null;
     }
 
-    private static void ResolveContactDamage(World world, int damage = 10, float knockbackForce = 6.0f)
+    private static void ResolveContactDamage(World world)
     {
         for (int i = 0; i < world.Entities.Count; i++)
         {
@@ -96,10 +126,10 @@ public static class CombatSystem
 
                 if (PhysicsSystem.Overlaps(enemy.Position, enemy.Size, player.Position, player.Size))
                 {
-                    if (player.TakeDamage(damage))
+                    if (player.TakeDamage(enemy.ContactDamage))
                     {
                         float dirX = player.Position.X >= enemy.Position.X ? 1.0f : -1.0f;
-                        player.Velocity = new Vector2(dirX * knockbackForce, -4.5f);
+                        player.Velocity = new Vector2(dirX * enemy.ContactKnockback, -4.5f);
 
                         if (player.IsDead)
                         {

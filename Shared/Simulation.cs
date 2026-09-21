@@ -24,8 +24,21 @@ public static class Simulation
             return;
 
         float dt = (float)GameConstants.SimulationTickDuration;
+
+        if (localPlayer.InvulnerabilityTimer > 0)
+        {
+            localPlayer.InvulnerabilityTimer = System.Math.Max(0, localPlayer.InvulnerabilityTimer - dt);
+        }
+
+        if (localPlayer.AttackCooldownTimer > 0)
+        {
+            localPlayer.AttackCooldownTimer = System.Math.Max(0, localPlayer.AttackCooldownTimer - dt);
+        }
+
         Vector2 inputMovement = PlayerSystem.ComputeInputMovement(command.Keys, dt);
         PhysicsSystem.StepBody(localPlayer, world.Blocks, dt, inputMovement);
         localPlayer.LastCommand = command.Sequence;
+
+        PlayerSystem.ProcessWeaponFiring(world, localPlayer, command);
     }
 }

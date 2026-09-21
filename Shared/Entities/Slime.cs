@@ -55,7 +55,8 @@ public class Slime : Enemy, IBinarySerializable
 
             float horizontalDistance = Math.Abs(target.Offset.X);
 
-            if (horizontalDistance < 3.5f && target.Offset.Y >= -1.0f)
+            // Use weak jump only on open flat ground nearby; if an obstacle was hit or target is elevated, full jump
+            if (!senses.HitHorizontal && horizontalDistance < 3.5f && target.Offset.Y >= -0.5f)
             {
                 Velocity = new Vector2(FacingDirection * WeakJumpSpeedX, WeakJumpSpeedY);
             }

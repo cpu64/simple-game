@@ -11,10 +11,15 @@ public static class PhysicsSystem
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
+        bool isGrounded = body.CollidesWithBlocks && IsGrounded(body.Position, body.Size, blocks);
+        float decayRate = isGrounded ? 0.05f : 0.85f;
+        float velX = body.Velocity.X * MathF.Pow(decayRate, dt);
         float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
-        float velX = body.Velocity.X * 0.88f;
 
-        Vector2 totalMovement = intentionalMovement + new Vector2(velX, velY) * dt;
+        float inputWeight = Math.Clamp(1.0f - (Math.Abs(velX) / 6.0f), 0.0f, 1.0f);
+        Vector2 effectiveIntent = intentionalMovement * inputWeight;
+
+        Vector2 totalMovement = effectiveIntent + new Vector2(velX, velY) * dt;
 
         MovementResult result;
         if (body.CollidesWithBlocks)
@@ -29,9 +34,14 @@ public static class PhysicsSystem
         body.Position = result.Position;
 
         if (result.HitFloor && velY > 0)
+        {
             velY = 0f;
+            velX *= 0.5f;
+        }
         else if (result.HitCeiling && velY < 0)
+        {
             velY = 0f;
+        }
 
         if (result.HitHorizontal)
             velX = 0f;

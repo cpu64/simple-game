@@ -35,44 +35,55 @@ public static class PlayerSystem
             if (world.Entities[i] is not Player player || player.IsDead)
                 continue;
 
-            InputCommand? latestCommand = null;
-            for (int c = 0; c < commands.Count; c++)
+            bool hadCommand = false;
+            while (true)
             {
-                InputCommand cmd = commands[c];
-                if (cmd.PlayerId == player.UserId && cmd.Sequence > player.LastCommand)
+                int nextIndex = -1;
+                long nextSequence = long.MaxValue;
+
+                for (int c = 0; c < commands.Count; c++)
                 {
-                    if (latestCommand == null || cmd.Sequence > latestCommand.Value.Sequence)
+                    InputCommand cmd = commands[c];
+                    if (cmd.PlayerId == player.UserId && cmd.Sequence > player.LastCommand && cmd.Sequence < nextSequence)
                     {
-                        latestCommand = cmd;
+                        nextSequence = cmd.Sequence;
+                        nextIndex = c;
                     }
                 }
-            }
 
-            if (latestCommand.HasValue)
-            {
-                InputCommand command = latestCommand.Value;
+                if (nextIndex == -1)
+                    break;
+
+                hadCommand = true;
+                InputCommand command = commands[nextIndex];
                 player.LastCommand = command.Sequence;
 
                 Vector2 inputMovement = ComputeInputMovement(command.Keys, dt);
                 PhysicsSystem.StepBody(player, world.Blocks, dt, inputMovement);
 
-                if (player.AttackCooldownTimer <= 0)
-                {
-                    if ((command.Keys & KeyState.MouseLeft) != 0)
-                    {
-                        ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);
-                        player.AttackCooldownTimer = SimpleBulletCooldown;
-                    }
-                    else if ((command.Keys & KeyState.MouseRight) != 0)
-                    {
-                        ProjectileSystem.SpawnHeavyBullet(world, player, command.Pointer);
-                        player.AttackCooldownTimer = HeavyBulletCooldown;
-                    }
-                }
+                ProcessWeaponFiring(world, player, command);
             }
-            else
+
+            if (!hadCommand)
             {
                 PhysicsSystem.StepBody(player, world.Blocks, dt, Vector2.Zero);
+            }
+        }
+    }
+
+    public static void ProcessWeaponFiring(World world, Player player, InputCommand command)
+    {
+        if (player.AttackCooldownTimer <= 0)
+        {
+            if ((command.Keys & KeyState.MouseLeft) != 0)
+            {
+                ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);
+                player.AttackCooldownTimer = SimpleBulletCooldown;
+            }
+            else if ((command.Keys & KeyState.MouseRight) != 0)
+            {
+                ProjectileSystem.SpawnHeavyBullet(world, player, command.Pointer);
+                player.AttackCooldownTimer = HeavyBulletCooldown;
             }
         }
     }

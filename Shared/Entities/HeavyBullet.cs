@@ -2,12 +2,13 @@ using System.Numerics;
 
 public class HeavyBullet : Bullet, IBinarySerializable
 {
-    private const float BulletWidth = 0.2f;
-    private const float BulletHeight = 0.2f;
+    private const float BulletWidth = 0.35f;
+    private const float BulletHeight = 0.35f;
 
     public override int Damage => 25;
     public override Vector2 Size => new Vector2(BulletWidth, BulletHeight);
     public override float GravityScale => 1.0f;
+    public override float KnockbackForce => 6.0f;
 
     public override Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }

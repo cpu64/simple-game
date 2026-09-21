@@ -5,6 +5,8 @@ public abstract class Entity
     public EntityId Id { get; }
     public Vector2 Position { get; set; }
 
+    public virtual bool CanBePruned => false;
+
     protected Entity(EntityId id, Vector2 position)
     {
         Id = id;

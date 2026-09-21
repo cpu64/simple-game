@@ -10,7 +10,9 @@ public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving, IKinemat
 
     public virtual float GravityScale => 0.0f;
     public virtual bool CollidesWithBlocks => true;
+    public virtual float KnockbackForce => 3.0f;
     public bool IsDead => TicksLeft <= 0;
+    public override bool CanBePruned => IsDead;
 
     protected Bullet(EntityId id, Vector2 position, EntityId firedBy)
         : base(id, position)

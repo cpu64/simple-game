@@ -202,12 +202,12 @@ public static class GameWindow
         foreach (Player beforePlayer in before.Entities.OfType<Player>())
         {
             // The local player is rendered from the predicted local world.
-            if (beforePlayer.UserId == localPlayerId)
+            if (beforePlayer.UserId == localPlayerId || beforePlayer.IsDead)
                 continue;
 
             Player? afterPlayer = after.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == beforePlayer.UserId);
 
-            if (afterPlayer == null)
+            if (afterPlayer == null || afterPlayer.IsDead)
                 continue;
 
             Vector2 position = Vector2.Lerp(beforePlayer.Position, afterPlayer.Position, (float)alpha);
@@ -221,7 +221,7 @@ public static class GameWindow
         foreach (Player player in world.Entities.OfType<Player>())
         {
             // The local player is rendered from the predicted local world.
-            if (player.UserId == localPlayerId)
+            if (player.UserId == localPlayerId || player.IsDead)
                 continue;
 
             Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);

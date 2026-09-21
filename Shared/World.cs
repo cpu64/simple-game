@@ -73,13 +73,7 @@ public class World : IBinarySerializable
     {
         for (int i = Entities.Count - 1; i >= 0; i--)
         {
-            Entity entity = Entities[i];
-
-            if (entity is Bullet bullet && bullet.IsDead)
-            {
-                Entities.RemoveAt(i);
-            }
-            else if (entity is Enemy enemy && enemy.IsDead)
+            if (Entities[i].CanBePruned)
             {
                 Entities.RemoveAt(i);
             }

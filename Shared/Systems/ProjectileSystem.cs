@@ -28,9 +28,4 @@ public static class ProjectileSystem
 
         world.Entities.Add(new HeavyBullet(world.NextEntityId++, player.Position, player.Id, direction * HeavyBulletSpeed, ticksLeft: 300));
     }
-
-    public static void Update(World world)
-    {
-        CombatSystem.Resolve(world);
-    }
 }

@@ -150,10 +150,9 @@ public class LocalServer
 
             InputCommand command = new InputCommand(nextCommandSequence++, playerId, Keys, Pointer);
 
-            pendingCommands.Enqueue(command);
-
             if (remoteServer != null)
             {
+                pendingCommands.Enqueue(command);
                 remoteServer.Send(command);
             }
 
