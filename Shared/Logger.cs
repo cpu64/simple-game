@@ -226,6 +226,59 @@ namespace Game.Logging
             Flush();
         }
 
+        public IDisposable Time(object? message, string? category = null, LogLevel level = LogLevel.Debug)
+        {
+            if (!_running || level < _minimumLevel)
+                return NoOpDisposable.Instance;
+
+            return new LogTimer(this, message, category, level);
+        }
+
+        private sealed class NoOpDisposable : IDisposable
+        {
+            public static readonly NoOpDisposable Instance = new();
+
+            private NoOpDisposable() { }
+
+            public void Dispose() { }
+        }
+
+        private sealed class LogTimer : IDisposable
+        {
+            private readonly Logger _logger;
+            private readonly object? _message;
+            private readonly string? _category;
+            private readonly LogLevel _level;
+
+            private readonly long _startTimestamp;
+
+            private bool _disposed;
+
+            public LogTimer(Logger logger, object? message, string? category, LogLevel level)
+            {
+                _logger = logger;
+                _message = message;
+                _category = category;
+                _level = level;
+
+                _startTimestamp = Stopwatch.GetTimestamp();
+            }
+
+            public void Dispose()
+            {
+                if (_disposed)
+                    return;
+
+                _disposed = true;
+
+                long elapsedTicks = Stopwatch.GetTimestamp() - _startTimestamp;
+
+                double milliseconds = elapsedTicks * 1000.0 / Stopwatch.Frequency;
+
+                _logger.Log(_level, $"{_message?.ToString() ?? string.Empty} " + $"took {milliseconds:F3} ms", _category);
+            }
+        }
+
         private void Log(LogLevel level, object? message, string? category, Exception? exception = null)
         {
             if (!_running)
