@@ -15,7 +15,7 @@ public static class PhysicsSystem
         bool isGrounded = body.CollidesWithBlocks && body.Velocity.Y >= 0 && IsGrounded(body.Position, body.Size, blocks);
         float velX = body.Velocity.X;
 
-        if (body is Player || isGrounded)
+        if (isGrounded)
         {
             velX *= body.Drag;
         }
