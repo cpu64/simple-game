@@ -1,15 +1,22 @@
 using System.Numerics;
 
-public class SimpleBullet : Bullet, ICollidable, ILifespan, IMoving, IBinarySerializable
+public class SimpleBullet : Bullet, ICollidable, IMoving, IBinarySerializable
 {
     public Vector2 Velocity { get; set; }
-    public long TicksLeft { get; set; }
+    public override long TicksLeft { get; set; }
 
     public SimpleBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft)
         : base(id, position, firedBy)
     {
         Velocity = velocity;
         TicksLeft = ticksLeft;
+    }
+
+    public override ImpactResult Tick(World world, float deltaTime)
+    {
+        Position += Velocity * deltaTime;
+        TicksLeft--;
+        return ImpactResult.None;
     }
 
     public override SimpleBullet Copy()
