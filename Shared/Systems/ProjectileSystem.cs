@@ -38,13 +38,24 @@ public static class ProjectileSystem
             if (world.Entities[i] is not Bullet bullet)
                 continue;
 
-            ImpactResult impact = bullet.Tick(world, dt);
+            // Prioritize entity hits over block collisions so enemies backed against walls can be damaged
+            EntityId? hitEntity = FindHitEntity(bullet, world);
+            ImpactResult impact;
 
-            if (impact.Kind == ImpactKind.None)
+            if (hitEntity.HasValue)
             {
-                EntityId? hitEntity = FindHitEntity(bullet, world);
-                if (hitEntity.HasValue)
-                    impact = ImpactResult.Entity(hitEntity.Value);
+                impact = ImpactResult.Entity(hitEntity.Value);
+            }
+            else
+            {
+                impact = bullet.Tick(world, dt);
+
+                if (impact.Kind == ImpactKind.None)
+                {
+                    hitEntity = FindHitEntity(bullet, world);
+                    if (hitEntity.HasValue)
+                        impact = ImpactResult.Entity(hitEntity.Value);
+                }
             }
 
             switch (impact.Kind)

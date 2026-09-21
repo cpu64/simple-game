@@ -16,6 +16,8 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
     public float InvulnerabilityTimer { get; set; }
     public bool IsInvulnerable => InvulnerabilityTimer > 0;
 
+    public float AttackCooldownTimer { get; set; }
+
     public Player(
         EntityId id,
         Vector2 position,
@@ -24,7 +26,8 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         float rotation = 0,
         Vector2 velocity = new Vector2(),
         int health = 100,
-        float invulnerabilityTimer = 0.0f
+        float invulnerabilityTimer = 0.0f,
+        float attackCooldownTimer = 0.0f
     )
         : base(id, position)
     {
@@ -34,6 +37,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         LastCommand = lastCommand;
         Health = health;
         InvulnerabilityTimer = invulnerabilityTimer;
+        AttackCooldownTimer = attackCooldownTimer;
     }
 
     public bool TakeDamage(int amount)
@@ -68,6 +72,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         writer.Write(Velocity);
         writer.Write(Health);
         writer.Write(InvulnerabilityTimer);
+        writer.Write(AttackCooldownTimer);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
@@ -80,7 +85,8 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         var velocity = reader.Read<Vector2>();
         var health = reader.Read<int>();
         var invulnerabilityTimer = reader.Read<float>();
+        var attackCooldownTimer = reader.Read<float>();
 
-        return new Player(id, position, userId, lastCommand, rotation, velocity, health, invulnerabilityTimer);
+        return new Player(id, position, userId, lastCommand, rotation, velocity, health, invulnerabilityTimer, attackCooldownTimer);
     }
 }

@@ -208,6 +208,9 @@ public class LocalServer
         {
             PlayerSystem.ProcessCommands(world, pendingCommands.ToList(), isReplay: true);
         }
+
+        // Advance world.Tick to match predicted clock so remote player interpolation does not hitch
+        world.Tick = authoritativeWorld.Tick + pendingCommands.Count;
     }
 
     private long GetLastAcknowledgedSequence(World authoritativeWorld)

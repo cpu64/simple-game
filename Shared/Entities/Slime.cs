@@ -48,6 +48,12 @@ public class Slime : Enemy, IBinarySerializable
             Velocity = new Vector2(Velocity.X, 0);
         }
 
+        if (result.HitHorizontal)
+        {
+            Velocity = new Vector2(0, Velocity.Y);
+            FacingDirection = -FacingDirection;
+        }
+
         if (result.HitFloor)
         {
             Velocity = Vector2.Zero;
