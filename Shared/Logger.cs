@@ -32,7 +32,7 @@ public enum LogCategory
     Rendering = 1 << 1,
     Audio = 1 << 2,
     Network = 1 << 3,
-    Input = 1 << 4,
+    Simulation = 1 << 4,
     AI = 1 << 5,
     UI = 1 << 6,
     Gameplay = 1 << 7,
@@ -207,7 +207,7 @@ public sealed class Logger : IDisposable
         | LogCategory.Rendering
         | LogCategory.Audio
         | LogCategory.Network
-        | LogCategory.Input
+        | LogCategory.Simulation
         | LogCategory.AI
         | LogCategory.UI
         | LogCategory.Gameplay

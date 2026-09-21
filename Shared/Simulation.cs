@@ -13,6 +13,8 @@ public class Simulation
 
     public static World Tick(World world, List<InputCommand> commands)
     {
+        using var timer = Logger.Instance.Time("Simulation", LogCategory.Simulation).Every(GameConstants.SimulationTickRate);
+
         foreach (InputCommand command in commands)
         {
             Player? player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == command.PlayerId);
