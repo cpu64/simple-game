@@ -8,30 +8,16 @@ public static class PhysicsSystem
 {
     private const float Epsilon = 0.01f;
     public const float GravityConstant = 10.0f;
-    public const float MaxFallSpeed = 25.0f;
-    public const float GroundDragFactor = 0.97531f;
-    public const float AirDragFactor = 0.99864f;
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
-        bool isGrounded = body.CollidesWithBlocks && IsGrounded(body.Position, body.Size, blocks);
-        float decayFactor = isGrounded ? GroundDragFactor : AirDragFactor;
-        float velX = body.Velocity.X * decayFactor;
+        float velX = body.Velocity.X * 0.88f;
+        float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
 
-        float inputWeight = Math.Clamp(1.0f - (Math.Abs(velX) / 6.0f), 0.0f, 1.0f);
-        Vector2 effectiveIntent = new Vector2(intentionalMovement.X * inputWeight, intentionalMovement.Y);
+        if (Math.Abs(velX) < 0.05f)
+            velX = 0f;
 
-        float velY = body.Velocity.Y;
-        if (effectiveIntent.Y < 0)
-        {
-            velY = Math.Min(0f, velY);
-        }
-        else
-        {
-            velY = Math.Min(MaxFallSpeed, velY + (body.GravityScale * GravityConstant * dt));
-        }
-
-        Vector2 totalMovement = effectiveIntent + new Vector2(velX, velY) * dt;
+        Vector2 totalMovement = intentionalMovement + new Vector2(velX, velY) * dt;
 
         MovementResult result;
         if (body.CollidesWithBlocks)
@@ -48,10 +34,6 @@ public static class PhysicsSystem
         if (result.HitFloor && velY > 0)
         {
             velY = 0f;
-            if (!isGrounded)
-            {
-                velX *= 0.5f;
-            }
         }
         else if (result.HitCeiling && velY < 0)
         {
@@ -59,9 +41,6 @@ public static class PhysicsSystem
         }
 
         if (result.HitHorizontal)
-            velX = 0f;
-
-        if (Math.Abs(velX) < 0.05f)
             velX = 0f;
 
         body.Velocity = new Vector2(velX, velY);

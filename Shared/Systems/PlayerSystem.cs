@@ -6,6 +6,7 @@ using System.Numerics;
 public static class PlayerSystem
 {
     private const float Speed = 8.0f;
+    private const float JumpSpeed = 7.5f;
     private const float SimpleBulletCooldown = 0.2f;
     private const float HeavyBulletCooldown = 0.35f;
 
@@ -53,8 +54,20 @@ public static class PlayerSystem
                 InputCommand command = commands[nextIndex];
                 player.LastCommand = command.Sequence;
 
-                Vector2 inputMovement = ComputeInputMovement(command.Keys, dt);
-                PhysicsSystem.StepBody(player, world.Blocks, dt, inputMovement);
+                bool isGrounded = PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
+
+                float moveX = 0f;
+                if ((command.Keys & KeyState.Left) != 0)
+                    moveX -= Speed * dt;
+                if ((command.Keys & KeyState.Right) != 0)
+                    moveX += Speed * dt;
+
+                if ((command.Keys & KeyState.Up) != 0 && isGrounded)
+                {
+                    player.Velocity = new Vector2(player.Velocity.X, -JumpSpeed);
+                }
+
+                PhysicsSystem.StepBody(player, world.Blocks, dt, new Vector2(moveX, 0f));
 
                 ProcessWeaponFiring(world, player, command);
             }
@@ -65,41 +78,20 @@ public static class PlayerSystem
         }
     }
 
-    public static void ProcessWeaponFiring(World world, Player player, InputCommand command, bool spawnProjectiles = true)
+    public static void ProcessWeaponFiring(World world, Player player, InputCommand command)
     {
         if (player.AttackCooldownTimer <= 0)
         {
             if ((command.Keys & KeyState.MouseLeft) != 0)
             {
-                if (spawnProjectiles)
-                {
-                    ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);
-                }
+                ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);
                 player.AttackCooldownTimer = SimpleBulletCooldown;
             }
             else if ((command.Keys & KeyState.MouseRight) != 0)
             {
-                if (spawnProjectiles)
-                {
-                    ProjectileSystem.SpawnHeavyBullet(world, player, command.Pointer);
-                }
+                ProjectileSystem.SpawnHeavyBullet(world, player, command.Pointer);
                 player.AttackCooldownTimer = HeavyBulletCooldown;
             }
         }
-    }
-
-    public static Vector2 ComputeInputMovement(KeyState keys, float dt)
-    {
-        float moveX = 0f;
-        if ((keys & KeyState.Left) != 0)
-            moveX -= Speed * dt;
-        if ((keys & KeyState.Right) != 0)
-            moveX += Speed * dt;
-
-        float moveY = 0f;
-        if ((keys & KeyState.Up) != 0)
-            moveY -= Speed * dt;
-
-        return new Vector2(moveX, moveY);
     }
 }

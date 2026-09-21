@@ -17,27 +17,4 @@ public static class Simulation
 
         return world;
     }
-
-    public static void ReplayLocalPlayer(World world, Player localPlayer, InputCommand command)
-    {
-        if (localPlayer.IsDead)
-            return;
-
-        float dt = (float)GameConstants.SimulationTickDuration;
-
-        if (localPlayer.InvulnerabilityTimer > 0)
-        {
-            localPlayer.InvulnerabilityTimer = System.Math.Max(0, localPlayer.InvulnerabilityTimer - dt);
-        }
-
-        if (localPlayer.AttackCooldownTimer > 0)
-        {
-            localPlayer.AttackCooldownTimer = System.Math.Max(0, localPlayer.AttackCooldownTimer - dt);
-        }
-
-        Vector2 inputMovement = PlayerSystem.ComputeInputMovement(command.Keys, dt);
-        PhysicsSystem.StepBody(localPlayer, world.Blocks, dt, inputMovement);
-        PlayerSystem.ProcessWeaponFiring(world, localPlayer, command, spawnProjectiles: false);
-        localPlayer.LastCommand = command.Sequence;
-    }
 }

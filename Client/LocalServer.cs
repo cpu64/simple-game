@@ -202,30 +202,10 @@ public class LocalServer
         }
 
         // Replay every command that the authoritative server has not processed yet.
-        // Only re-simulate local player kinematics during rollback replay to prevent desyncing autonomous systems.
-        if (pendingCommands.Count > 0)
+        foreach (InputCommand command in pendingCommands)
         {
-            Player localPlayer = null;
-            for (int i = 0; i < world.Entities.Count; i++)
-            {
-                if (world.Entities[i] is Player p && p.UserId == playerId)
-                {
-                    localPlayer = p;
-                    break;
-                }
-            }
-
-            if (localPlayer != null)
-            {
-                foreach (InputCommand command in pendingCommands)
-                {
-                    Simulation.ReplayLocalPlayer(world, localPlayer, command);
-                }
-            }
+            ApplyCommand(command);
         }
-
-        // Advance world.Tick to match predicted clock so remote player interpolation does not hitch
-        world.Tick = authoritativeWorld.Tick + pendingCommands.Count;
     }
 
     private long GetLastAcknowledgedSequence(World authoritativeWorld)
