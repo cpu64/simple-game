@@ -8,12 +8,13 @@ public static class PhysicsSystem
 {
     private const float Epsilon = 0.01f;
     public const float GravityConstant = 10.0f;
+    public const float MaxFallSpeed = 25.0f;
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
         bool isGrounded = body.CollidesWithBlocks && body.Velocity.Y >= 0 && IsGrounded(body.Position, body.Size, blocks);
         float velX = isGrounded ? body.Velocity.X * body.Drag : body.Velocity.X;
-        float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
+        float velY = Math.Min(MaxFallSpeed, body.Velocity.Y + (body.GravityScale * GravityConstant * dt));
 
         if (body.Drag < 1.0f && Math.Abs(velX) < 0.05f)
             velX = 0f;

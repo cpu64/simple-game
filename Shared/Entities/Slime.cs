@@ -44,8 +44,6 @@ public class Slime : Enemy, IBinarySerializable
         if (!senses.IsGrounded)
             return;
 
-        Velocity = Vector2.Zero;
-
         JumpTimer -= dt;
         if (JumpTimer > 0)
             return;

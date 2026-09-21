@@ -5,7 +5,7 @@ public class Player : Entity, IFacing, IMoving, ICollidable, IDamageable, IKinem
 {
     public Vector2 Size => new Vector2(1.0f, 1.0f);
     public float GravityScale => 1.0f;
-    public float Drag => 0.88f;
+    public float Drag => 0.85f;
     public bool CollidesWithBlocks => true;
 
     public Guid UserId { get; private set; }

@@ -5,15 +5,12 @@ public class CommandQueue
 {
     private readonly object queueLock = new object();
 
-    private readonly Queue<InputCommand> commands = new Queue<InputCommand>();
     private readonly Dictionary<Guid, Queue<InputCommand>> playerQueues = new Dictionary<Guid, Queue<InputCommand>>();
 
     public void Add(InputCommand command)
     {
         lock (queueLock)
         {
-            commands.Enqueue(command);
-
             if (!playerQueues.TryGetValue(command.PlayerId, out Queue<InputCommand> queue))
             {
                 queue = new Queue<InputCommand>();
@@ -46,10 +43,15 @@ public class CommandQueue
     {
         lock (queueLock)
         {
-            List<InputCommand> result = new List<InputCommand>(commands);
+            List<InputCommand> result = new List<InputCommand>();
 
-            commands.Clear();
-            playerQueues.Clear();
+            foreach (var queue in playerQueues.Values)
+            {
+                while (queue.Count > 0)
+                {
+                    result.Add(queue.Dequeue());
+                }
+            }
 
             return result;
         }
