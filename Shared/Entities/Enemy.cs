@@ -1,13 +1,17 @@
 using System;
 using System.Numerics;
 
-public abstract class Enemy : Entity, IDamageable, ICollidable, IMoving, IGravityAffected
+public abstract class Enemy : Entity, IDamageable, ICollidable, IMoving, IKinematicBody
 {
     public abstract int Health { get; protected set; }
     public abstract int MaxHealth { get; }
     public Vector2 Velocity { get; set; }
     public abstract Vector2 Size { get; }
+    public MovementResult LastMovement { get; set; }
     public bool IsDead => Health <= 0;
+
+    public virtual float GravityScale => 1.0f;
+    public virtual bool CollidesWithBlocks => true;
 
     protected Enemy(EntityId id, Vector2 position, Vector2 velocity = default)
         : base(id, position)
@@ -15,7 +19,7 @@ public abstract class Enemy : Entity, IDamageable, ICollidable, IMoving, IGravit
         Velocity = velocity;
     }
 
-    public abstract void Tick(World world, float deltaTime);
+    public abstract void UpdateAI(in AISenses senses, float dt);
 
     public virtual bool TakeDamage(int amount)
     {

@@ -1,9 +1,12 @@
 using System;
 using System.Numerics;
 
-public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, IDamageable, IBinarySerializable
+public class Player : Entity, IFacing, IMoving, ICollidable, IDamageable, IKinematicBody, IBinarySerializable
 {
     public Vector2 Size => new Vector2(1.0f, 1.0f);
+    public float GravityScale => 1.0f;
+    public bool CollidesWithBlocks => true;
+
     public Guid UserId { get; private set; }
     public long LastCommand { get; set; }
     public float Rotation { get; set; }

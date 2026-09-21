@@ -6,24 +6,42 @@ public static class EnemySystem
     {
         float dt = (float)GameConstants.SimulationTickDuration;
 
-        for (int i = world.Entities.Count - 1; i >= 0; i--)
+        for (int i = 0; i < world.Entities.Count; i++)
         {
-            if (world.Entities[i] is not Enemy enemy)
+            if (world.Entities[i] is not Enemy enemy || enemy.IsDead)
                 continue;
 
-            if (enemy.IsDead)
-            {
-                world.Entities.RemoveAt(i);
+            bool isGrounded = enemy.LastMovement.HitFloor || PhysicsSystem.IsGrounded(enemy.Position, enemy.Size, world.Blocks);
+            TargetInfo? nearestTarget = FindNearestTarget(enemy, world);
+
+            AISenses senses = new AISenses(isGrounded, enemy.LastMovement.HitHorizontal, enemy.LastMovement.HitCeiling, nearestTarget);
+
+            enemy.UpdateAI(in senses, dt);
+
+            enemy.LastMovement = PhysicsSystem.StepBody(enemy, world.Blocks, dt);
+        }
+    }
+
+    private static TargetInfo? FindNearestTarget(Enemy enemy, World world)
+    {
+        TargetInfo? nearest = null;
+        float minDistanceSq = 400.0f; // 20 blocks detection range
+
+        for (int i = 0; i < world.Entities.Count; i++)
+        {
+            if (world.Entities[i] is not Player player || player.IsDead)
                 continue;
-            }
 
-            enemy.Tick(world, dt);
-
-            if (enemy.IsDead)
+            Vector2 offset = player.Position - enemy.Position;
+            float distSq = offset.LengthSquared();
+            if (distSq < minDistanceSq)
             {
-                world.Entities.RemoveAt(i);
+                minDistanceSq = distSq;
+                nearest = new TargetInfo(player.Id, offset, distSq);
             }
         }
+
+        return nearest;
     }
 
     public static Slime SpawnSlime(World world, Vector2 position)

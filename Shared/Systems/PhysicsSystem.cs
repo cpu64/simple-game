@@ -7,6 +7,42 @@ public readonly record struct MovementResult(Vector2 Position, bool HitHorizonta
 public static class PhysicsSystem
 {
     private const float Epsilon = 0.01f;
+    public const float GravityConstant = 10.0f;
+
+    public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
+    {
+        float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
+        float velX = body.Velocity.X * 0.88f;
+
+        Vector2 totalMovement = intentionalMovement + new Vector2(velX, velY) * dt;
+
+        MovementResult result;
+        if (body.CollidesWithBlocks)
+        {
+            result = MoveDetailed(body.Position, body.Size.X, body.Size.Y, totalMovement, blocks);
+        }
+        else
+        {
+            result = new MovementResult(body.Position + totalMovement, false, false, false);
+        }
+
+        body.Position = result.Position;
+
+        if (result.HitFloor && velY > 0)
+            velY = 0f;
+        else if (result.HitCeiling && velY < 0)
+            velY = 0f;
+
+        if (result.HitHorizontal)
+            velX = 0f;
+
+        if (Math.Abs(velX) < 0.05f)
+            velX = 0f;
+
+        body.Velocity = new Vector2(velX, velY);
+
+        return result;
+    }
 
     public static Vector2 Move(Vector2 position, float width, float height, Vector2 movement, List<Block> blocks)
     {
@@ -51,6 +87,11 @@ public static class PhysicsSystem
         }
 
         return false;
+    }
+
+    public static bool IsGrounded(Vector2 position, Vector2 size, List<Block> blocks)
+    {
+        return CollidesWithBlock(position.X, position.Y + Epsilon, size.X, size.Y, blocks);
     }
 
     private static (Vector2 Position, bool Hit) MoveHorizontalDetailed(Vector2 position, float width, float height, float amount, List<Block> blocks)

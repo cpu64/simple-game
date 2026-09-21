@@ -206,7 +206,23 @@ public class LocalServer
         // Only re-simulate local player kinematics during rollback replay to prevent desyncing autonomous systems.
         if (pendingCommands.Count > 0)
         {
-            PlayerSystem.ProcessCommands(world, pendingCommands.ToList(), isReplay: true);
+            Player localPlayer = null;
+            for (int i = 0; i < world.Entities.Count; i++)
+            {
+                if (world.Entities[i] is Player p && p.UserId == playerId)
+                {
+                    localPlayer = p;
+                    break;
+                }
+            }
+
+            if (localPlayer != null)
+            {
+                foreach (InputCommand command in pendingCommands)
+                {
+                    Simulation.ReplayLocalPlayer(world, localPlayer, command);
+                }
+            }
         }
 
         // Advance world.Tick to match predicted clock so remote player interpolation does not hitch
@@ -215,12 +231,15 @@ public class LocalServer
 
     private long GetLastAcknowledgedSequence(World authoritativeWorld)
     {
-        Player? player = authoritativeWorld.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
+        for (int i = 0; i < authoritativeWorld.Entities.Count; i++)
+        {
+            if (authoritativeWorld.Entities[i] is Player p && p.UserId == playerId)
+            {
+                return p.LastCommand;
+            }
+        }
 
-        if (player == null)
-            return -1;
-
-        return player.LastCommand;
+        return -1;
     }
 
     private void AddAuthoritativeWorld(World authoritativeWorld)

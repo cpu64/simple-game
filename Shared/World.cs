@@ -69,6 +69,23 @@ public class World : IBinarySerializable
         return new World(Tick, blocks, entities, NextEntityId);
     }
 
+    public void PruneDead()
+    {
+        for (int i = Entities.Count - 1; i >= 0; i--)
+        {
+            Entity entity = Entities[i];
+
+            if (entity is Bullet bullet && bullet.IsDead)
+            {
+                Entities.RemoveAt(i);
+            }
+            else if (entity is Enemy enemy && enemy.IsDead)
+            {
+                Entities.RemoveAt(i);
+            }
+        }
+    }
+
     public void Save(string path)
     {
         if (string.IsNullOrWhiteSpace(path))

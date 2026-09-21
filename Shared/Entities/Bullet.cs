@@ -1,6 +1,6 @@
 using System.Numerics;
 
-public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving
+public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving, IKinematicBody
 {
     public EntityId FiredBy { get; }
     public abstract long TicksLeft { get; set; }
@@ -8,13 +8,15 @@ public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving
     public abstract Vector2 Velocity { get; set; }
     public virtual Vector2 Size => new Vector2(0.25f, 0.25f);
 
+    public virtual float GravityScale => 0.0f;
+    public virtual bool CollidesWithBlocks => true;
+    public bool IsDead => TicksLeft <= 0;
+
     protected Bullet(EntityId id, Vector2 position, EntityId firedBy)
         : base(id, position)
     {
         FiredBy = firedBy;
     }
-
-    public abstract ImpactResult Tick(World world, float deltaTime);
 
     public override Bullet Copy()
     {

@@ -1,13 +1,13 @@
 using System.Numerics;
 
-public class HeavyBullet : Bullet, IGravityAffected, IMoving, IBinarySerializable
+public class HeavyBullet : Bullet, IBinarySerializable
 {
-    private const float BulletGravity = 10.0f;
     private const float BulletWidth = 0.2f;
     private const float BulletHeight = 0.2f;
 
     public override int Damage => 25;
     public override Vector2 Size => new Vector2(BulletWidth, BulletHeight);
+    public override float GravityScale => 1.0f;
 
     public override Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }
@@ -17,18 +17,6 @@ public class HeavyBullet : Bullet, IGravityAffected, IMoving, IBinarySerializabl
     {
         Velocity = velocity;
         TicksLeft = ticksLeft;
-    }
-
-    public override ImpactResult Tick(World world, float deltaTime)
-    {
-        Velocity += new Vector2(0, BulletGravity * deltaTime);
-
-        if (!PhysicsSystem.TryMove(Position, BulletWidth, BulletHeight, Velocity * deltaTime, world.Blocks, out Vector2 newPosition))
-            return ImpactResult.Block();
-
-        Position = newPosition;
-        TicksLeft--;
-        return ImpactResult.None;
     }
 
     public override HeavyBullet Copy()

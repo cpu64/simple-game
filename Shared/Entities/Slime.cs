@@ -1,10 +1,8 @@
 using System;
-using System.Linq;
 using System.Numerics;
 
 public class Slime : Enemy, IBinarySerializable
 {
-    private const float Gravity = 10.0f;
     private const float JumpSpeedX = 3.5f;
     private const float JumpSpeedY = -7.0f;
     private const float WeakJumpSpeedX = 2.2f;
@@ -33,84 +31,45 @@ public class Slime : Enemy, IBinarySerializable
         FacingDirection = facingDirection;
     }
 
-    public override void Tick(World world, float deltaTime)
+    public override void UpdateAI(in AISenses senses, float dt)
     {
         if (IsDead)
             return;
 
-        Velocity += new Vector2(0, Gravity * deltaTime);
-
-        MovementResult result = PhysicsSystem.MoveDetailed(Position, Size.X, Size.Y, Velocity * deltaTime, world.Blocks);
-        Position = result.Position;
-
-        if (result.HitCeiling && Velocity.Y < 0)
+        if (senses.HitHorizontal)
         {
-            Velocity = new Vector2(Velocity.X, 0);
-        }
-
-        if (result.HitHorizontal)
-        {
-            Velocity = new Vector2(0, Velocity.Y);
             FacingDirection = -FacingDirection;
         }
 
-        if (result.HitFloor)
+        if (!senses.IsGrounded)
+            return;
+
+        JumpTimer -= dt;
+        if (JumpTimer > 0)
+            return;
+
+        if (senses.NearestTarget.HasValue)
         {
-            Velocity = Vector2.Zero;
+            TargetInfo target = senses.NearestTarget.Value;
+            FacingDirection = target.Offset.X >= 0 ? 1.0f : -1.0f;
 
-            JumpTimer -= deltaTime;
-            if (JumpTimer <= 0)
+            float horizontalDistance = Math.Abs(target.Offset.X);
+
+            if (horizontalDistance < 3.5f && target.Offset.Y >= -1.0f)
             {
-                Player? nearestPlayer = FindNearestPlayer(world);
-                if (nearestPlayer != null)
-                {
-                    float dx = nearestPlayer.Position.X - Position.X;
-                    float dy = nearestPlayer.Position.Y - Position.Y;
-                    FacingDirection = dx >= 0 ? 1.0f : -1.0f;
-
-                    float horizontalDistance = Math.Abs(dx);
-
-                    // Choose a weaker, lower jump when player is nearby to hit them instead of jumping over
-                    if (horizontalDistance < 3.5f && dy >= -1.0f)
-                    {
-                        Velocity = new Vector2(FacingDirection * WeakJumpSpeedX, WeakJumpSpeedY);
-                    }
-                    else
-                    {
-                        Velocity = new Vector2(FacingDirection * JumpSpeedX, JumpSpeedY);
-                    }
-                }
-                else
-                {
-                    Velocity = new Vector2(FacingDirection * 2.0f, -4.5f);
-                }
-
-                JumpTimer = DefaultJumpInterval;
+                Velocity = new Vector2(FacingDirection * WeakJumpSpeedX, WeakJumpSpeedY);
+            }
+            else
+            {
+                Velocity = new Vector2(FacingDirection * JumpSpeedX, JumpSpeedY);
             }
         }
-
-        CombatSystem.CheckEnemyContactDamage(world, this, damage: 10);
-    }
-
-    private Player? FindNearestPlayer(World world)
-    {
-        Player? nearest = null;
-        float minDistanceSq = 400.0f; // Detect within 20 blocks
-
-        foreach (Player player in world.Entities.OfType<Player>())
+        else
         {
-            if (player.IsDead)
-                continue;
-
-            float distSq = Vector2.DistanceSquared(Position, player.Position);
-            if (distSq < minDistanceSq)
-            {
-                minDistanceSq = distSq;
-                nearest = player;
-            }
+            Velocity = new Vector2(FacingDirection * 2.0f, -4.5f);
         }
 
-        return nearest;
+        JumpTimer = DefaultJumpInterval;
     }
 
     public override Slime Copy()
