@@ -48,8 +48,8 @@ public static class GameWindow
     {
         foreach (Bullet bullet in world.Entities.OfType<Bullet>())
         {
-            int screenX = (int)Math.Round(bullet.Position.X * 20.0);
-            int screenY = (int)Math.Round(bullet.Position.Y * 20.0);
+            int screenX = (int)Math.Round((bullet.Position.X + bullet.Size.X * 0.5f) * 20.0);
+            int screenY = (int)Math.Round((bullet.Position.Y + bullet.Size.Y * 0.5f) * 20.0);
 
             if (bullet is HeavyBullet)
             {

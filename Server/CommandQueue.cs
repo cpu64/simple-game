@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 public class CommandQueue
@@ -5,12 +6,39 @@ public class CommandQueue
     private readonly object queueLock = new object();
 
     private readonly Queue<InputCommand> commands = new Queue<InputCommand>();
+    private readonly Dictionary<Guid, Queue<InputCommand>> playerQueues = new Dictionary<Guid, Queue<InputCommand>>();
 
     public void Add(InputCommand command)
     {
         lock (queueLock)
         {
             commands.Enqueue(command);
+
+            if (!playerQueues.TryGetValue(command.PlayerId, out Queue<InputCommand> queue))
+            {
+                queue = new Queue<InputCommand>();
+                playerQueues[command.PlayerId] = queue;
+            }
+
+            queue.Enqueue(command);
+        }
+    }
+
+    public List<InputCommand> TakeOnePerPlayer()
+    {
+        lock (queueLock)
+        {
+            List<InputCommand> result = new List<InputCommand>(playerQueues.Count);
+
+            foreach (var kvp in playerQueues)
+            {
+                if (kvp.Value.Count > 0)
+                {
+                    result.Add(kvp.Value.Dequeue());
+                }
+            }
+
+            return result;
         }
     }
 
@@ -21,6 +49,7 @@ public class CommandQueue
             List<InputCommand> result = new List<InputCommand>(commands);
 
             commands.Clear();
+            playerQueues.Clear();
 
             return result;
         }

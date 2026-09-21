@@ -37,6 +37,7 @@ public static class Simulation
 
         Vector2 inputMovement = PlayerSystem.ComputeInputMovement(command.Keys, dt);
         PhysicsSystem.StepBody(localPlayer, world.Blocks, dt, inputMovement);
+        PlayerSystem.ProcessWeaponFiring(world, localPlayer, command, spawnProjectiles: false);
         localPlayer.LastCommand = command.Sequence;
     }
 }

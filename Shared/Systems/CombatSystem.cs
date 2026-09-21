@@ -33,11 +33,10 @@ public static class CombatSystem
 
             if (hitEntity != null && hitBlock)
             {
-                Entity targetEntity = (Entity)hitEntity;
                 ICollidable collidable = (ICollidable)hitEntity;
 
-                float closestEntityX = Math.Clamp(bullet.Position.X, targetEntity.Position.X, targetEntity.Position.X + collidable.Size.X);
-                float closestEntityY = Math.Clamp(bullet.Position.Y, targetEntity.Position.Y, targetEntity.Position.Y + collidable.Size.Y);
+                float closestEntityX = Math.Clamp(bullet.Position.X, collidable.Position.X, collidable.Position.X + collidable.Size.X);
+                float closestEntityY = Math.Clamp(bullet.Position.Y, collidable.Position.Y, collidable.Position.Y + collidable.Size.Y);
                 float entityDistSq = Vector2.DistanceSquared(bullet.Position, new Vector2(closestEntityX, closestEntityY));
 
                 float minBlockDistSq = float.MaxValue;

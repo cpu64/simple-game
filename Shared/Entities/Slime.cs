@@ -91,6 +91,9 @@ public class Slime : Enemy, IBinarySerializable
         writer.Write(Health);
         writer.Write(JumpTimer);
         writer.Write(FacingDirection);
+        writer.Write(LastMovement.HitHorizontal);
+        writer.Write(LastMovement.HitFloor);
+        writer.Write(LastMovement.HitCeiling);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
@@ -101,7 +104,12 @@ public class Slime : Enemy, IBinarySerializable
         var health = reader.Read<int>();
         var jumpTimer = reader.Read<float>();
         var facing = reader.Read<float>();
+        var hitHorizontal = reader.Read<bool>();
+        var hitFloor = reader.Read<bool>();
+        var hitCeiling = reader.Read<bool>();
 
-        return new Slime(id, position, velocity, health, jumpTimer, facing);
+        var slime = new Slime(id, position, velocity, health, jumpTimer, facing);
+        slime.LastMovement = new MovementResult(position, hitHorizontal, hitFloor, hitCeiling);
+        return slime;
     }
 }

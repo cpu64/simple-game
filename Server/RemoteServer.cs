@@ -228,7 +228,7 @@ public class RemoteServer
     {
         lock (worldLock)
         {
-            world = Simulation.Tick(world, commandQueue.TakeAll());
+            world = Simulation.Tick(world, commandQueue.TakeOnePerPlayer());
         }
 
         if (world.Tick % GameConstants.SnapshotIntervalTicks == 0)

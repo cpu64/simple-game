@@ -9,16 +9,27 @@ public static class PhysicsSystem
     private const float Epsilon = 0.01f;
     public const float GravityConstant = 10.0f;
     public const float MaxFallSpeed = 25.0f;
+    public const float GroundDragFactor = 0.97531f;
+    public const float AirDragFactor = 0.99864f;
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
         bool isGrounded = body.CollidesWithBlocks && IsGrounded(body.Position, body.Size, blocks);
-        float decayRate = isGrounded ? 0.05f : 0.85f;
-        float velX = body.Velocity.X * MathF.Pow(decayRate, dt);
-        float velY = Math.Min(MaxFallSpeed, body.Velocity.Y + (body.GravityScale * GravityConstant * dt));
+        float decayFactor = isGrounded ? GroundDragFactor : AirDragFactor;
+        float velX = body.Velocity.X * decayFactor;
 
         float inputWeight = Math.Clamp(1.0f - (Math.Abs(velX) / 6.0f), 0.0f, 1.0f);
         Vector2 effectiveIntent = new Vector2(intentionalMovement.X * inputWeight, intentionalMovement.Y);
+
+        float velY = body.Velocity.Y;
+        if (effectiveIntent.Y < 0)
+        {
+            velY = Math.Min(0f, velY);
+        }
+        else
+        {
+            velY = Math.Min(MaxFallSpeed, velY + (body.GravityScale * GravityConstant * dt));
+        }
 
         Vector2 totalMovement = effectiveIntent + new Vector2(velX, velY) * dt;
 
