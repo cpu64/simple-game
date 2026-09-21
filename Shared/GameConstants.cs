@@ -7,7 +7,7 @@ public static class GameConstants
     public const int TargetFrameRate = 120;
     public const int InterpolationBufferTicks = 5;
     public const int InterpolationDelayTicks = InterpolationBufferTicks + SnapshotIntervalTicks;
-    public const int InterpolationBufferSize = 2 + (InterpolationDelayTicks - 1) / SnapshotIntervalTicks;
+    public const int InterpolationBufferSize = 8;
 
     // Simulation
     public const int SimulationTickRate = 120;

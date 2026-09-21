@@ -38,11 +38,7 @@ public class CommandQueue
                     queue.Dequeue();
                 }
 
-                int countToTake = queue.Count > 1 ? 2 : 1;
-                for (int i = 0; i < countToTake && queue.Count > 0; i++)
-                {
-                    result.Add(queue.Dequeue());
-                }
+                result.Add(queue.Dequeue());
             }
 
             return result;

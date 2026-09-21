@@ -220,6 +220,9 @@ public class RemoteServer
                 Tick();
 
                 nextTick += GameConstants.SimulationTickDuration;
+
+                if (now - nextTick > 0.25)
+                    nextTick = now;
             }
             else
             {

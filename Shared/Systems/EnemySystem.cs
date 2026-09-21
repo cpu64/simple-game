@@ -11,7 +11,7 @@ public static class EnemySystem
             if (world.Entities[i] is not Enemy enemy || enemy.IsDead)
                 continue;
 
-            bool isGrounded = enemy.LastMovement.HitFloor || PhysicsSystem.IsGrounded(enemy.Position, enemy.Size, world.Blocks);
+            bool isGrounded = enemy.Velocity.Y >= 0 && (enemy.LastMovement.HitFloor || PhysicsSystem.IsGrounded(enemy.Position, enemy.Size, world.Blocks));
             TargetInfo? nearestTarget = FindNearestTarget(enemy, world);
 
             float facing = nearestTarget.HasValue ? (nearestTarget.Value.Offset.X >= 0 ? 1.0f : -1.0f) : enemy.FacingDirection;

@@ -124,7 +124,7 @@ public static class PhysicsSystem
 
                 float blockLeft = block.Position.X;
 
-                if (right > blockLeft && position.X < blockLeft)
+                if (right > blockLeft && position.X + width <= blockLeft + Epsilon)
                 {
                     correctedX = Math.Min(correctedX, blockLeft - width);
                     hit = true;
@@ -140,7 +140,7 @@ public static class PhysicsSystem
 
                 float blockRight = block.Position.X + 1.0f;
 
-                if (newX < blockRight && position.X + width > blockRight)
+                if (newX < blockRight && position.X >= blockRight - Epsilon)
                 {
                     correctedX = Math.Max(correctedX, blockRight);
                     hit = true;
@@ -180,7 +180,7 @@ public static class PhysicsSystem
 
                 float blockTop = block.Position.Y;
 
-                if (newY + height > blockTop && position.Y < blockTop)
+                if (newY + height > blockTop && position.Y + height <= blockTop + Epsilon)
                 {
                     correctedY = Math.Min(correctedY, blockTop - height);
                     hitFloor = true;
@@ -196,7 +196,7 @@ public static class PhysicsSystem
 
                 float blockBottom = block.Position.Y + 1.0f;
 
-                if (newY < blockBottom && position.Y + height > blockBottom)
+                if (newY < blockBottom && position.Y >= blockBottom - Epsilon)
                 {
                     correctedY = Math.Max(correctedY, blockBottom);
                     hitCeiling = true;
