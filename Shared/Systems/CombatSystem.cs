@@ -68,8 +68,10 @@ public static class CombatSystem
                 {
                     if (hitEntity is IMoving moving && bullet.Velocity.LengthSquared() > 0.001f)
                     {
-                        Vector2 knockback = Vector2.Normalize(bullet.Velocity) * bullet.KnockbackForce;
-                        moving.Velocity += knockback;
+                        Vector2 bulletDir = Vector2.Normalize(bullet.Velocity);
+                        float knockX = bulletDir.X * bullet.KnockbackForce;
+                        float knockY = Math.Min(bulletDir.Y * bullet.KnockbackForce, -2.5f);
+                        moving.Velocity = new Vector2(moving.Velocity.X + knockX, Math.Min(moving.Velocity.Y, 0f) + knockY);
                     }
 
                     if (hitEntity.IsDead)
@@ -140,9 +142,11 @@ public static class CombatSystem
                 {
                     if (player.TakeDamage(enemy.ContactDamage))
                     {
-                        Vector2 diff = (player.Position + player.Size * 0.5f) - (enemy.Position + enemy.Size * 0.5f);
-                        Vector2 impactDir = diff.LengthSquared() > 0.0001f ? Vector2.Normalize(diff) : new Vector2(1, 0);
-                        player.Velocity += impactDir * enemy.ContactKnockback;
+                        float dirX = (player.Position.X + player.Size.X * 0.5f) >= (enemy.Position.X + enemy.Size.X * 0.5f) ? 1.0f : -1.0f;
+                        float knockX = dirX * enemy.ContactKnockback;
+                        float knockUp = -6.0f;
+
+                        player.Velocity = new Vector2(player.Velocity.X + knockX, Math.Min(player.Velocity.Y, 0f) + knockUp);
 
                         if (player.IsDead)
                         {
