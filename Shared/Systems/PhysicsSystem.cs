@@ -11,10 +11,10 @@ public static class PhysicsSystem
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
-        float velX = body.Velocity.X * 0.88f;
+        float velX = body.Velocity.X * body.Drag;
         float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
 
-        if (Math.Abs(velX) < 0.05f)
+        if (body.Drag < 1.0f && Math.Abs(velX) < 0.05f)
             velX = 0f;
 
         Vector2 totalMovement = intentionalMovement + new Vector2(velX, velY) * dt;
