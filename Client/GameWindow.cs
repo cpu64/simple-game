@@ -16,7 +16,7 @@ public static class GameWindow
         {
             while (!Raylib.WindowShouldClose())
             {
-                using (Logger.Instance.Time("Drawing", LogCategory.Rendering).Every(GameConstants.TargetFrameRate))
+                using (Logger.Instance.Info("Drawing").Category(LogCategory.Rendering).Every("render", GameConstants.TargetFrameRate).Time())
                 {
                     UpdateInput(input);
 

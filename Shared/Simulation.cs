@@ -13,7 +13,7 @@ public class Simulation
 
     public static World Tick(World world, List<InputCommand> commands)
     {
-        using var timer = Logger.Instance.Time("Simulation", LogCategory.Simulation).Every(GameConstants.SimulationTickRate);
+        using var timer = Logger.Instance.Info("Simulation").Category(LogCategory.Simulation).Every("simulation", GameConstants.SimulationTickRate).Time();
 
         foreach (InputCommand command in commands)
         {

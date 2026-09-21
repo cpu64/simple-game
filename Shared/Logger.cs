@@ -6,10 +6,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-// ========================================================================
-// Log Level
-// ========================================================================
-
 public enum LogLevel
 {
     Trace = 0,
@@ -20,28 +16,15 @@ public enum LogLevel
     Fatal = 5,
 }
 
-// ========================================================================
-// Log Category
-// ========================================================================
-
 [Flags]
 public enum LogCategory
 {
     None = 0,
-    Physics = 1 << 0,
-    Rendering = 1 << 1,
-    Audio = 1 << 2,
+    Rendering = 1 << 0,
+    Simulation = 1 << 1,
+    Physics = 1 << 2,
     Network = 1 << 3,
-    Simulation = 1 << 4,
-    AI = 1 << 5,
-    UI = 1 << 6,
-    Gameplay = 1 << 7,
-    Performance = 1 << 8,
 }
-
-// ========================================================================
-// Log Entry
-// ========================================================================
 
 public sealed class LogEntry
 {
@@ -79,19 +62,11 @@ public sealed class LogEntry
     }
 }
 
-// ========================================================================
-// Log Sink
-// ========================================================================
-
 public interface ILogSink : IDisposable
 {
     void Write(LogEntry entry);
     void Flush();
 }
-
-// ========================================================================
-// Console Sink
-// ========================================================================
 
 public sealed class ConsoleSink : ILogSink
 {
@@ -120,10 +95,6 @@ public sealed class ConsoleSink : ILogSink
     }
 }
 
-// ========================================================================
-// Debug Sink
-// ========================================================================
-
 public sealed class DebugSink : ILogSink
 {
     public void Write(LogEntry entry)
@@ -135,10 +106,6 @@ public sealed class DebugSink : ILogSink
 
     public void Dispose() { }
 }
-
-// ========================================================================
-// File Sink
-// ========================================================================
 
 public sealed class FileSink : ILogSink
 {
@@ -176,9 +143,81 @@ public sealed class FileSink : ILogSink
     }
 }
 
-// ========================================================================
+// ============================================================================
+// Fluent API interfaces
+// ============================================================================
+//
+// The interfaces intentionally expose only the operations that are legal at
+// each stage.
+//
+// Start
+//   Category / Assert / Every / Time / Write
+//
+// After Category
+//   Assert / Every / Time / Write
+//
+// After Assert
+//   Every / Time / Write
+//
+// After Every
+//   Time / Write
+//
+// This enforces:
+//
+// Category -> Assert -> Every -> Time
+//
+// while allowing every stage to be skipped.
+// ============================================================================
+
+public interface ILogStart
+{
+    ILogAfterCategory Category(LogCategory category);
+
+    ILogAfterAssert Assert(Func<bool> condition);
+
+    ILogAfterEvery Every(string key, long everyNCalls);
+
+    ILogAfterEvery Every(string key, TimeSpan interval);
+
+    Logger.LogScope Time();
+
+    void Write();
+}
+
+public interface ILogAfterCategory
+{
+    ILogAfterAssert Assert(Func<bool> condition);
+
+    ILogAfterEvery Every(string key, long everyNCalls);
+
+    ILogAfterEvery Every(string key, TimeSpan interval);
+
+    Logger.LogScope Time();
+
+    void Write();
+}
+
+public interface ILogAfterAssert
+{
+    ILogAfterEvery Every(string key, long everyNCalls);
+
+    ILogAfterEvery Every(string key, TimeSpan interval);
+
+    Logger.LogScope Time();
+
+    void Write();
+}
+
+public interface ILogAfterEvery
+{
+    Logger.LogScope Time();
+
+    void Write();
+}
+
+// ============================================================================
 // Logger
-// ========================================================================
+// ============================================================================
 
 public sealed class Logger : IDisposable
 {
@@ -193,7 +232,6 @@ public sealed class Logger : IDisposable
     private readonly object _rateLimitLock = new();
 
     private readonly Dictionary<string, DateTime> _rateLimitTimes = new();
-
     private readonly Dictionary<string, long> _rateLimitCounts = new();
 
     private readonly Thread _writerThread;
@@ -202,16 +240,7 @@ public sealed class Logger : IDisposable
 
     private LogLevel _minimumLevel = LogLevel.Trace;
 
-    private LogCategory _enabledCategories =
-        LogCategory.Physics
-        | LogCategory.Rendering
-        | LogCategory.Audio
-        | LogCategory.Network
-        | LogCategory.Simulation
-        | LogCategory.AI
-        | LogCategory.UI
-        | LogCategory.Gameplay
-        | LogCategory.Performance;
+    private LogCategory _enabledCategories = ~LogCategory.None;
 
     private Logger()
     {
@@ -220,9 +249,9 @@ public sealed class Logger : IDisposable
         _writerThread.Start();
     }
 
-    // ====================================================================
+    // ========================================================================
     // Configuration
-    // ====================================================================
+    // ========================================================================
 
     public LogLevel MinimumLevel
     {
@@ -257,6 +286,10 @@ public sealed class Logger : IDisposable
         _enabledCategories &= ~category;
     }
 
+    // ========================================================================
+    // Sinks
+    // ========================================================================
+
     public void AddSink(ILogSink sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
@@ -280,47 +313,45 @@ public sealed class Logger : IDisposable
         }
     }
 
-    // ====================================================================
-    // Logging
-    // ====================================================================
+    // ========================================================================
+    // Fluent entry points
+    // ========================================================================
 
-    public void Trace(object? message, LogCategory category = LogCategory.None)
+    public ILogStart Trace(object? message)
     {
-        Log(LogLevel.Trace, message, category);
+        return new FluentLogOperation(this, LogLevel.Trace, message);
     }
 
-    public void Debug(object? message, LogCategory category = LogCategory.None)
+    public ILogStart Debug(object? message)
     {
-        Log(LogLevel.Debug, message, category);
+        return new FluentLogOperation(this, LogLevel.Debug, message);
     }
 
-    public void Info(object? message, LogCategory category = LogCategory.None)
+    public ILogStart Info(object? message)
     {
-        Log(LogLevel.Info, message, category);
+        return new FluentLogOperation(this, LogLevel.Info, message);
     }
 
-    public void Warning(object? message, LogCategory category = LogCategory.None)
+    public ILogStart Warning(object? message)
     {
-        Log(LogLevel.Warning, message, category);
+        return new FluentLogOperation(this, LogLevel.Warning, message);
     }
 
-    public void Error(object? message, LogCategory category = LogCategory.None, Exception? exception = null)
+    public ILogStart Error(object? message, Exception? exception = null)
     {
-        Log(LogLevel.Error, message, category, exception);
+        return new FluentLogOperation(this, LogLevel.Error, message, exception);
     }
 
-    public void Fatal(object? message, LogCategory category = LogCategory.None, Exception? exception = null)
+    public ILogStart Fatal(object? message, Exception? exception = null)
     {
-        Log(LogLevel.Fatal, message, category, exception);
-
-        Flush();
+        return new FluentLogOperation(this, LogLevel.Fatal, message, exception, flushOnWrite: true);
     }
 
-    // ====================================================================
-    // Internal Logging
-    // ====================================================================
+    // ========================================================================
+    // Internal logging
+    // ========================================================================
 
-    internal void Log(LogLevel level, object? message, LogCategory category, Exception? exception = null)
+    internal void Log(LogLevel level, object? message, LogCategory category, Exception? exception = null, bool flush = false)
     {
         if (!ShouldLog(level, category))
             return;
@@ -328,6 +359,11 @@ public sealed class Logger : IDisposable
         _queue.Enqueue(LogWorkItem.Log(new LogEntry(level, category, message, exception)));
 
         _signal.Set();
+
+        if (flush)
+        {
+            Flush();
+        }
     }
 
     private bool ShouldLog(LogLevel level, LogCategory category)
@@ -346,113 +382,9 @@ public sealed class Logger : IDisposable
         return true;
     }
 
-    // ====================================================================
-    // Timers
-    // ====================================================================
-
-    public LogTimer Time(object? message, LogCategory category = LogCategory.None, LogLevel level = LogLevel.Debug)
-    {
-        if (!ShouldLog(level, category))
-            return LogTimer.Disabled;
-
-        return new LogTimer(this, message, category, level);
-    }
-
-    public sealed class LogTimer : IDisposable
-    {
-        private readonly Logger? _logger;
-        private readonly object? _message;
-        private readonly LogCategory _category;
-        private readonly LogLevel _level;
-
-        private long _startTimestamp;
-
-        private bool _enabled;
-        private bool _disposed;
-
-        private readonly string _rateLimitKey;
-
-        internal static LogTimer Disabled => new();
-
-        private LogTimer()
-        {
-            _logger = null;
-            _message = null;
-            _category = LogCategory.None;
-            _level = LogLevel.Debug;
-
-            _rateLimitKey = string.Empty;
-
-            _enabled = false;
-        }
-
-        internal LogTimer(Logger logger, object? message, LogCategory category, LogLevel level)
-        {
-            _logger = logger;
-            _message = message;
-            _category = category;
-            _level = level;
-
-            // Each Time() expression gets its own counter key.
-            //
-            // This uses the call site rather than message.ToString()
-            // so mutable objects cannot unexpectedly change the key.
-            _rateLimitKey = $"{GetCallerKey()}:{category}:{message?.GetType().FullName}";
-
-            _enabled = true;
-
-            _startTimestamp = Stopwatch.GetTimestamp();
-        }
-
-        public LogTimer Every(long everyNCalls)
-        {
-            if (everyNCalls <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(everyNCalls));
-            }
-
-            if (!_enabled)
-                return this;
-
-            if (!_logger!.ShouldLogEvery(everyNCalls, _rateLimitKey))
-            {
-                _enabled = false;
-                return this;
-            }
-
-            // Restart the timer at the point where we know this
-            // particular call should actually be measured.
-            _startTimestamp = Stopwatch.GetTimestamp();
-
-            return this;
-        }
-
-        public void Dispose()
-        {
-            if (_disposed)
-                return;
-
-            _disposed = true;
-
-            if (!_enabled)
-                return;
-
-            long elapsedTicks = Stopwatch.GetTimestamp() - _startTimestamp;
-
-            double milliseconds = elapsedTicks * 1000.0 / Stopwatch.Frequency;
-
-            _logger!.Log(_level, $"{_message?.ToString() ?? string.Empty} " + $"took {milliseconds:F3} ms", _category);
-        }
-
-        private static string GetCallerKey([CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
-        {
-            return $"{file}:{line}";
-        }
-    }
-
-    // ====================================================================
-    // Rate Limiting
-    // ====================================================================
+    // ========================================================================
+    // Rate limiting
+    // ========================================================================
 
     private bool ShouldLogEvery(long everyNCalls, string key)
     {
@@ -468,16 +400,8 @@ public sealed class Logger : IDisposable
         }
     }
 
-    public void LogEvery(TimeSpan interval, string key, LogLevel level, object? message, LogCategory category = LogCategory.None, Exception? exception = null)
+    private bool ShouldLogEvery(TimeSpan interval, string key)
     {
-        if (!ShouldLog(level, category))
-            return;
-
-        if (interval < TimeSpan.Zero)
-        {
-            throw new ArgumentOutOfRangeException(nameof(interval));
-        }
-
         DateTime now = DateTime.UtcNow;
 
         lock (_rateLimitLock)
@@ -485,55 +409,18 @@ public sealed class Logger : IDisposable
             if (_rateLimitTimes.TryGetValue(key, out DateTime last))
             {
                 if (now - last < interval)
-                    return;
+                    return false;
             }
 
             _rateLimitTimes[key] = now;
-        }
 
-        Log(level, message, category, exception);
-    }
-
-    public void LogEvery(long everyNCalls, string key, LogLevel level, object? message, LogCategory category = LogCategory.None, Exception? exception = null)
-    {
-        if (!ShouldLog(level, category))
-            return;
-
-        if (everyNCalls <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(everyNCalls));
-        }
-
-        if (!ShouldLogEvery(everyNCalls, key))
-            return;
-
-        Log(level, message, category, exception);
-    }
-
-    // ====================================================================
-    // Assertions
-    // ====================================================================
-
-#if DEBUG
-
-    public void Assert(Func<bool> condition, object? message, LogCategory category = LogCategory.None)
-    {
-        ArgumentNullException.ThrowIfNull(condition);
-
-        if (condition())
-        {
-            Error(message, category);
+            return true;
         }
     }
-#else
 
-    [Conditional("DEBUG")]
-    public void Assert(Func<bool> condition, object? message, LogCategory category = LogCategory.None) { }
-#endif
-
-    // ====================================================================
-    // Flush
-    // ====================================================================
+    // ========================================================================
+    // Flush / shutdown
+    // ========================================================================
 
     public void Flush()
     {
@@ -548,10 +435,6 @@ public sealed class Logger : IDisposable
 
         completed.Wait();
     }
-
-    // ====================================================================
-    // Shutdown
-    // ====================================================================
 
     public void Shutdown()
     {
@@ -595,9 +478,236 @@ public sealed class Logger : IDisposable
         Shutdown();
     }
 
-    // ====================================================================
-    // Writer Thread
-    // ====================================================================
+    // ========================================================================
+    // Fluent operation
+    // ========================================================================
+
+    private sealed class FluentLogOperation : ILogStart, ILogAfterCategory, ILogAfterAssert, ILogAfterEvery
+    {
+        private readonly Logger _logger;
+
+        private readonly LogLevel _level;
+        private readonly object? _message;
+        private readonly Exception? _exception;
+        private readonly bool _flushOnWrite;
+
+        private LogCategory _category;
+
+        private bool _enabled;
+
+        internal FluentLogOperation(Logger logger, LogLevel level, object? message, Exception? exception = null, bool flushOnWrite = false)
+        {
+            _logger = logger;
+            _level = level;
+            _message = message;
+            _exception = exception;
+            _flushOnWrite = flushOnWrite;
+
+            _category = LogCategory.None;
+
+            // This is intentionally only the inexpensive initial filtering.
+            //
+            // No assertion is evaluated.
+            // No rate-limit bookkeeping occurs.
+            // No stopwatch is started.
+            // No LogEntry is allocated.
+            _enabled = logger.ShouldLog(level, LogCategory.None);
+        }
+
+        // ====================================================================
+        // Category
+        // ====================================================================
+
+        public ILogAfterCategory Category(LogCategory category)
+        {
+            if (!_enabled)
+                return this;
+
+            _category = category;
+
+            if (!_logger.ShouldLog(_level, _category))
+            {
+                _enabled = false;
+            }
+
+            return this;
+        }
+
+        // ====================================================================
+        // Assert
+        // ====================================================================
+
+        public ILogAfterAssert Assert(Func<bool> condition)
+        {
+            ArgumentNullException.ThrowIfNull(condition);
+
+#if DEBUG
+            if (!_enabled)
+                return this;
+
+            if (!condition())
+            {
+                _enabled = false;
+            }
+#else
+            // Deliberately do not invoke condition in RELEASE.
+            //
+            // The fluent call remains syntactically valid, but the predicate
+            // is never evaluated.
+#endif
+
+            return this;
+        }
+
+        // ====================================================================
+        // Every - count
+        // ====================================================================
+
+        public ILogAfterEvery Every(string key, long everyNCalls)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+
+            if (everyNCalls <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(everyNCalls));
+            }
+
+            if (!_enabled)
+                return this;
+
+            if (!_logger.ShouldLogEvery(everyNCalls, key))
+            {
+                _enabled = false;
+            }
+
+            return this;
+        }
+
+        // ====================================================================
+        // Every - interval
+        // ====================================================================
+
+        public ILogAfterEvery Every(string key, TimeSpan interval)
+        {
+            ArgumentNullException.ThrowIfNull(key);
+
+            if (interval < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(interval));
+            }
+
+            if (!_enabled)
+                return this;
+
+            if (!_logger.ShouldLogEvery(interval, key))
+            {
+                _enabled = false;
+            }
+
+            return this;
+        }
+
+        // ====================================================================
+        // Write
+        // ====================================================================
+
+        public void Write()
+        {
+            if (!_enabled)
+                return;
+
+            _logger.Log(_level, _message, _category, _exception, _flushOnWrite);
+        }
+
+        // ====================================================================
+        // Time
+        // ====================================================================
+
+        public LogScope Time()
+        {
+            if (!_enabled)
+            {
+                return LogScope.Disabled;
+            }
+
+            // All filtering has already succeeded.
+            //
+            // Only now is the stopwatch started.
+            return new LogScope(_logger, _level, _message, _category, _exception, _flushOnWrite);
+        }
+    }
+
+    // ========================================================================
+    // Timing scope
+    // ========================================================================
+
+    public sealed class LogScope : IDisposable
+    {
+        private readonly Logger? _logger;
+
+        private readonly LogLevel _level;
+        private readonly object? _message;
+        private readonly LogCategory _category;
+        private readonly Exception? _exception;
+        private readonly bool _flushOnWrite;
+
+        private readonly long _startTimestamp;
+
+        private bool _disposed;
+
+        internal static LogScope Disabled => new();
+
+        private LogScope()
+        {
+            _logger = null;
+            _level = LogLevel.Debug;
+            _message = null;
+            _category = LogCategory.None;
+            _exception = null;
+            _flushOnWrite = false;
+
+            _startTimestamp = 0;
+        }
+
+        internal LogScope(Logger logger, LogLevel level, object? message, LogCategory category, Exception? exception, bool flushOnWrite)
+        {
+            _logger = logger;
+
+            _level = level;
+            _message = message;
+            _category = category;
+            _exception = exception;
+            _flushOnWrite = flushOnWrite;
+
+            // IMPORTANT:
+            //
+            // This is the first stopwatch operation in the entire fluent pipeline. Category, Assert and Every have already succeeded.
+            _startTimestamp = Stopwatch.GetTimestamp();
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
+            if (_logger == null)
+                return;
+
+            long elapsedTicks = Stopwatch.GetTimestamp() - _startTimestamp;
+
+            double milliseconds = elapsedTicks * 1000.0 / Stopwatch.Frequency;
+
+            string message = $"{_message?.ToString() ?? string.Empty} " + $"took {milliseconds:F3} ms";
+
+            _logger.Log(_level, message, _category, _exception, _flushOnWrite);
+        }
+    }
+
+    // ========================================================================
+    // Async writer
+    // ========================================================================
 
     private void WriterLoop()
     {
@@ -688,9 +798,9 @@ public sealed class Logger : IDisposable
         }
     }
 
-    // ====================================================================
-    // Queue Work Item
-    // ====================================================================
+    // ========================================================================
+    // Work items
+    // ========================================================================
 
     private enum LogWorkItemType
     {
