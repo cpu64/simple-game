@@ -18,7 +18,7 @@ public static class PhysicsSystem
         float velY = Math.Min(MaxFallSpeed, body.Velocity.Y + (body.GravityScale * GravityConstant * dt));
 
         float inputWeight = Math.Clamp(1.0f - (Math.Abs(velX) / 6.0f), 0.0f, 1.0f);
-        Vector2 effectiveIntent = intentionalMovement * inputWeight;
+        Vector2 effectiveIntent = new Vector2(intentionalMovement.X * inputWeight, intentionalMovement.Y);
 
         Vector2 totalMovement = effectiveIntent + new Vector2(velX, velY) * dt;
 
@@ -37,7 +37,10 @@ public static class PhysicsSystem
         if (result.HitFloor && velY > 0)
         {
             velY = 0f;
-            velX *= 0.5f;
+            if (!isGrounded)
+            {
+                velX *= 0.5f;
+            }
         }
         else if (result.HitCeiling && velY < 0)
         {

@@ -10,6 +10,7 @@ public abstract class Enemy : Entity, IDamageable, ICollidable, IMoving, IKinema
     public MovementResult LastMovement { get; set; }
     public bool IsDead => Health <= 0;
     public override bool CanBePruned => IsDead;
+    public virtual float FacingDirection { get; set; } = 1.0f;
 
     public virtual int ContactDamage => 10;
     public virtual float ContactKnockback => 6.0f;

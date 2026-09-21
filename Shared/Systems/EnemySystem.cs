@@ -14,7 +14,7 @@ public static class EnemySystem
             bool isGrounded = enemy.LastMovement.HitFloor || PhysicsSystem.IsGrounded(enemy.Position, enemy.Size, world.Blocks);
             TargetInfo? nearestTarget = FindNearestTarget(enemy, world);
 
-            float facing = nearestTarget.HasValue ? (nearestTarget.Value.Offset.X >= 0 ? 1.0f : -1.0f) : 1.0f;
+            float facing = nearestTarget.HasValue ? (nearestTarget.Value.Offset.X >= 0 ? 1.0f : -1.0f) : enemy.FacingDirection;
             bool obstacleAhead = PhysicsSystem.CollidesWithBlock(enemy.Position.X + facing * 0.8f, enemy.Position.Y, enemy.Size.X, enemy.Size.Y, world.Blocks);
 
             AISenses senses = new AISenses(isGrounded, enemy.LastMovement.HitHorizontal, enemy.LastMovement.HitCeiling, obstacleAhead, nearestTarget);

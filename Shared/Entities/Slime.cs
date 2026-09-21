@@ -14,7 +14,6 @@ public class Slime : Enemy, IBinarySerializable
     public override Vector2 Size => new Vector2(1.0f, 0.8f);
 
     public float JumpTimer { get; set; }
-    public float FacingDirection { get; set; }
 
     public Slime(
         EntityId id,
