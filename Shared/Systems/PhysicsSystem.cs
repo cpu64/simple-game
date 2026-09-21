@@ -125,7 +125,9 @@ public static class PhysicsSystem
 
             foreach (Block block in blocks)
             {
-                if (!OverlapsVertically(position.Y, position.Y + height, block.Position.Y, block.Position.Y + 1.0f))
+                float blockTop = block.Position.Y;
+                float blockBottom = block.Position.Y + 1.0f;
+                if (position.Y + height <= blockTop || position.Y >= blockBottom)
                     continue;
 
                 float blockLeft = block.Position.X;
@@ -141,7 +143,9 @@ public static class PhysicsSystem
         {
             foreach (Block block in blocks)
             {
-                if (!OverlapsVertically(position.Y, position.Y + height, block.Position.Y, block.Position.Y + 1.0f))
+                float blockTop = block.Position.Y;
+                float blockBottom = block.Position.Y + 1.0f;
+                if (position.Y + height <= blockTop || position.Y >= blockBottom)
                     continue;
 
                 float blockRight = block.Position.X + 1.0f;
@@ -181,7 +185,9 @@ public static class PhysicsSystem
         {
             foreach (Block block in blocks)
             {
-                if (!OverlapsHorizontally(position.X, position.X + width, block.Position.X, block.Position.X + 1.0f))
+                float blockLeft = block.Position.X;
+                float blockRight = block.Position.X + 1.0f;
+                if (position.X + width <= blockLeft || position.X >= blockRight)
                     continue;
 
                 float blockTop = block.Position.Y;
@@ -197,7 +203,9 @@ public static class PhysicsSystem
         {
             foreach (Block block in blocks)
             {
-                if (!OverlapsHorizontally(position.X, position.X + width, block.Position.X, block.Position.X + 1.0f))
+                float blockLeft = block.Position.X;
+                float blockRight = block.Position.X + 1.0f;
+                if (position.X + width <= blockLeft || position.X >= blockRight)
                     continue;
 
                 float blockBottom = block.Position.Y + 1.0f;
