@@ -25,17 +25,35 @@ public class CommandQueue
     {
         lock (queueLock)
         {
-            List<InputCommand> result = new List<InputCommand>(playerQueues.Count);
+            List<InputCommand> result = new List<InputCommand>(playerQueues.Count * 2);
 
             foreach (var kvp in playerQueues)
             {
-                if (kvp.Value.Count > 0)
+                Queue<InputCommand> queue = kvp.Value;
+                if (queue.Count == 0)
+                    continue;
+
+                while (queue.Count > 10)
                 {
-                    result.Add(kvp.Value.Dequeue());
+                    queue.Dequeue();
+                }
+
+                int countToTake = queue.Count > 1 ? 2 : 1;
+                for (int i = 0; i < countToTake && queue.Count > 0; i++)
+                {
+                    result.Add(queue.Dequeue());
                 }
             }
 
             return result;
+        }
+    }
+
+    public void RemovePlayer(Guid playerId)
+    {
+        lock (queueLock)
+        {
+            playerQueues.Remove(playerId);
         }
     }
 

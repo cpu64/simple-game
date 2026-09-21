@@ -17,11 +17,12 @@ public static class CombatSystem
             if (world.Entities[i] is not Bullet bullet || bullet.IsDead)
                 continue;
 
-            bullet.TicksLeft--;
             if (bullet.TicksLeft <= 0)
                 continue;
 
-            float velY = bullet.Velocity.Y + (bullet.GravityScale * PhysicsSystem.GravityConstant * dt);
+            bullet.TicksLeft--;
+
+            float velY = Math.Min(PhysicsSystem.MaxFallSpeed, bullet.Velocity.Y + (bullet.GravityScale * PhysicsSystem.GravityConstant * dt));
             bullet.Velocity = new Vector2(bullet.Velocity.X, velY);
 
             Vector2 candidatePos = bullet.Position + bullet.Velocity * dt;
@@ -55,7 +56,7 @@ public static class CombatSystem
                     }
                 }
 
-                if (entityDistSq > minBlockDistSq + 0.05f)
+                if (entityDistSq >= minBlockDistSq)
                 {
                     hitEntity = null;
                 }

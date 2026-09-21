@@ -124,7 +124,7 @@ public static class PhysicsSystem
 
                 float blockLeft = block.Position.X;
 
-                if (right > blockLeft && position.X + width <= blockLeft + Epsilon)
+                if (right > blockLeft && position.X < blockLeft)
                 {
                     correctedX = Math.Min(correctedX, blockLeft - width);
                     hit = true;
@@ -140,7 +140,7 @@ public static class PhysicsSystem
 
                 float blockRight = block.Position.X + 1.0f;
 
-                if (newX < blockRight && position.X >= blockRight - Epsilon)
+                if (newX < blockRight && position.X + width > blockRight)
                 {
                     correctedX = Math.Max(correctedX, blockRight);
                     hit = true;
@@ -180,7 +180,7 @@ public static class PhysicsSystem
 
                 float blockTop = block.Position.Y;
 
-                if (newY + height > blockTop && position.Y + height <= blockTop + Epsilon)
+                if (newY + height > blockTop && position.Y < blockTop)
                 {
                     correctedY = Math.Min(correctedY, blockTop - height);
                     hitFloor = true;
@@ -196,7 +196,7 @@ public static class PhysicsSystem
 
                 float blockBottom = block.Position.Y + 1.0f;
 
-                if (newY < blockBottom && position.Y >= blockBottom - Epsilon)
+                if (newY < blockBottom && position.Y + height > blockBottom)
                 {
                     correctedY = Math.Max(correctedY, blockBottom);
                     hitCeiling = true;
@@ -207,7 +207,7 @@ public static class PhysicsSystem
         return (new Vector2(position.X, correctedY), hitFloor, hitCeiling);
     }
 
-    private static bool OverlapsHorizontally(float left1, float right1, float left2, float right2) => right1 > left2 && left1 < right2;
+    private static bool OverlapsHorizontally(float left1, float right1, float left2, float right2) => right1 > left2 + Epsilon && left1 < right2 - Epsilon;
 
-    private static bool OverlapsVertically(float top1, float bottom1, float top2, float bottom2) => bottom1 > top2 && top1 < bottom2;
+    private static bool OverlapsVertically(float top1, float bottom1, float top2, float bottom2) => bottom1 > top2 + Epsilon && top1 < bottom2 - Epsilon;
 }

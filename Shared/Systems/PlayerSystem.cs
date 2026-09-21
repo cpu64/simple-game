@@ -33,7 +33,7 @@ public static class PlayerSystem
 
         for (int i = 0; i < world.Entities.Count; i++)
         {
-            if (world.Entities[i] is not Player player || player.IsDead)
+            if (world.Entities[i] is not Player player)
                 continue;
 
             int nextIndex = -1;
@@ -53,6 +53,12 @@ public static class PlayerSystem
             {
                 InputCommand command = commands[nextIndex];
                 player.LastCommand = command.Sequence;
+
+                if (player.IsDead)
+                {
+                    PhysicsSystem.StepBody(player, world.Blocks, dt, Vector2.Zero);
+                    continue;
+                }
 
                 bool isGrounded = player.Velocity.Y >= 0 && PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
 
