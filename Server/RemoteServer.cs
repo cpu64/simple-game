@@ -30,6 +30,7 @@ public class RemoteServer
     {
         commandQueue = new CommandQueue();
         world = new World(worldPath);
+        EnemySystem.SpawnSlime(world, new Vector2(25, 18));
     }
 
     public void Start(int port)

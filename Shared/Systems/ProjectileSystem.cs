@@ -35,8 +35,10 @@ public static class ProjectileSystem
             switch (impact.Kind)
             {
                 case ImpactKind.Block:
+                    world.Entities.RemoveAt(i);
+                    break;
                 case ImpactKind.Entity:
-                    // TODO: CombatSystem.ApplyImpact(world, bullet, impact)
+                    CombatSystem.ApplyImpact(world, bullet, impact);
                     world.Entities.RemoveAt(i);
                     break;
                 case ImpactKind.None:
@@ -49,7 +51,23 @@ public static class ProjectileSystem
 
     private static EntityId? FindHitEntity(Bullet bullet, World world)
     {
-        // When enemies are added, check AABB overlap between bullet and each enemy here.
+        foreach (Entity entity in world.Entities)
+        {
+            if (entity.Id == bullet.FiredBy)
+                continue;
+
+            if (entity is not (IDamageable damageable and ICollidable collidable))
+                continue;
+
+            if (damageable.IsDead)
+                continue;
+
+            if (PhysicsSystem.Overlaps(bullet.Position, bullet.Size, entity.Position, collidable.Size))
+            {
+                return entity.Id;
+            }
+        }
+
         return null;
     }
 }

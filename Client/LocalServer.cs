@@ -41,6 +41,7 @@ public class LocalServer
         world = new World(worldPath);
 
         world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId));
+        EnemySystem.SpawnSlime(world, new Vector2(25, 18));
     }
 
     public LocalServer(SharedInputState input, Guid playerId, IPEndPoint endpoint)

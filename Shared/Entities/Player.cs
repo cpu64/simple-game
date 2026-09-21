@@ -1,8 +1,9 @@
 using System;
 using System.Numerics;
 
-public class Player : Entity, IFacing, IGravityAffected, IMoving, IBinarySerializable
+public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, IBinarySerializable
 {
+    public Vector2 Size => new Vector2(1.0f, 1.0f);
     public Guid UserId { get; private set; }
     public long LastCommand { get; set; }
     public float Rotation { get; set; }

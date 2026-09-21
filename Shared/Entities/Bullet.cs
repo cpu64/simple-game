@@ -1,9 +1,11 @@
 using System.Numerics;
 
-public abstract class Bullet : Entity, ILifespan
+public abstract class Bullet : Entity, ILifespan, ICollidable
 {
     public EntityId FiredBy { get; }
     public abstract long TicksLeft { get; set; }
+    public abstract int Damage { get; }
+    public virtual Vector2 Size => new Vector2(0.25f, 0.25f);
 
     protected Bullet(EntityId id, Vector2 position, EntityId firedBy)
         : base(id, position)
@@ -20,6 +22,6 @@ public abstract class Bullet : Entity, ILifespan
 
     public override string ToString()
     {
-        return $"{base.ToString()}, FiredBy={FiredBy}";
+        return $"{base.ToString()}, FiredBy={FiredBy}, Damage={Damage}";
     }
 }

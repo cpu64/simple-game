@@ -28,6 +28,8 @@ public static class GameWindow
 
                 RenderBullets(renderInput.World);
 
+                RenderEnemies(renderInput.World);
+
                 RenderLocalPlayer(renderInput.World, playerId);
 
                 RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
@@ -44,9 +46,38 @@ public static class GameWindow
 
     private static void RenderBullets(World world)
     {
-        foreach (SimpleBullet bullet in world.Entities.OfType<SimpleBullet>())
+        foreach (Bullet bullet in world.Entities.OfType<Bullet>())
         {
-            Raylib.DrawRectangle((int)Math.Round(bullet.Position.X * 20.0), (int)Math.Round(bullet.Position.Y * 20.0), 5, 5, Color.Green);
+            Color color = bullet is HeavyBullet ? Color.DarkGreen : Color.Green;
+            int width = (int)Math.Max(3, Math.Round(bullet.Size.X * 20.0));
+            int height = (int)Math.Max(3, Math.Round(bullet.Size.Y * 20.0));
+            Raylib.DrawRectangle((int)Math.Round(bullet.Position.X * 20.0), (int)Math.Round(bullet.Position.Y * 20.0), width, height, color);
+        }
+    }
+
+    private static void RenderEnemies(World world)
+    {
+        foreach (Enemy enemy in world.Entities.OfType<Enemy>())
+        {
+            int screenX = (int)Math.Round(enemy.Position.X * 20.0);
+            int screenY = (int)Math.Round(enemy.Position.Y * 20.0);
+            int width = (int)Math.Round(enemy.Size.X * 20.0);
+            int height = (int)Math.Round(enemy.Size.Y * 20.0);
+
+            Color bodyColor = new Color(50, 150, 255, 230);
+            Raylib.DrawRectangle(screenX, screenY, width, height, bodyColor);
+            Raylib.DrawRectangleLines(screenX, screenY, width, height, Color.DarkBlue);
+
+            if (enemy.Health < enemy.MaxHealth && enemy.Health > 0)
+            {
+                int barWidth = width;
+                int barHeight = 4;
+                int barY = screenY - 6;
+
+                Raylib.DrawRectangle(screenX, barY, barWidth, barHeight, Color.Red);
+                int healthWidth = (int)Math.Round(barWidth * ((double)enemy.Health / enemy.MaxHealth));
+                Raylib.DrawRectangle(screenX, barY, healthWidth, barHeight, Color.Green);
+            }
         }
     }
 

@@ -6,6 +6,8 @@ public static class Simulation
     {
         PlayerSystem.ProcessCommands(world, commands);
 
+        EnemySystem.Update(world);
+
         ProjectileSystem.Update(world);
 
         world.Tick++;

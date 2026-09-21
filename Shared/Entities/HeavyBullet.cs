@@ -1,10 +1,13 @@
 using System.Numerics;
 
-public class HeavyBullet : Bullet, ICollidable, IGravityAffected, IMoving, IBinarySerializable
+public class HeavyBullet : Bullet, IGravityAffected, IMoving, IBinarySerializable
 {
     private const float BulletGravity = 10.0f;
     private const float BulletWidth = 0.2f;
     private const float BulletHeight = 0.2f;
+
+    public override int Damage => 25;
+    public override Vector2 Size => new Vector2(BulletWidth, BulletHeight);
 
     public Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }

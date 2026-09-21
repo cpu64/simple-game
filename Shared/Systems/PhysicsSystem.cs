@@ -22,21 +22,19 @@ public static class PhysicsSystem
         return true;
     }
 
+    public static bool Overlaps(Vector2 pos1, Vector2 size1, Vector2 pos2, Vector2 size2)
+    {
+        return pos1.X + size1.X > pos2.X && pos1.X < pos2.X + size2.X && pos1.Y + size1.Y > pos2.Y && pos1.Y < pos2.Y + size2.Y;
+    }
+
     public static bool CollidesWithBlock(float x, float y, float width, float height, List<Block> blocks)
     {
-        float playerLeft = x;
-        float playerRight = x + width;
-        float playerTop = y;
-        float playerBottom = y + height;
+        Vector2 position = new Vector2(x, y);
+        Vector2 size = new Vector2(width, height);
 
         foreach (Block block in blocks)
         {
-            float blockLeft = block.Position.X;
-            float blockRight = block.Position.X + 1.0f;
-            float blockTop = block.Position.Y;
-            float blockBottom = block.Position.Y + 1.0f;
-
-            if (playerRight > blockLeft && playerLeft < blockRight && playerBottom > blockTop && playerTop < blockBottom)
+            if (Overlaps(position, size, block.Position, Vector2.One))
             {
                 return true;
             }
