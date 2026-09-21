@@ -140,8 +140,9 @@ public static class CombatSystem
                 {
                     if (player.TakeDamage(enemy.ContactDamage))
                     {
-                        float dirX = player.Position.X >= enemy.Position.X ? 1.0f : -1.0f;
-                        player.Velocity = new Vector2(dirX * enemy.ContactKnockback, -4.5f);
+                        Vector2 diff = (player.Position + player.Size * 0.5f) - (enemy.Position + enemy.Size * 0.5f);
+                        Vector2 impactDir = diff.LengthSquared() > 0.0001f ? Vector2.Normalize(diff) : new Vector2(1, 0);
+                        player.Velocity += impactDir * enemy.ContactKnockback;
 
                         if (player.IsDead)
                         {

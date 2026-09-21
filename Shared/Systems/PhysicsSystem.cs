@@ -13,7 +13,13 @@ public static class PhysicsSystem
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
         bool isGrounded = body.CollidesWithBlocks && body.Velocity.Y >= 0 && IsGrounded(body.Position, body.Size, blocks);
-        float velX = isGrounded ? body.Velocity.X * body.Drag : body.Velocity.X;
+        float velX = body.Velocity.X;
+
+        if (body is Player || isGrounded)
+        {
+            velX *= body.Drag;
+        }
+
         float velY = Math.Min(MaxFallSpeed, body.Velocity.Y + (body.GravityScale * GravityConstant * dt));
 
         if (body.Drag < 1.0f && Math.Abs(velX) < 0.05f)
@@ -148,12 +154,6 @@ public static class PhysicsSystem
             }
         }
 
-        if (!hit)
-        {
-            correctedX = position.X;
-            hit = true;
-        }
-
         return (new Vector2(correctedX, position.Y), hit);
     }
 
@@ -208,15 +208,6 @@ public static class PhysicsSystem
                     hitCeiling = true;
                 }
             }
-        }
-
-        if (!hitFloor && !hitCeiling)
-        {
-            correctedY = position.Y;
-            if (amount > 0)
-                hitFloor = true;
-            else
-                hitCeiling = true;
         }
 
         return (new Vector2(position.X, correctedY), hitFloor, hitCeiling);
