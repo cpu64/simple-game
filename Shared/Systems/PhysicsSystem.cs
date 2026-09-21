@@ -11,7 +11,8 @@ public static class PhysicsSystem
 
     public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
     {
-        float velX = body.Velocity.X * body.Drag;
+        bool isGrounded = body.CollidesWithBlocks && body.Velocity.Y >= 0 && IsGrounded(body.Position, body.Size, blocks);
+        float velX = isGrounded ? body.Velocity.X * body.Drag : body.Velocity.X;
         float velY = body.Velocity.Y + (body.GravityScale * GravityConstant * dt);
 
         if (body.Drag < 1.0f && Math.Abs(velX) < 0.05f)

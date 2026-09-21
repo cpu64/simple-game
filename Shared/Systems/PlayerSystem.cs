@@ -54,7 +54,7 @@ public static class PlayerSystem
                 InputCommand command = commands[nextIndex];
                 player.LastCommand = command.Sequence;
 
-                bool isGrounded = PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
+                bool isGrounded = player.Velocity.Y >= 0 && PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
 
                 float moveX = 0f;
                 if ((command.Keys & KeyState.Left) != 0)
