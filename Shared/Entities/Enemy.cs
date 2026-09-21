@@ -17,9 +17,13 @@ public abstract class Enemy : Entity, IDamageable, ICollidable, IMoving, IGravit
 
     public abstract void Tick(World world, float deltaTime);
 
-    public virtual void TakeDamage(int amount)
+    public virtual bool TakeDamage(int amount)
     {
+        if (IsDead)
+            return false;
+
         Health = Math.Max(0, Health - amount);
+        return true;
     }
 
     public virtual void OnDeath(World world) { }

@@ -13,7 +13,19 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
     public int MaxHealth => 100;
     public bool IsDead => Health <= 0;
 
-    public Player(EntityId id, Vector2 position, Guid userId, long lastCommand = -1, float rotation = 0, Vector2 velocity = new Vector2(), int health = 100)
+    public float InvulnerabilityTimer { get; set; }
+    public bool IsInvulnerable => InvulnerabilityTimer > 0;
+
+    public Player(
+        EntityId id,
+        Vector2 position,
+        Guid userId,
+        long lastCommand = -1,
+        float rotation = 0,
+        Vector2 velocity = new Vector2(),
+        int health = 100,
+        float invulnerabilityTimer = 0.0f
+    )
         : base(id, position)
     {
         UserId = userId;
@@ -21,11 +33,17 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         Velocity = velocity;
         LastCommand = lastCommand;
         Health = health;
+        InvulnerabilityTimer = invulnerabilityTimer;
     }
 
-    public void TakeDamage(int amount)
+    public bool TakeDamage(int amount)
     {
+        if (IsInvulnerable || IsDead)
+            return false;
+
         Health = Math.Max(0, Health - amount);
+        InvulnerabilityTimer = 0.5f;
+        return true;
     }
 
     public void OnDeath(World world) { }
@@ -37,7 +55,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
 
     public override string ToString()
     {
-        return $"{base.ToString()}, UserId={UserId}, Health={Health}/{MaxHealth}, LastCommand={LastCommand}, Rotation={Rotation:F2}, Velocity={Velocity}";
+        return $"{base.ToString()}, UserId={UserId}, Health={Health}/{MaxHealth}, Invulnerable={IsInvulnerable}, LastCommand={LastCommand}, Rotation={Rotation:F2}, Velocity={Velocity}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
@@ -49,6 +67,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         writer.Write(Rotation);
         writer.Write(Velocity);
         writer.Write(Health);
+        writer.Write(InvulnerabilityTimer);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
@@ -60,7 +79,8 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         var rotation = reader.Read<float>();
         var velocity = reader.Read<Vector2>();
         var health = reader.Read<int>();
+        var invulnerabilityTimer = reader.Read<float>();
 
-        return new Player(id, position, userId, lastCommand, rotation, velocity, health);
+        return new Player(id, position, userId, lastCommand, rotation, velocity, health, invulnerabilityTimer);
     }
 }

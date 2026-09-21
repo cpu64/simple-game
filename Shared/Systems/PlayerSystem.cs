@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -22,7 +23,30 @@ public static class PlayerSystem
 
             player.LastCommand = command.Sequence;
 
-            player.Position = PhysicsSystem.Move(player.Position, Width, Height, ComputeMovement(command.Keys, dt), world.Blocks);
+            if (player.InvulnerabilityTimer > 0)
+            {
+                player.InvulnerabilityTimer = Math.Max(0, player.InvulnerabilityTimer - dt);
+            }
+
+            Vector2 inputMovement = ComputeMovement(command.Keys, dt);
+            Vector2 totalMovement = inputMovement + player.Velocity * dt;
+
+            MovementResult result = PhysicsSystem.MoveDetailed(player.Position, Width, Height, totalMovement, world.Blocks);
+            player.Position = result.Position;
+
+            float velX = player.Velocity.X * 0.88f;
+            if (Math.Abs(velX) < 0.05f)
+                velX = 0f;
+
+            float velY = player.Velocity.Y;
+            if (result.HitFloor && velY > 0)
+                velY = 0f;
+            else if (result.HitCeiling && velY < 0)
+                velY = 0f;
+            else if (velY != 0)
+                velY += Gravity * dt;
+
+            player.Velocity = new Vector2(velX, velY);
 
             if (!isReplay && (command.Keys & KeyState.MouseLeft) != 0)
                 ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);

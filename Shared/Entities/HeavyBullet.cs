@@ -9,7 +9,7 @@ public class HeavyBullet : Bullet, IGravityAffected, IMoving, IBinarySerializabl
     public override int Damage => 25;
     public override Vector2 Size => new Vector2(BulletWidth, BulletHeight);
 
-    public Vector2 Velocity { get; set; }
+    public override Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }
 
     public HeavyBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft)

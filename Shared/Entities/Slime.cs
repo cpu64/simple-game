@@ -7,6 +7,8 @@ public class Slime : Enemy, IBinarySerializable
     private const float Gravity = 10.0f;
     private const float JumpSpeedX = 3.5f;
     private const float JumpSpeedY = -7.0f;
+    private const float WeakJumpSpeedX = 2.2f;
+    private const float WeakJumpSpeedY = -3.8f;
     private const float DefaultJumpInterval = 1.2f;
 
     public override int Health { get; protected set; }
@@ -56,10 +58,27 @@ public class Slime : Enemy, IBinarySerializable
                 Player? nearestPlayer = FindNearestPlayer(world);
                 if (nearestPlayer != null)
                 {
-                    FacingDirection = nearestPlayer.Position.X >= Position.X ? 1.0f : -1.0f;
+                    float dx = nearestPlayer.Position.X - Position.X;
+                    float dy = nearestPlayer.Position.Y - Position.Y;
+                    FacingDirection = dx >= 0 ? 1.0f : -1.0f;
+
+                    float horizontalDistance = Math.Abs(dx);
+
+                    // Choose a weaker, lower jump when player is nearby to hit them instead of jumping over
+                    if (horizontalDistance < 3.5f && dy >= -1.0f)
+                    {
+                        Velocity = new Vector2(FacingDirection * WeakJumpSpeedX, WeakJumpSpeedY);
+                    }
+                    else
+                    {
+                        Velocity = new Vector2(FacingDirection * JumpSpeedX, JumpSpeedY);
+                    }
+                }
+                else
+                {
+                    Velocity = new Vector2(FacingDirection * 2.0f, -4.5f);
                 }
 
-                Velocity = new Vector2(FacingDirection * JumpSpeedX, JumpSpeedY);
                 JumpTimer = DefaultJumpInterval;
             }
         }

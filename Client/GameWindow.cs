@@ -102,7 +102,9 @@ public static class GameWindow
         int screenX = (int)Math.Round(player.Position.X * 20.0);
         int screenY = (int)Math.Round(player.Position.Y * 20.0);
 
-        Raylib.DrawRectangle(screenX, screenY, 20, 20, Color.Red);
+        Color playerColor = player.IsInvulnerable && ((int)(Raylib.GetTime() * 12) % 2 == 0) ? new Color(255, 120, 120, 150) : Color.Red;
+
+        Raylib.DrawRectangle(screenX, screenY, 20, 20, playerColor);
 
         if (player.Health < player.MaxHealth)
         {

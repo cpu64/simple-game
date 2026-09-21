@@ -3,7 +3,7 @@ using System.Numerics;
 public class SimpleBullet : Bullet, IMoving, IBinarySerializable
 {
     public override int Damage => 10;
-    public Vector2 Velocity { get; set; }
+    public override Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }
 
     public SimpleBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft)
