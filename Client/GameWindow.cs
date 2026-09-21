@@ -59,6 +59,9 @@ public static class GameWindow
     {
         foreach (Enemy enemy in world.Entities.OfType<Enemy>())
         {
+            if (enemy.IsDead)
+                continue;
+
             int screenX = (int)Math.Round(enemy.Position.X * 20.0);
             int screenY = (int)Math.Round(enemy.Position.Y * 20.0);
             int width = (int)Math.Round(enemy.Size.X * 20.0);
@@ -93,10 +96,24 @@ public static class GameWindow
     {
         Player? player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
 
-        if (player == null)
+        if (player == null || player.IsDead)
             return;
 
-        Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);
+        int screenX = (int)Math.Round(player.Position.X * 20.0);
+        int screenY = (int)Math.Round(player.Position.Y * 20.0);
+
+        Raylib.DrawRectangle(screenX, screenY, 20, 20, Color.Red);
+
+        if (player.Health < player.MaxHealth)
+        {
+            int barWidth = 20;
+            int barHeight = 4;
+            int barY = screenY - 6;
+
+            Raylib.DrawRectangle(screenX, barY, barWidth, barHeight, Color.Maroon);
+            int healthWidth = (int)Math.Round(barWidth * ((double)player.Health / player.MaxHealth));
+            Raylib.DrawRectangle(screenX, barY, healthWidth, barHeight, Color.Green);
+        }
     }
 
     private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick, Guid localPlayerId)

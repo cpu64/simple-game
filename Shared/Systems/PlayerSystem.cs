@@ -9,7 +9,7 @@ public static class PlayerSystem
     private const float Width = 1.0f;
     private const float Height = 1.0f;
 
-    public static void ProcessCommands(World world, List<InputCommand> commands)
+    public static void ProcessCommands(World world, List<InputCommand> commands, bool isReplay = false)
     {
         float dt = (float)GameConstants.SimulationTickDuration;
 
@@ -24,7 +24,7 @@ public static class PlayerSystem
 
             player.Position = PhysicsSystem.Move(player.Position, Width, Height, ComputeMovement(command.Keys, dt), world.Blocks);
 
-            if ((command.Keys & KeyState.MouseLeft) != 0)
+            if (!isReplay && (command.Keys & KeyState.MouseLeft) != 0)
                 ProjectileSystem.SpawnSimpleBullet(world, player, command.Pointer);
         }
     }

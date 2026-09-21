@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 
-public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, IBinarySerializable
+public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, IDamageable, IBinarySerializable
 {
     public Vector2 Size => new Vector2(1.0f, 1.0f);
     public Guid UserId { get; private set; }
@@ -9,14 +9,26 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
     public float Rotation { get; set; }
     public Vector2 Velocity { get; set; }
 
-    public Player(EntityId id, Vector2 position, Guid userId, long lastCommand = -1, float rotation = 0, Vector2 velocity = new Vector2())
+    public int Health { get; set; }
+    public int MaxHealth => 100;
+    public bool IsDead => Health <= 0;
+
+    public Player(EntityId id, Vector2 position, Guid userId, long lastCommand = -1, float rotation = 0, Vector2 velocity = new Vector2(), int health = 100)
         : base(id, position)
     {
         UserId = userId;
         Rotation = rotation;
         Velocity = velocity;
         LastCommand = lastCommand;
+        Health = health;
     }
+
+    public void TakeDamage(int amount)
+    {
+        Health = Math.Max(0, Health - amount);
+    }
+
+    public void OnDeath(World world) { }
 
     public override Player Copy()
     {
@@ -25,7 +37,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
 
     public override string ToString()
     {
-        return $"{base.ToString()}, UserId={UserId}, LastCommand={LastCommand}, Rotation={Rotation:F2}, Velocity={Velocity}";
+        return $"{base.ToString()}, UserId={UserId}, Health={Health}/{MaxHealth}, LastCommand={LastCommand}, Rotation={Rotation:F2}, Velocity={Velocity}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
@@ -36,6 +48,7 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         writer.Write(LastCommand);
         writer.Write(Rotation);
         writer.Write(Velocity);
+        writer.Write(Health);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
@@ -46,7 +59,8 @@ public class Player : Entity, IFacing, IGravityAffected, IMoving, ICollidable, I
         var lastCommand = reader.Read<long>();
         var rotation = reader.Read<float>();
         var velocity = reader.Read<Vector2>();
+        var health = reader.Read<int>();
 
-        return new Player(id, position, userId, lastCommand, rotation, velocity);
+        return new Player(id, position, userId, lastCommand, rotation, velocity, health);
     }
 }

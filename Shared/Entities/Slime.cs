@@ -38,14 +38,17 @@ public class Slime : Enemy, IBinarySerializable
 
         Velocity += new Vector2(0, Gravity * deltaTime);
 
-        Vector2 newPosition = PhysicsSystem.Move(Position, Size.X, Size.Y, Velocity * deltaTime, world.Blocks);
+        MovementResult result = PhysicsSystem.MoveDetailed(Position, Size.X, Size.Y, Velocity * deltaTime, world.Blocks);
+        Position = result.Position;
 
-        bool isGrounded = newPosition.Y == Position.Y && Velocity.Y > 0;
+        if (result.HitCeiling && Velocity.Y < 0)
+        {
+            Velocity = new Vector2(Velocity.X, 0);
+        }
 
-        if (isGrounded)
+        if (result.HitFloor)
         {
             Velocity = Vector2.Zero;
-            Position = newPosition;
 
             JumpTimer -= deltaTime;
             if (JumpTimer <= 0)
@@ -60,10 +63,8 @@ public class Slime : Enemy, IBinarySerializable
                 JumpTimer = DefaultJumpInterval;
             }
         }
-        else
-        {
-            Position = newPosition;
-        }
+
+        CombatSystem.CheckEnemyContactDamage(world, this, damage: 10);
     }
 
     private Player? FindNearestPlayer(World world)
@@ -73,6 +74,9 @@ public class Slime : Enemy, IBinarySerializable
 
         foreach (Player player in world.Entities.OfType<Player>())
         {
+            if (player.IsDead)
+                continue;
+
             float distSq = Vector2.DistanceSquared(Position, player.Position);
             if (distSq < minDistanceSq)
             {

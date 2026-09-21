@@ -14,9 +14,31 @@ public static class CombatSystem
         {
             damageable.TakeDamage(bullet.Damage);
 
-            if (damageable.IsDead && target is Enemy enemy)
+            if (damageable.IsDead)
             {
-                enemy.OnDeath(world);
+                damageable.OnDeath(world);
+            }
+        }
+    }
+
+    public static void CheckEnemyContactDamage(World world, Enemy enemy, int damage = 10)
+    {
+        if (enemy.IsDead)
+            return;
+
+        foreach (Player player in world.Entities.OfType<Player>())
+        {
+            if (player.IsDead)
+                continue;
+
+            if (PhysicsSystem.Overlaps(enemy.Position, enemy.Size, player.Position, player.Size))
+            {
+                player.TakeDamage(damage);
+
+                if (player.IsDead)
+                {
+                    player.OnDeath(world);
+                }
             }
         }
     }

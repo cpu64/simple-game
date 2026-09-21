@@ -15,7 +15,10 @@ public class SimpleBullet : Bullet, IMoving, IBinarySerializable
 
     public override ImpactResult Tick(World world, float deltaTime)
     {
-        Position += Velocity * deltaTime;
+        if (!PhysicsSystem.TryMove(Position, Size.X, Size.Y, Velocity * deltaTime, world.Blocks, out Vector2 newPosition))
+            return ImpactResult.Block();
+
+        Position = newPosition;
         TicksLeft--;
         return ImpactResult.None;
     }

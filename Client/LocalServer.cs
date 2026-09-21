@@ -192,7 +192,7 @@ public class LocalServer
 
     private void Reconcile(World authoritativeWorld)
     {
-        world = authoritativeWorld;
+        world = authoritativeWorld.Copy();
 
         long lastAcknowledgedSequence = GetLastAcknowledgedSequence(authoritativeWorld);
 
@@ -203,9 +203,10 @@ public class LocalServer
         }
 
         // Replay every command that the authoritative server has not processed yet.
-        foreach (InputCommand command in pendingCommands)
+        // Only re-simulate local player kinematics during rollback replay to prevent desyncing autonomous systems.
+        if (pendingCommands.Count > 0)
         {
-            ApplyCommand(command);
+            PlayerSystem.ProcessCommands(world, pendingCommands.ToList(), isReplay: true);
         }
     }
 
