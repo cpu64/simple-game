@@ -18,6 +18,10 @@ namespace Game.Logging
         Fatal = 5,
     }
 
+    // ========================================================================
+    // Log Entry
+    // ========================================================================
+
     public sealed class LogEntry
     {
         public DateTime Timestamp { get; }
@@ -54,11 +58,19 @@ namespace Game.Logging
         }
     }
 
+    // ========================================================================
+    // Log Sink
+    // ========================================================================
+
     public interface ILogSink : IDisposable
     {
         void Write(LogEntry entry);
         void Flush();
     }
+
+    // ========================================================================
+    // Console Sink
+    // ========================================================================
 
     public sealed class ConsoleSink : ILogSink
     {
@@ -74,8 +86,11 @@ namespace Game.Logging
 
         public void Flush()
         {
-            Console.Out.Flush();
-            Console.Error.Flush();
+            lock (_lock)
+            {
+                Console.Out.Flush();
+                Console.Error.Flush();
+            }
         }
 
         public void Dispose()
@@ -83,6 +98,10 @@ namespace Game.Logging
             Flush();
         }
     }
+
+    // ========================================================================
+    // Debug Sink
+    // ========================================================================
 
     public sealed class DebugSink : ILogSink
     {
@@ -95,6 +114,10 @@ namespace Game.Logging
 
         public void Dispose() { }
     }
+
+    // ========================================================================
+    // File Sink
+    // ========================================================================
 
     public sealed class FileSink : ILogSink
     {
@@ -132,11 +155,15 @@ namespace Game.Logging
         }
     }
 
+    // ========================================================================
+    // Logger
+    // ========================================================================
+
     public sealed class Logger : IDisposable
     {
-        public static Logger Instance { get; } = new Logger();
+        public static Logger Instance { get; } = new();
 
-        private readonly ConcurrentQueue<LogEntry> _queue = new();
+        private readonly ConcurrentQueue<LogWorkItem> _queue = new();
         private readonly AutoResetEvent _signal = new(false);
 
         private readonly object _sinkLock = new();
@@ -159,9 +186,9 @@ namespace Game.Logging
             _writerThread.Start();
         }
 
-        // ------------------------------------------------------------
+        // ====================================================================
         // Configuration
-        // ------------------------------------------------------------
+        // ====================================================================
 
         public LogLevel MinimumLevel
         {
@@ -175,6 +202,9 @@ namespace Game.Logging
 
             lock (_sinkLock)
             {
+                if (!_running)
+                    throw new ObjectDisposedException(nameof(Logger));
+
                 _sinks.Add(sink);
             }
         }
@@ -189,9 +219,9 @@ namespace Game.Logging
             }
         }
 
-        // ------------------------------------------------------------
-        // Standard logging
-        // ------------------------------------------------------------
+        // ====================================================================
+        // Standard Logging
+        // ====================================================================
 
         public void Trace(object? message, string? category = null)
         {
@@ -222,25 +252,25 @@ namespace Game.Logging
         {
             Log(LogLevel.Fatal, message, category, exception);
 
-            // Fatal messages should be forced to disk/output.
             Flush();
         }
 
+        // ====================================================================
+        // Timers
+        // ====================================================================
+
+        /// <summary>
+        /// Creates a timer that logs the elapsed time when disposed.
+        ///
+        /// If the requested log level is disabled, this returns a shared
+        /// no-op disposable and does not start a timer.
+        /// </summary>
         public IDisposable Time(object? message, string? category = null, LogLevel level = LogLevel.Debug)
         {
             if (!_running || level < _minimumLevel)
                 return NoOpDisposable.Instance;
 
             return new LogTimer(this, message, category, level);
-        }
-
-        private sealed class NoOpDisposable : IDisposable
-        {
-            public static readonly NoOpDisposable Instance = new();
-
-            private NoOpDisposable() { }
-
-            public void Dispose() { }
         }
 
         private sealed class LogTimer : IDisposable
@@ -279,6 +309,19 @@ namespace Game.Logging
             }
         }
 
+        private sealed class NoOpDisposable : IDisposable
+        {
+            public static readonly NoOpDisposable Instance = new();
+
+            private NoOpDisposable() { }
+
+            public void Dispose() { }
+        }
+
+        // ====================================================================
+        // Internal Logging
+        // ====================================================================
+
         private void Log(LogLevel level, object? message, string? category, Exception? exception = null)
         {
             if (!_running)
@@ -287,23 +330,25 @@ namespace Game.Logging
             if (level < _minimumLevel)
                 return;
 
-            _queue.Enqueue(new LogEntry(level, message, category, exception));
+            _queue.Enqueue(LogWorkItem.Log(new LogEntry(level, message, category, exception)));
 
             _signal.Set();
         }
 
-        // ------------------------------------------------------------
-        // Rate limiting
-        // ------------------------------------------------------------
+        // ====================================================================
+        // Rate Limiting
+        // ====================================================================
 
         /// <summary>
-        /// Logs at most once during the specified time span.
-        /// The key identifies the rate-limited message.
+        /// Logs at most once during the specified interval.
         /// </summary>
         public void LogEvery(TimeSpan interval, string key, LogLevel level, object? message, string? category = null, Exception? exception = null)
         {
             if (!_running || level < _minimumLevel)
                 return;
+
+            if (interval < TimeSpan.Zero)
+                throw new ArgumentOutOfRangeException(nameof(interval));
 
             DateTime now = DateTime.UtcNow;
 
@@ -347,9 +392,9 @@ namespace Game.Logging
             Log(level, message, category, exception);
         }
 
-        // ------------------------------------------------------------
+        // ====================================================================
         // Assertions
-        // ------------------------------------------------------------
+        // ====================================================================
 
 #if DEBUG
 
@@ -357,7 +402,7 @@ namespace Game.Logging
         /// Evaluates the condition only in DEBUG builds.
         ///
         /// If condition() returns true, the message is logged.
-        /// If it returns false, nothing happens.
+        /// If condition() returns false, nothing happens.
         /// </summary>
         public void Assert(Func<bool> condition, object? message, string? category = null)
         {
@@ -370,42 +415,39 @@ namespace Game.Logging
         }
 #else
 
-        // The conditional attribute means calls to Assert() are removed
-        // by the compiler at the call site in RELEASE builds.
+        /// <summary>
+        /// This method call is removed completely from RELEASE builds.
+        /// Therefore condition() is never evaluated.
+        /// </summary>
         [Conditional("DEBUG")]
         public void Assert(Func<bool> condition, object? message, string? category = null) { }
 #endif
 
-        // ------------------------------------------------------------
-        // Flush / shutdown
-        // ------------------------------------------------------------
+        // ====================================================================
+        // Flush
+        // ====================================================================
 
+        /// <summary>
+        /// Waits until every log entry that was queued before this call
+        /// has been written to all sinks.
+        /// </summary>
         public void Flush()
         {
-            // Wake writer and wait until all currently queued entries
-            // have been processed.
+            if (!_running)
+                return;
+
+            using ManualResetEventSlim completed = new(false);
+
+            _queue.Enqueue(LogWorkItem.Flush(completed));
+
             _signal.Set();
 
-            while (!_queue.IsEmpty)
-            {
-                Thread.Yield();
-            }
-
-            lock (_sinkLock)
-            {
-                foreach (ILogSink sink in _sinks)
-                {
-                    try
-                    {
-                        sink.Flush();
-                    }
-                    catch
-                    {
-                        // Never allow a sink failure to crash the game.
-                    }
-                }
-            }
+            completed.Wait();
         }
+
+        // ====================================================================
+        // Shutdown
+        // ====================================================================
 
         public void Shutdown()
         {
@@ -414,6 +456,7 @@ namespace Game.Logging
 
             _running = false;
 
+            // Wake the writer so it can drain the remaining queue.
             _signal.Set();
 
             if (Thread.CurrentThread != _writerThread)
@@ -428,11 +471,19 @@ namespace Game.Logging
                     try
                     {
                         sink.Flush();
+                    }
+                    catch
+                    {
+                        // Logging must never crash the game.
+                    }
+
+                    try
+                    {
                         sink.Dispose();
                     }
                     catch
                     {
-                        // Logging must never throw during shutdown.
+                        // Logging must never crash the game.
                     }
                 }
 
@@ -447,58 +498,157 @@ namespace Game.Logging
             Shutdown();
         }
 
-        // ------------------------------------------------------------
-        // Writer thread
-        // ------------------------------------------------------------
+        // ====================================================================
+        // Writer Thread
+        // ====================================================================
 
         private void WriterLoop()
         {
             while (_running || !_queue.IsEmpty)
             {
-                if (!_queue.TryDequeue(out LogEntry? entry))
+                if (!_queue.TryDequeue(out LogWorkItem? work))
                 {
                     _signal.WaitOne(100);
                     continue;
                 }
 
-                WriteToSinks(entry);
-            }
-
-            // Make absolutely sure everything queued before shutdown
-            // has been written.
-            while (_queue.TryDequeue(out LogEntry? entry))
-            {
-                WriteToSinks(entry);
-            }
-
-            lock (_sinkLock)
-            {
-                foreach (ILogSink sink in _sinks)
+                try
                 {
-                    try
+                    switch (work.Type)
                     {
-                        sink.Flush();
+                        case LogWorkItemType.Log:
+                            if (work.Entry != null)
+                            {
+                                WriteToSinks(work.Entry);
+                            }
+
+                            break;
+
+                        case LogWorkItemType.Flush:
+                            FlushSinks();
+
+                            work.FlushEvent?.Set();
+
+                            break;
                     }
-                    catch { }
+                }
+                catch
+                {
+                    // The logger itself must never bring down the game.
+                    work.FlushEvent?.Set();
                 }
             }
+
+            // The loop condition should already have drained the queue,
+            // but drain once more as a final guarantee.
+            while (_queue.TryDequeue(out LogWorkItem? work))
+            {
+                try
+                {
+                    switch (work.Type)
+                    {
+                        case LogWorkItemType.Log:
+                            if (work.Entry != null)
+                            {
+                                WriteToSinks(work.Entry);
+                            }
+
+                            break;
+
+                        case LogWorkItemType.Flush:
+                            FlushSinks();
+
+                            work.FlushEvent?.Set();
+
+                            break;
+                    }
+                }
+                catch
+                {
+                    work.FlushEvent?.Set();
+                }
+            }
+
+            FlushSinks();
         }
 
         private void WriteToSinks(LogEntry entry)
         {
+            ILogSink[] sinks;
+
             lock (_sinkLock)
             {
-                foreach (ILogSink sink in _sinks)
+                sinks = _sinks.ToArray();
+            }
+
+            foreach (ILogSink sink in sinks)
+            {
+                try
                 {
-                    try
-                    {
-                        sink.Write(entry);
-                    }
-                    catch
-                    {
-                        // A broken logging sink must never crash the game.
-                    }
+                    sink.Write(entry);
                 }
+                catch
+                {
+                    // A broken sink must never crash the game.
+                }
+            }
+        }
+
+        private void FlushSinks()
+        {
+            ILogSink[] sinks;
+
+            lock (_sinkLock)
+            {
+                sinks = _sinks.ToArray();
+            }
+
+            foreach (ILogSink sink in sinks)
+            {
+                try
+                {
+                    sink.Flush();
+                }
+                catch
+                {
+                    // A broken sink must never crash the game.
+                }
+            }
+        }
+
+        // ====================================================================
+        // Queue Work Item
+        // ====================================================================
+
+        private enum LogWorkItemType
+        {
+            Log,
+            Flush,
+        }
+
+        private sealed class LogWorkItem
+        {
+            public LogWorkItemType Type { get; }
+
+            public LogEntry? Entry { get; }
+
+            public ManualResetEventSlim? FlushEvent { get; }
+
+            private LogWorkItem(LogWorkItemType type, LogEntry? entry, ManualResetEventSlim? flushEvent)
+            {
+                Type = type;
+                Entry = entry;
+                FlushEvent = flushEvent;
+            }
+
+            public static LogWorkItem Log(LogEntry entry)
+            {
+                return new LogWorkItem(LogWorkItemType.Log, entry, null);
+            }
+
+            public static LogWorkItem Flush(ManualResetEventSlim flushEvent)
+            {
+                return new LogWorkItem(LogWorkItemType.Flush, null, flushEvent);
             }
         }
     }
