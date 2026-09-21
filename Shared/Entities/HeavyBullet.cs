@@ -13,8 +13,8 @@ public class HeavyBullet : Bullet, IBinarySerializable
     public override Vector2 Velocity { get; set; }
     public override long TicksLeft { get; set; }
 
-    public HeavyBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft)
-        : base(id, position, firedBy)
+    public HeavyBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft, bool firedByPlayer = true)
+        : base(id, position, firedBy, firedByPlayer)
     {
         Velocity = velocity;
         TicksLeft = ticksLeft;
@@ -35,12 +35,20 @@ public class HeavyBullet : Bullet, IBinarySerializable
         writer.Write(Id);
         writer.Write(Position);
         writer.Write(FiredBy);
+        writer.Write(FiredByPlayer);
         writer.Write(Velocity);
         writer.Write(TicksLeft);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
     {
-        return new HeavyBullet(reader.Read<EntityId>(), reader.Read<Vector2>(), reader.Read<EntityId>(), reader.Read<Vector2>(), reader.Read<long>());
+        EntityId id = reader.Read<EntityId>();
+        Vector2 position = reader.Read<Vector2>();
+        EntityId firedBy = reader.Read<EntityId>();
+        bool firedByPlayer = reader.Read<bool>();
+        Vector2 velocity = reader.Read<Vector2>();
+        long ticksLeft = reader.Read<long>();
+
+        return new HeavyBullet(id, position, firedBy, velocity, ticksLeft, firedByPlayer);
     }
 }

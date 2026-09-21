@@ -103,7 +103,7 @@ public static class GameWindow
 
     private static void RenderLocalPlayer(World world, Guid playerId)
     {
-        Player? player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
+        Player player = world.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
 
         if (player == null || player.IsDead)
             return;
@@ -205,7 +205,7 @@ public static class GameWindow
             if (beforePlayer.UserId == localPlayerId || beforePlayer.IsDead)
                 continue;
 
-            Player? afterPlayer = after.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == beforePlayer.UserId);
+            Player afterPlayer = after.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == beforePlayer.UserId);
 
             if (afterPlayer == null || afterPlayer.IsDead)
                 continue;

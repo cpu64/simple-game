@@ -175,7 +175,7 @@ public class RemoteServer
 
         lock (worldLock)
         {
-            Player? player = world.Get<Player>().FirstOrDefault(p => p.UserId == playerId);
+            Player player = world.Get<Player>().FirstOrDefault(p => p.UserId == playerId);
 
             if (player == null)
             {

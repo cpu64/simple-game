@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 
 public static class CombatSystem
@@ -33,10 +34,29 @@ public static class CombatSystem
             if (hitEntity != null && hitBlock)
             {
                 Entity targetEntity = (Entity)hitEntity;
-                float entityDistSq = Vector2.DistanceSquared(bullet.Position, targetEntity.Position);
-                float blockDistSq = Vector2.DistanceSquared(bullet.Position, candidatePos);
+                ICollidable collidable = (ICollidable)hitEntity;
 
-                if (entityDistSq > blockDistSq)
+                float closestEntityX = Math.Clamp(bullet.Position.X, targetEntity.Position.X, targetEntity.Position.X + collidable.Size.X);
+                float closestEntityY = Math.Clamp(bullet.Position.Y, targetEntity.Position.Y, targetEntity.Position.Y + collidable.Size.Y);
+                float entityDistSq = Vector2.DistanceSquared(bullet.Position, new Vector2(closestEntityX, closestEntityY));
+
+                float minBlockDistSq = float.MaxValue;
+                for (int b = 0; b < world.Blocks.Count; b++)
+                {
+                    Block block = world.Blocks[b];
+                    if (PhysicsSystem.Overlaps(candidatePos, bullet.Size, block.Position, Vector2.One))
+                    {
+                        float closestBlockX = Math.Clamp(bullet.Position.X, block.Position.X, block.Position.X + 1.0f);
+                        float closestBlockY = Math.Clamp(bullet.Position.Y, block.Position.Y, block.Position.Y + 1.0f);
+                        float distSq = Vector2.DistanceSquared(bullet.Position, new Vector2(closestBlockX, closestBlockY));
+                        if (distSq < minBlockDistSq)
+                        {
+                            minBlockDistSq = distSq;
+                        }
+                    }
+                }
+
+                if (entityDistSq > minBlockDistSq + 0.05f)
                 {
                     hitEntity = null;
                 }
@@ -73,15 +93,7 @@ public static class CombatSystem
 
     private static IDamageable? FindHitEntity(Bullet bullet, Vector2 candidatePos, World world)
     {
-        bool firedByPlayer = false;
-        for (int i = 0; i < world.Entities.Count; i++)
-        {
-            if (world.Entities[i].Id == bullet.FiredBy)
-            {
-                firedByPlayer = world.Entities[i] is Player;
-                break;
-            }
-        }
+        bool firedByPlayer = bullet.FiredByPlayer;
 
         for (int i = 0; i < world.Entities.Count; i++)
         {

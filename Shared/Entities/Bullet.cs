@@ -3,6 +3,7 @@ using System.Numerics;
 public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving, IKinematicBody
 {
     public EntityId FiredBy { get; }
+    public bool FiredByPlayer { get; }
     public abstract long TicksLeft { get; set; }
     public abstract int Damage { get; }
     public abstract Vector2 Velocity { get; set; }
@@ -14,10 +15,11 @@ public abstract class Bullet : Entity, ILifespan, ICollidable, IMoving, IKinemat
     public bool IsDead => TicksLeft <= 0;
     public override bool CanBePruned => IsDead;
 
-    protected Bullet(EntityId id, Vector2 position, EntityId firedBy)
+    protected Bullet(EntityId id, Vector2 position, EntityId firedBy, bool firedByPlayer = true)
         : base(id, position)
     {
         FiredBy = firedBy;
+        FiredByPlayer = firedByPlayer;
     }
 
     public override Bullet Copy()

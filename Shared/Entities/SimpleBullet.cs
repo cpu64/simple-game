@@ -7,8 +7,8 @@ public class SimpleBullet : Bullet, IBinarySerializable
     public override long TicksLeft { get; set; }
     public override float GravityScale => 0.0f;
 
-    public SimpleBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft)
-        : base(id, position, firedBy)
+    public SimpleBullet(EntityId id, Vector2 position, EntityId firedBy, Vector2 velocity, long ticksLeft, bool firedByPlayer = true)
+        : base(id, position, firedBy, firedByPlayer)
     {
         Velocity = velocity;
         TicksLeft = ticksLeft;
@@ -29,12 +29,20 @@ public class SimpleBullet : Bullet, IBinarySerializable
         writer.Write(Id);
         writer.Write(Position);
         writer.Write(FiredBy);
+        writer.Write(FiredByPlayer);
         writer.Write(Velocity);
         writer.Write(TicksLeft);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
     {
-        return new SimpleBullet(reader.Read<EntityId>(), reader.Read<Vector2>(), reader.Read<EntityId>(), reader.Read<Vector2>(), reader.Read<long>());
+        EntityId id = reader.Read<EntityId>();
+        Vector2 position = reader.Read<Vector2>();
+        EntityId firedBy = reader.Read<EntityId>();
+        bool firedByPlayer = reader.Read<bool>();
+        Vector2 velocity = reader.Read<Vector2>();
+        long ticksLeft = reader.Read<long>();
+
+        return new SimpleBullet(id, position, firedBy, velocity, ticksLeft, firedByPlayer);
     }
 }

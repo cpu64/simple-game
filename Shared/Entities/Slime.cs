@@ -36,7 +36,8 @@ public class Slime : Enemy, IBinarySerializable
         if (IsDead)
             return;
 
-        if (senses.HitHorizontal)
+        // Only flip facing if actually moving towards the wall that was hit
+        if (senses.HitHorizontal && Velocity.X * FacingDirection >= 0)
         {
             FacingDirection = -FacingDirection;
         }
@@ -55,8 +56,8 @@ public class Slime : Enemy, IBinarySerializable
 
             float horizontalDistance = Math.Abs(target.Offset.X);
 
-            // Use weak jump only on open flat ground nearby; if an obstacle was hit or target is elevated, full jump
-            if (!senses.HitHorizontal && horizontalDistance < 3.5f && target.Offset.Y >= -0.5f)
+            // Use weak jump only on open flat ground nearby; if an obstacle is ahead or hit, or target is elevated, use full jump
+            if (!senses.ObstacleAhead && !senses.HitHorizontal && horizontalDistance < 3.5f && target.Offset.Y >= -0.5f)
             {
                 Velocity = new Vector2(FacingDirection * WeakJumpSpeedX, WeakJumpSpeedY);
             }
