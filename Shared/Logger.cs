@@ -6,6 +6,10 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
+// ========================================================================
+// Log Level
+// ========================================================================
+
 public enum LogLevel
 {
     Trace = 0,
@@ -17,6 +21,25 @@ public enum LogLevel
 }
 
 // ========================================================================
+// Log Category
+// ========================================================================
+
+[Flags]
+public enum LogCategory
+{
+    None = 0,
+    Physics = 1 << 0,
+    Rendering = 1 << 1,
+    Audio = 1 << 2,
+    Network = 1 << 3,
+    Input = 1 << 4,
+    AI = 1 << 5,
+    UI = 1 << 6,
+    Gameplay = 1 << 7,
+    Performance = 1 << 8,
+}
+
+// ========================================================================
 // Log Entry
 // ========================================================================
 
@@ -24,12 +47,12 @@ public sealed class LogEntry
 {
     public DateTime Timestamp { get; }
     public LogLevel Level { get; }
-    public string? Category { get; }
+    public LogCategory Category { get; }
     public int ThreadId { get; }
     public object? Message { get; }
     public Exception? Exception { get; }
 
-    public LogEntry(LogLevel level, object? message, string? category, Exception? exception)
+    public LogEntry(LogLevel level, LogCategory category, object? message, Exception? exception)
     {
         Timestamp = DateTime.Now;
         Level = level;
@@ -43,7 +66,7 @@ public sealed class LogEntry
     {
         string message = Message?.ToString() ?? string.Empty;
 
-        string category = string.IsNullOrEmpty(Category) ? string.Empty : $" [{Category}]";
+        string category = Category == LogCategory.None ? string.Empty : $" [{Category}]";
 
         string result = $"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} " + $"[{Level}]" + $"{category} " + $"[T{ThreadId}] " + message;
 
@@ -168,7 +191,9 @@ public sealed class Logger : IDisposable
     private readonly List<ILogSink> _sinks = new();
 
     private readonly object _rateLimitLock = new();
+
     private readonly Dictionary<string, DateTime> _rateLimitTimes = new();
+
     private readonly Dictionary<string, long> _rateLimitCounts = new();
 
     private readonly Thread _writerThread;
@@ -176,6 +201,17 @@ public sealed class Logger : IDisposable
     private volatile bool _running = true;
 
     private LogLevel _minimumLevel = LogLevel.Trace;
+
+    private LogCategory _enabledCategories =
+        LogCategory.Physics
+        | LogCategory.Rendering
+        | LogCategory.Audio
+        | LogCategory.Network
+        | LogCategory.Input
+        | LogCategory.AI
+        | LogCategory.UI
+        | LogCategory.Gameplay
+        | LogCategory.Performance;
 
     private Logger()
     {
@@ -192,6 +228,33 @@ public sealed class Logger : IDisposable
     {
         get => _minimumLevel;
         set => _minimumLevel = value;
+    }
+
+    public LogCategory EnabledCategories
+    {
+        get => _enabledCategories;
+        set => _enabledCategories = value;
+    }
+
+    /// <summary>
+    /// Returns true when at least one bit in category is enabled.
+    /// </summary>
+    public bool IsCategoryEnabled(LogCategory category)
+    {
+        if (category == LogCategory.None)
+            return true;
+
+        return (_enabledCategories & category) != 0;
+    }
+
+    public void EnableCategory(LogCategory category)
+    {
+        _enabledCategories |= category;
+    }
+
+    public void DisableCategory(LogCategory category)
+    {
+        _enabledCategories &= ~category;
     }
 
     public void AddSink(ILogSink sink)
@@ -218,35 +281,35 @@ public sealed class Logger : IDisposable
     }
 
     // ====================================================================
-    // Standard Logging
+    // Logging
     // ====================================================================
 
-    public void Trace(object? message, string? category = null)
+    public void Trace(object? message, LogCategory category = LogCategory.None)
     {
         Log(LogLevel.Trace, message, category);
     }
 
-    public void Debug(object? message, string? category = null)
+    public void Debug(object? message, LogCategory category = LogCategory.None)
     {
         Log(LogLevel.Debug, message, category);
     }
 
-    public void Info(object? message, string? category = null)
+    public void Info(object? message, LogCategory category = LogCategory.None)
     {
         Log(LogLevel.Info, message, category);
     }
 
-    public void Warning(object? message, string? category = null)
+    public void Warning(object? message, LogCategory category = LogCategory.None)
     {
         Log(LogLevel.Warning, message, category);
     }
 
-    public void Error(object? message, Exception? exception = null, string? category = null)
+    public void Error(object? message, LogCategory category = LogCategory.None, Exception? exception = null)
     {
         Log(LogLevel.Error, message, category, exception);
     }
 
-    public void Fatal(object? message, Exception? exception = null, string? category = null)
+    public void Fatal(object? message, LogCategory category = LogCategory.None, Exception? exception = null)
     {
         Log(LogLevel.Fatal, message, category, exception);
 
@@ -254,18 +317,42 @@ public sealed class Logger : IDisposable
     }
 
     // ====================================================================
+    // Internal Logging
+    // ====================================================================
+
+    internal void Log(LogLevel level, object? message, LogCategory category, Exception? exception = null)
+    {
+        if (!ShouldLog(level, category))
+            return;
+
+        _queue.Enqueue(LogWorkItem.Log(new LogEntry(level, category, message, exception)));
+
+        _signal.Set();
+    }
+
+    private bool ShouldLog(LogLevel level, LogCategory category)
+    {
+        if (!_running)
+            return false;
+
+        if (level < _minimumLevel)
+            return false;
+
+        if (category != LogCategory.None && (_enabledCategories & category) == 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    // ====================================================================
     // Timers
     // ====================================================================
 
-    /// <summary>
-    /// Creates a timer that logs the elapsed time when disposed.
-    ///
-    /// If the requested log level is disabled, this returns a shared
-    /// no-op disposable and does not start a timer.
-    /// </summary>
-    public LogTimer Time(object? message, string? category = null, LogLevel level = LogLevel.Debug)
+    public LogTimer Time(object? message, LogCategory category = LogCategory.None, LogLevel level = LogLevel.Debug)
     {
-        if (!_running || level < _minimumLevel)
+        if (!ShouldLog(level, category))
             return LogTimer.Disabled;
 
         return new LogTimer(this, message, category, level);
@@ -273,56 +360,68 @@ public sealed class Logger : IDisposable
 
     public sealed class LogTimer : IDisposable
     {
-        private readonly Logger _logger;
+        private readonly Logger? _logger;
         private readonly object? _message;
-        private readonly string? _category;
+        private readonly LogCategory _category;
         private readonly LogLevel _level;
 
         private long _startTimestamp;
+
         private bool _enabled;
         private bool _disposed;
 
-        internal static LogTimer Disabled => new LogTimer();
+        private readonly string _rateLimitKey;
+
+        internal static LogTimer Disabled => new();
 
         private LogTimer()
         {
-            _logger = null!;
+            _logger = null;
             _message = null;
-            _category = null;
+            _category = LogCategory.None;
             _level = LogLevel.Debug;
+
+            _rateLimitKey = string.Empty;
+
             _enabled = false;
         }
 
-        internal LogTimer(Logger logger, object? message, string? category, LogLevel level)
+        internal LogTimer(Logger logger, object? message, LogCategory category, LogLevel level)
         {
             _logger = logger;
             _message = message;
             _category = category;
             _level = level;
 
-            // Normal Time() logs every call.
+            // Each Time() expression gets its own counter key.
+            //
+            // This uses the call site rather than message.ToString()
+            // so mutable objects cannot unexpectedly change the key.
+            _rateLimitKey = $"{GetCallerKey()}:{category}:{message?.GetType().FullName}";
+
             _enabled = true;
+
             _startTimestamp = Stopwatch.GetTimestamp();
         }
 
         public LogTimer Every(long everyNCalls)
         {
             if (everyNCalls <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(everyNCalls));
+            }
 
-            // Logger/timer already disabled.
             if (!_enabled)
                 return this;
 
-            string key = CreateTimerKey();
-
-            if (!_logger.ShouldLogEvery(everyNCalls, key))
+            if (!_logger!.ShouldLogEvery(everyNCalls, _rateLimitKey))
             {
                 _enabled = false;
                 return this;
             }
 
-            // Only start timing for the calls we actually intend to log.
+            // Restart the timer at the point where we know this
+            // particular call should actually be measured.
             _startTimestamp = Stopwatch.GetTimestamp();
 
             return this;
@@ -342,55 +441,42 @@ public sealed class Logger : IDisposable
 
             double milliseconds = elapsedTicks * 1000.0 / Stopwatch.Frequency;
 
-            _logger.Log(_level, $"{_message?.ToString() ?? string.Empty} took {milliseconds:F3} ms", _category);
+            _logger!.Log(_level, $"{_message?.ToString() ?? string.Empty} " + $"took {milliseconds:F3} ms", _category);
         }
 
-        private string CreateTimerKey()
+        private static string GetCallerKey([CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
         {
-            return $"Timer:{_category}:{_message?.ToString() ?? string.Empty}";
+            return $"{file}:{line}";
         }
-    }
-
-    private sealed class NoOpDisposable : IDisposable
-    {
-        public static readonly NoOpDisposable Instance = new();
-
-        private NoOpDisposable() { }
-
-        public void Dispose() { }
-    }
-
-    // ====================================================================
-    // Internal Logging
-    // ====================================================================
-
-    private void Log(LogLevel level, object? message, string? category, Exception? exception = null)
-    {
-        if (!_running)
-            return;
-
-        if (level < _minimumLevel)
-            return;
-
-        _queue.Enqueue(LogWorkItem.Log(new LogEntry(level, message, category, exception)));
-
-        _signal.Set();
     }
 
     // ====================================================================
     // Rate Limiting
     // ====================================================================
 
-    /// <summary>
-    /// Logs at most once during the specified interval.
-    /// </summary>
-    public void LogEvery(TimeSpan interval, string key, LogLevel level, object? message, string? category = null, Exception? exception = null)
+    private bool ShouldLogEvery(long everyNCalls, string key)
     {
-        if (!_running || level < _minimumLevel)
+        lock (_rateLimitLock)
+        {
+            _rateLimitCounts.TryGetValue(key, out long count);
+
+            count++;
+
+            _rateLimitCounts[key] = count;
+
+            return count % everyNCalls == 0;
+        }
+    }
+
+    public void LogEvery(TimeSpan interval, string key, LogLevel level, object? message, LogCategory category = LogCategory.None, Exception? exception = null)
+    {
+        if (!ShouldLog(level, category))
             return;
 
         if (interval < TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(interval));
+        }
 
         DateTime now = DateTime.UtcNow;
 
@@ -408,30 +494,15 @@ public sealed class Logger : IDisposable
         Log(level, message, category, exception);
     }
 
-    private bool ShouldLogEvery(long everyNCalls, string key)
+    public void LogEvery(long everyNCalls, string key, LogLevel level, object? message, LogCategory category = LogCategory.None, Exception? exception = null)
     {
-        lock (_rateLimitLock)
-        {
-            _rateLimitCounts.TryGetValue(key, out long count);
-
-            count++;
-
-            _rateLimitCounts[key] = count;
-
-            return count % everyNCalls == 0;
-        }
-    }
-
-    /// <summary>
-    /// Logs every Nth call.
-    /// </summary>
-    public void LogEvery(long everyNCalls, string key, LogLevel level, object? message, string? category = null, Exception? exception = null)
-    {
-        if (!_running || level < _minimumLevel)
+        if (!ShouldLog(level, category))
             return;
 
         if (everyNCalls <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(everyNCalls));
+        }
 
         if (!ShouldLogEvery(everyNCalls, key))
             return;
@@ -445,39 +516,25 @@ public sealed class Logger : IDisposable
 
 #if DEBUG
 
-    /// <summary>
-    /// Evaluates the condition only in DEBUG builds.
-    ///
-    /// If condition() returns true, the message is logged.
-    /// If condition() returns false, nothing happens.
-    /// </summary>
-    public void Assert(Func<bool> condition, object? message, string? category = null)
+    public void Assert(Func<bool> condition, object? message, LogCategory category = LogCategory.None)
     {
         ArgumentNullException.ThrowIfNull(condition);
 
         if (condition())
         {
-            Error(message, category: category);
+            Error(message, category);
         }
     }
 #else
 
-    /// <summary>
-    /// This method call is removed completely from RELEASE builds.
-    /// Therefore condition() is never evaluated.
-    /// </summary>
     [Conditional("DEBUG")]
-    public void Assert(Func<bool> condition, object? message, string? category = null) { }
+    public void Assert(Func<bool> condition, object? message, LogCategory category = LogCategory.None) { }
 #endif
 
     // ====================================================================
     // Flush
     // ====================================================================
 
-    /// <summary>
-    /// Waits until every log entry that was queued before this call
-    /// has been written to all sinks.
-    /// </summary>
     public void Flush()
     {
         if (!_running)
@@ -503,7 +560,6 @@ public sealed class Logger : IDisposable
 
         _running = false;
 
-        // Wake the writer so it can drain the remaining queue.
         _signal.Set();
 
         if (Thread.CurrentThread != _writerThread)
@@ -519,19 +575,13 @@ public sealed class Logger : IDisposable
                 {
                     sink.Flush();
                 }
-                catch
-                {
-                    // Logging must never crash the game.
-                }
+                catch { }
 
                 try
                 {
                     sink.Dispose();
                 }
-                catch
-                {
-                    // Logging must never crash the game.
-                }
+                catch { }
             }
 
             _sinks.Clear();
@@ -559,64 +609,45 @@ public sealed class Logger : IDisposable
                 continue;
             }
 
-            try
-            {
-                switch (work.Type)
-                {
-                    case LogWorkItemType.Log:
-                        if (work.Entry != null)
-                        {
-                            WriteToSinks(work.Entry);
-                        }
-
-                        break;
-
-                    case LogWorkItemType.Flush:
-                        FlushSinks();
-
-                        work.FlushEvent?.Set();
-
-                        break;
-                }
-            }
-            catch
-            {
-                // The logger itself must never bring down the game.
-                work.FlushEvent?.Set();
-            }
+            ProcessWorkItem(work);
         }
 
-        // The loop condition should already have drained the queue,
-        // but drain once more as a final guarantee.
         while (_queue.TryDequeue(out LogWorkItem? work))
         {
-            try
-            {
-                switch (work.Type)
-                {
-                    case LogWorkItemType.Log:
-                        if (work.Entry != null)
-                        {
-                            WriteToSinks(work.Entry);
-                        }
-
-                        break;
-
-                    case LogWorkItemType.Flush:
-                        FlushSinks();
-
-                        work.FlushEvent?.Set();
-
-                        break;
-                }
-            }
-            catch
-            {
-                work.FlushEvent?.Set();
-            }
+            ProcessWorkItem(work);
         }
 
         FlushSinks();
+    }
+
+    private void ProcessWorkItem(LogWorkItem work)
+    {
+        try
+        {
+            switch (work.Type)
+            {
+                case LogWorkItemType.Log:
+
+                    if (work.Entry != null)
+                    {
+                        WriteToSinks(work.Entry);
+                    }
+
+                    break;
+
+                case LogWorkItemType.Flush:
+
+                    FlushSinks();
+
+                    work.FlushEvent?.Set();
+
+                    break;
+            }
+        }
+        catch
+        {
+            work.FlushEvent?.Set();
+        }
     }
 
     private void WriteToSinks(LogEntry entry)
@@ -634,10 +665,7 @@ public sealed class Logger : IDisposable
             {
                 sink.Write(entry);
             }
-            catch
-            {
-                // A broken sink must never crash the game.
-            }
+            catch { }
         }
     }
 
@@ -656,10 +684,7 @@ public sealed class Logger : IDisposable
             {
                 sink.Flush();
             }
-            catch
-            {
-                // A broken sink must never crash the game.
-            }
+            catch { }
         }
     }
 

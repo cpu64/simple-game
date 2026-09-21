@@ -6,6 +6,10 @@ public static class Client
 {
     public static void Main(string[] args)
     {
+        Logger.Instance.MinimumLevel = LogLevel.Trace;
+
+        Logger.Instance.AddSink(new ConsoleSink());
+
         string serverAddress = args.Length == 0 ? null : args[0];
 
         SharedInputState input = new SharedInputState();
