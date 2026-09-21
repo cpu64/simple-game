@@ -33,7 +33,7 @@ public class CommandQueue
                 if (queue.Count == 0)
                     continue;
 
-                while (queue.Count > 10)
+                while (queue.Count > 60)
                 {
                     queue.Dequeue();
                 }
@@ -50,24 +50,6 @@ public class CommandQueue
         lock (queueLock)
         {
             playerQueues.Remove(playerId);
-        }
-    }
-
-    public List<InputCommand> TakeAll()
-    {
-        lock (queueLock)
-        {
-            List<InputCommand> result = new List<InputCommand>();
-
-            foreach (var queue in playerQueues.Values)
-            {
-                while (queue.Count > 0)
-                {
-                    result.Add(queue.Dequeue());
-                }
-            }
-
-            return result;
         }
     }
 }

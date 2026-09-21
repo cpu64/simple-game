@@ -148,6 +148,12 @@ public static class PhysicsSystem
             }
         }
 
+        if (!hit)
+        {
+            correctedX = position.X;
+            hit = true;
+        }
+
         return (new Vector2(correctedX, position.Y), hit);
     }
 
@@ -202,6 +208,15 @@ public static class PhysicsSystem
                     hitCeiling = true;
                 }
             }
+        }
+
+        if (!hitFloor && !hitCeiling)
+        {
+            correctedY = position.Y;
+            if (amount > 0)
+                hitFloor = true;
+            else
+                hitCeiling = true;
         }
 
         return (new Vector2(position.X, correctedY), hitFloor, hitCeiling);

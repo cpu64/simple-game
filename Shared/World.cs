@@ -52,13 +52,6 @@ public class World : IBinarySerializable
 
     public World Copy()
     {
-        List<Block> blocks = new List<Block>(Blocks.Count);
-
-        foreach (Block block in Blocks)
-        {
-            blocks.Add(block);
-        }
-
         List<Entity> entities = new List<Entity>(Entities.Count);
 
         foreach (Entity entity in Entities)
@@ -66,7 +59,7 @@ public class World : IBinarySerializable
             entities.Add(entity.Copy());
         }
 
-        return new World(Tick, blocks, entities, NextEntityId);
+        return new World(Tick, Blocks, entities, NextEntityId);
     }
 
     public void PruneDead()
