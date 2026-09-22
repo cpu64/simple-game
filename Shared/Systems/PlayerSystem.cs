@@ -5,8 +5,12 @@ using System.Numerics;
 
 public static class PlayerSystem
 {
-    private const float Speed = 8.0f;
+    public const float Speed = 8.0f;
     private const float JumpSpeed = 7.5f;
+    private const float GroundDecel = 50.0f;
+    private const float AirAccel = 35.0f;
+    private const float AirCounterAccel = 50.0f;
+    private const float AirDecel = 6.0f;
     private const float SimpleBulletCooldown = 0.2f;
     private const float HeavyBulletCooldown = 0.35f;
 
@@ -56,30 +60,102 @@ public static class PlayerSystem
 
                 if (player.IsDead)
                 {
-                    PhysicsSystem.StepBody(player, world.Blocks, dt, Vector2.Zero);
+                    PhysicsSystem.StepBody(player, world.Blocks, dt);
                     continue;
                 }
 
                 bool isGrounded = player.Velocity.Y >= 0 && PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
 
-                float moveX = 0f;
+                float inputX = 0f;
                 if ((command.Keys & KeyState.Left) != 0)
-                    moveX -= Speed * dt;
+                    inputX -= 1f;
                 if ((command.Keys & KeyState.Right) != 0)
-                    moveX += Speed * dt;
+                    inputX += 1f;
 
                 if ((command.Keys & KeyState.Up) != 0 && isGrounded)
                 {
                     player.Velocity = new Vector2(player.Velocity.X, -JumpSpeed);
+                    isGrounded = false;
                 }
 
-                PhysicsSystem.StepBody(player, world.Blocks, dt, new Vector2(moveX, 0f));
+                float velX = player.Velocity.X;
+
+                if (inputX != 0)
+                {
+                    float targetVelX = inputX * Speed;
+
+                    if (isGrounded)
+                    {
+                        if (Math.Sign(velX) == Math.Sign(inputX) || Math.Abs(velX) < 0.1f)
+                        {
+                            if (Math.Abs(velX) > Speed)
+                            {
+                                velX = Math.Sign(velX) * Math.Max(Speed, Math.Abs(velX) - GroundDecel * dt);
+                            }
+                            else
+                            {
+                                velX = targetVelX;
+                            }
+                        }
+                        else
+                        {
+                            velX += inputX * GroundDecel * dt;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Sign(velX) == Math.Sign(inputX))
+                        {
+                            if (Math.Abs(velX) > Speed)
+                            {
+                                velX = Math.Sign(velX) * Math.Max(Speed, Math.Abs(velX) - AirDecel * dt);
+                            }
+                            else
+                            {
+                                velX = Math.Clamp(velX + inputX * AirAccel * dt, -Speed, Speed);
+                            }
+                        }
+                        else
+                        {
+                            velX += inputX * AirCounterAccel * dt;
+                        }
+                    }
+                }
+                else
+                {
+                    if (isGrounded)
+                    {
+                        if (Math.Abs(velX) <= GroundDecel * dt)
+                            velX = 0f;
+                        else
+                            velX -= Math.Sign(velX) * GroundDecel * dt;
+                    }
+                    else if (Math.Abs(velX) > Speed)
+                    {
+                        velX = Math.Sign(velX) * Math.Max(Speed, Math.Abs(velX) - AirDecel * dt);
+                    }
+                }
+
+                player.Velocity = new Vector2(velX, player.Velocity.Y);
+
+                PhysicsSystem.StepBody(player, world.Blocks, dt);
 
                 ProcessWeaponFiring(world, player, command);
             }
             else
             {
-                PhysicsSystem.StepBody(player, world.Blocks, dt, Vector2.Zero);
+                bool isGrounded = player.Velocity.Y >= 0 && PhysicsSystem.IsGrounded(player.Position, player.Size, world.Blocks);
+                if (isGrounded)
+                {
+                    float velX = player.Velocity.X;
+                    if (Math.Abs(velX) <= GroundDecel * dt)
+                        velX = 0f;
+                    else
+                        velX -= Math.Sign(velX) * GroundDecel * dt;
+                    player.Velocity = new Vector2(velX, player.Velocity.Y);
+                }
+
+                PhysicsSystem.StepBody(player, world.Blocks, dt);
             }
         }
     }

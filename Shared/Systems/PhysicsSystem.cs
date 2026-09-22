@@ -10,22 +10,22 @@ public static class PhysicsSystem
     public const float GravityConstant = 10.0f;
     public const float MaxFallSpeed = 25.0f;
 
-    public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt, Vector2 intentionalMovement = default)
+    public static MovementResult StepBody(IKinematicBody body, List<Block> blocks, float dt)
     {
         bool isGrounded = body.CollidesWithBlocks && body.Velocity.Y >= 0 && IsGrounded(body.Position, body.Size, blocks);
         float velX = body.Velocity.X;
 
-        if (isGrounded)
+        if (isGrounded && body is not Player)
         {
             velX *= body.Drag;
         }
 
         float velY = Math.Min(MaxFallSpeed, body.Velocity.Y + (body.GravityScale * GravityConstant * dt));
 
-        if (body.Drag < 1.0f && Math.Abs(velX) < 0.05f)
+        if (body is not Player && body.Drag < 1.0f && Math.Abs(velX) < 0.05f)
             velX = 0f;
 
-        Vector2 totalMovement = intentionalMovement + new Vector2(velX, velY) * dt;
+        Vector2 totalMovement = new Vector2(velX, velY) * dt;
 
         MovementResult result;
         if (body.CollidesWithBlocks)
