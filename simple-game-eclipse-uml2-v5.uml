@@ -1,0 +1,1087 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:version="20131001">
+  <uml:Model xmi:type="uml:Model" xmi:id="model_simple-game" name="simple-game">
+    <packagedElement xmi:type="uml:Package" xmi:id="pkg_PrimitiveTypes" name="PrimitiveTypes">
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_void" name="void" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_string" name="string" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_object" name="object" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_bool" name="bool" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_int" name="int" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_float" name="float" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_long" name="long" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_double" name="double" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_byte" name="byte" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_short" name="short" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="pkg_ExternalTypes" name="ExternalTypes">
+      <packagedElement xmi:type="uml:Interface" xmi:id="iface_ext_IDisposable" name="IDisposable" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Thread" name="Thread" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_TcpListener" name="TcpListener" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Guid" name="Guid" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_TcpClient" name="TcpClient" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_NetworkStream" name="NetworkStream" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_T" name="T" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_RingBuffer_World_" name="RingBuffer&lt;World&gt;" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext__KeyState_Keys__Vector2_Pointer_" name="(KeyState Keys, Vector2 Pointer)" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Vector2" name="Vector2" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_IPEndPoint" name="IPEndPoint" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_ConcurrentQueue_object_" name="ConcurrentQueue&lt;object&gt;" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_SemaphoreSlim" name="SemaphoreSlim" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_CancellationTokenSource" name="CancellationTokenSource" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_CancellationToken" name="CancellationToken" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Exception" name="Exception" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_DateTime" name="DateTime" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_BinaryWriter" name="BinaryWriter" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_BinaryReader" name="BinaryReader" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Stream" name="Stream" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Type" name="Type" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Func_BinaryStreamHandler__object_" name="Func&lt;BinaryStreamHandler, object&gt;" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RemoteServerMain" name="RemoteServerMain" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerMain_Main_1" name="Main" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerMain_Main_1_args" name="args" direction="in" type="prim_string" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RemoteServer" name="RemoteServer" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_commandQueue" name="commandQueue" visibility="private" isStatic="false" isReadOnly="true" type="cls_CommandQueue" association="assoc_RemoteServer_commandQueue_CommandQueue" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_worldLock" name="worldLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_clientsLock" name="clientsLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_clients" name="clients" visibility="private" isStatic="false" isReadOnly="true" type="cls_ClientConnection" association="assoc_RemoteServer_clients_ClientConnection">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_RemoteServer_clients_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_RemoteServer_clients_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_world" name="world" visibility="private" isStatic="false" isReadOnly="false" type="cls_World" association="assoc_RemoteServer_world_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_simulationThread" name="simulationThread" visibility="private" isStatic="false" isReadOnly="false" type="ext_Thread" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_networkThread" name="networkThread" visibility="private" isStatic="false" isReadOnly="false" type="ext_Thread" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_running" name="running" visibility="private" isStatic="false" isReadOnly="false" type="prim_bool" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServer_listener" name="listener" visibility="private" isStatic="false" isReadOnly="false" type="ext_TcpListener" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RemoteServer_1" name="RemoteServer" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RemoteServer_1_worldPath" name="worldPath" direction="in" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_Start_1" name="Start" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServer_Start_1_port" name="port" direction="in" type="prim_int" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_Stop_1" name="Stop" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_RunNetwork_1" name="RunNetwork" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_HandleClient_1" name="HandleClient" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServer_HandleClient_1_client" name="client" direction="in" type="cls_ClientConnection" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_RegisterPlayer_1" name="RegisterPlayer" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServer_RegisterPlayer_1_client" name="client" direction="in" type="cls_ClientConnection" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServer_RegisterPlayer_1_playerId" name="playerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_RunSimulation_1" name="RunSimulation" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_Tick_1" name="Tick" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServer_SendSnapshot_1" name="SendSnapshot" visibility="private" isStatic="false" isAbstract="false" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_ClientConnection" name="ClientConnection" visibility="public" isAbstract="false" clientDependency="real_ClientConnection_IDisposable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_ClientConnection_IDisposable" client="cls_ClientConnection" supplier="iface_ext_IDisposable" contract="iface_ext_IDisposable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClientConnection_MaxMessageSize" name="MaxMessageSize" visibility="private" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClientConnection_client" name="client" visibility="private" isStatic="false" isReadOnly="true" type="ext_TcpClient" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClientConnection_stream" name="stream" visibility="private" isStatic="false" isReadOnly="true" type="ext_NetworkStream" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClientConnection_sendLock" name="sendLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_ClientConnection_Connected" name="Connected" visibility="public" isStatic="false" isReadOnly="false" type="prim_bool" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_ClientConnection_1" name="ClientConnection" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_ClientConnection_1_client" name="client" direction="in" type="ext_TcpClient" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClientConnection_Send_1" name="Send" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClientConnection_Send_1_message" name="message" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClientConnection_SendMessage_1" name="SendMessage" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClientConnection_SendMessage_1_message" name="message" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClientConnection_Receive_1" name="Receive" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClientConnection_Receive_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClientConnection_Dispose_1" name="Dispose" visibility="public" isStatic="false" isAbstract="false" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_CommandQueue" name="CommandQueue" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_CommandQueue_queueLock" name="queueLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_CommandQueue_commands" name="commands" visibility="private" isStatic="false" isReadOnly="true" type="cls_InputCommand" association="assoc_CommandQueue_commands_InputCommand">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_CommandQueue_commands_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_CommandQueue_commands_upper" value="*" />
+      </ownedAttribute>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CommandQueue_Add_1" name="Add" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CommandQueue_Add_1_command" name="command" direction="in" type="cls_InputCommand" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CommandQueue_TakeAll_1" name="TakeAll" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_CommandQueue_TakeAll_1_ret" direction="return" type="cls_InputCommand">
+          <lowerValue xmi:type="uml:LiteralInteger" xmi:id="op_CommandQueue_TakeAll_1_ret_lower" value="0" />
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="op_CommandQueue_TakeAll_1_ret_upper" value="*" />
+        </ownedParameter>
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RingBuffer" name="RingBuffer" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RingBuffer_buffer" name="buffer" visibility="private" isStatic="false" isReadOnly="true" type="ext_T">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_RingBuffer_buffer_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_RingBuffer_buffer_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RingBuffer_start" name="start" visibility="private" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RingBuffer_count" name="count" visibility="private" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RingBuffer_Count" name="Count" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RingBuffer_Capacity" name="Capacity" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RingBuffer_1" name="RingBuffer" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RingBuffer_1_capacity" name="capacity" direction="in" type="prim_int" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RingBuffer_Add_1" name="Add" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RingBuffer_Add_1_item" name="item" direction="in" type="ext_T" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RingBuffer_Get_1" name="Get" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RingBuffer_Get_1_index" name="index" direction="in" type="prim_int" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_RingBuffer_Get_1_ret" direction="return" type="ext_T" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderInput" name="RenderInput" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_World" name="World" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_World_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_AuthoritativeSnapshots" name="AuthoritativeSnapshots" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_AuthoritativeSnapshots_World">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderInput_AuthoritativeSnapshots_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderInput_AuthoritativeSnapshots_upper" value="*" />
+      </ownedAttribute>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RenderInput_1" name="RenderInput" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_authoritativeSnapshots" name="authoritativeSnapshots" direction="in" type="ext_RingBuffer_World_" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Client" name="Client" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Client_Main_1" name="Main" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Client_Main_1_args" name="args" direction="in" type="prim_string" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_SharedInputState" name="SharedInputState" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_SharedInputState_state" name="state" visibility="private" isStatic="false" isReadOnly="false" type="cls_Snapshot" association="assoc_SharedInputState_state_Snapshot" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SharedInputState_Read_1" name="Read" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_SharedInputState_Read_1_ret" direction="return" type="ext__KeyState_Keys__Vector2_Pointer_" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SharedInputState_Write_1" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_SharedInputState_Write_1_keys" name="keys" direction="in" type="enum_KeyState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_SharedInputState_Write_1_pointer" name="pointer" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Snapshot" name="Snapshot" visibility="private" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Snapshot_Keys" name="Keys" visibility="public" isStatic="false" isReadOnly="true" type="enum_KeyState" association="assoc_Snapshot_Keys_KeyState" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Snapshot_Pointer" name="Pointer" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_GameWindow" name="GameWindow" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameWindow_PixelsPerUnit" name="PixelsPerUnit" visibility="private" isStatic="false" isReadOnly="true" type="prim_float" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_Run_1" name="Run" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_server" name="server" direction="in" type="cls_LocalServer" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_playerId" name="playerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderBullets_1" name="RenderBullets" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderBullets_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderSlimes_1" name="RenderSlimes" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderSlimes_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderWorld_1" name="RenderWorld" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderWorld_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderLocalPlayer_1" name="RenderLocalPlayer" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderLocalPlayer_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderLocalPlayer_1_playerId" name="playerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderRemotePlayers_1" name="RenderRemotePlayers" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_snapshots" name="snapshots" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_worldTick" name="worldTick" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_FindSnapshots_1" name="FindSnapshots" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_snapshots" name="snapshots" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_renderTick" name="renderTick" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_before" name="before" direction="out" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_after" name="after" direction="out" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderInterpolatedRemotePlayers_1" name="RenderInterpolatedRemotePlayers" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_before" name="before" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_after" name="after" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_alpha" name="alpha" direction="in" type="prim_double" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderHealthBar_1" name="RenderHealthBar" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_1_entity" name="entity" direction="in" type="cls_Entity" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderHealthBar_2" name="RenderHealthBar" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_2_entity" name="entity" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_2_position" name="position" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderRemoteWorld_1" name="RenderRemoteWorld" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemoteWorld_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemoteWorld_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_UpdateInput_1" name="UpdateInput" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_UpdateInput_1_input" name="input" direction="in" type="cls_SharedInputState" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RemoteServerConnection" name="RemoteServerConnection" visibility="public" isAbstract="false" clientDependency="real_RemoteServerConnection_IDisposable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_RemoteServerConnection_IDisposable" client="cls_RemoteServerConnection" supplier="iface_ext_IDisposable" contract="iface_ext_IDisposable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_MaxMessageSize" name="MaxMessageSize" visibility="private" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_ReconnectTimeoutMilliseconds" name="ReconnectTimeoutMilliseconds" visibility="private" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_ReconnectDelayMilliseconds" name="ReconnectDelayMilliseconds" visibility="private" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_endpoint" name="endpoint" visibility="private" isStatic="false" isReadOnly="true" type="ext_IPEndPoint" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_sendQueue" name="sendQueue" visibility="private" isStatic="false" isReadOnly="true" type="ext_ConcurrentQueue_object_" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_receiveQueue" name="receiveQueue" visibility="private" isStatic="false" isReadOnly="true" type="ext_ConcurrentQueue_object_" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_sendSignal" name="sendSignal" visibility="private" isStatic="false" isReadOnly="true" type="ext_SemaphoreSlim" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_stateLock" name="stateLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_client" name="client" visibility="private" isStatic="false" isReadOnly="false" type="ext_TcpClient" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_stream" name="stream" visibility="private" isStatic="false" isReadOnly="false" type="ext_NetworkStream" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_cancellation" name="cancellation" visibility="private" isStatic="false" isReadOnly="false" type="ext_CancellationTokenSource" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_sendThread" name="sendThread" visibility="private" isStatic="false" isReadOnly="false" type="ext_Thread" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_receiveThread" name="receiveThread" visibility="private" isStatic="false" isReadOnly="false" type="ext_Thread" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_connected" name="connected" visibility="private" isStatic="false" isReadOnly="false" type="prim_bool" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_stopping" name="stopping" visibility="private" isStatic="false" isReadOnly="false" type="prim_bool" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RemoteServerConnection_reconnectMessage" name="reconnectMessage" visibility="private" isStatic="false" isReadOnly="false" type="iface_IBinarySerializable" association="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RemoteServerConnection_IsConnected" name="IsConnected" visibility="public" isStatic="false" isReadOnly="true" type="prim_bool" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RemoteServerConnection_1" name="RemoteServerConnection" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RemoteServerConnection_1_endpoint" name="endpoint" direction="in" type="ext_IPEndPoint" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_Connect_1" name="Connect" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_Connect_1_registrationMessage" name="registrationMessage" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_Disconnect_1" name="Disconnect" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_Dispose_1" name="Dispose" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_Send_1" name="Send" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_Send_1_message" name="message" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_WaitForConnection_1" name="WaitForConnection" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_ConnectSocket_1" name="ConnectSocket" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ConnectSocket_1_token" name="token" direction="in" type="ext_CancellationToken" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_SendLoop_1" name="SendLoop" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_SendMessage_1" name="SendMessage" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_SendMessage_1_message" name="message" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_ReceiveLoop_1" name="ReceiveLoop" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_TryReceive_1" name="TryReceive" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_TryReceive_1_message" name="message" direction="out" type="iface_IBinarySerializable" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_RemoteServerConnection_TryReceive_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_ReceiveMessages_1" name="ReceiveMessages" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ReceiveMessages_1_currentStream" name="currentStream" direction="in" type="ext_NetworkStream" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ReceiveMessages_1_token" name="token" direction="in" type="ext_CancellationToken" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_HandleConnectionFailure_1" name="HandleConnectionFailure" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_HandleConnectionFailure_1_exception" name="exception" direction="in" type="ext_Exception" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_TryReconnect_1" name="TryReconnect" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_SendRegistration_1" name="SendRegistration" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_CloseSocket_1" name="CloseSocket" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RemoteServerConnection_ReadExactly_1" name="ReadExactly" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ReadExactly_1_stream" name="stream" direction="in" type="ext_NetworkStream" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ReadExactly_1_buffer" name="buffer" direction="in" type="prim_byte" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RemoteServerConnection_ReadExactly_1_cancellationToken" name="cancellationToken" direction="in" type="ext_CancellationToken" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_StopwatchTimer" name="StopwatchTimer" visibility="private" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_StopwatchTimer_start" name="start" visibility="private" isStatic="false" isReadOnly="true" type="ext_DateTime" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_StopwatchTimer_ElapsedMilliseconds" name="ElapsedMilliseconds" visibility="public" isStatic="false" isReadOnly="true" type="prim_long" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_LocalServer" name="LocalServer" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_input" name="input" visibility="private" isStatic="false" isReadOnly="true" type="cls_SharedInputState" association="assoc_LocalServer_input_SharedInputState" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_remoteServer" name="remoteServer" visibility="private" isStatic="false" isReadOnly="true" type="cls_RemoteServerConnection" association="assoc_LocalServer_remoteServer_RemoteServerConnection" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_authoritativeWorlds" name="authoritativeWorlds" visibility="private" isStatic="false" isReadOnly="true" type="ext_RingBuffer_World_" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_worldLock" name="worldLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_playerId" name="playerId" visibility="private" isStatic="false" isReadOnly="true" type="ext_Guid" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_pendingCommands" name="pendingCommands" visibility="private" isStatic="false" isReadOnly="true" type="cls_InputCommand" association="assoc_LocalServer_pendingCommands_InputCommand">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_LocalServer_pendingCommands_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_LocalServer_pendingCommands_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_nextCommandSequence" name="nextCommandSequence" visibility="private" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_world" name="world" visibility="private" isStatic="false" isReadOnly="false" type="cls_World" association="assoc_LocalServer_world_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_simulationThread" name="simulationThread" visibility="private" isStatic="false" isReadOnly="false" type="ext_Thread" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_running" name="running" visibility="private" isStatic="false" isReadOnly="false" type="prim_bool" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_LocalServer_1" name="LocalServer" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_playerId" name="playerId" direction="in" type="ext_Guid" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_worldPath" name="worldPath" direction="in" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_LocalServer_2" name="LocalServer" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_playerId" name="playerId" direction="in" type="ext_Guid" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_endpoint" name="endpoint" direction="in" type="ext_IPEndPoint" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Start_1" name="Start" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Stop_1" name="Stop" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Run_1" name="Run" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Tick_1" name="Tick" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_ApplyCommand_1" name="ApplyCommand" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_ApplyCommand_1_command" name="command" direction="in" type="cls_InputCommand" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_ReceiveLatestAuthoritativeWorld_1" name="ReceiveLatestAuthoritativeWorld" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Reconcile_1" name="Reconcile" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_Reconcile_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_GetLastAcknowledgedSequence_1" name="GetLastAcknowledgedSequence" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_GetLastAcknowledgedSequence_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LocalServer_GetLastAcknowledgedSequence_1_ret" direction="return" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_AddAuthoritativeWorld_1" name="AddAuthoritativeWorld" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_AddAuthoritativeWorld_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_GetRenderInput_1" name="GetRenderInput" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LocalServer_GetRenderInput_1_ret" direction="return" type="cls_RenderInput" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_ICollidable" name="ICollidable" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_ICollidable_CollisionSize" name="CollisionSize" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IGravityAffected" name="IGravityAffected" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IGravityAffected_GravitationalAcceleration" name="GravitationalAcceleration" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IDamaging" name="IDamaging" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IDamaging_Damage" name="Damage" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IDamaging_DamageBox" name="DamageBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IDamaging_KnockBackMultiplier" name="KnockBackMultiplier" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IHealth" name="IHealth" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IHealth_MaxHealth" name="MaxHealth" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IHealth_Health" name="Health" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IHealth_HitBox" name="HitBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IHealth_InvincibleUntil" name="InvincibleUntil" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IHealth_IsDead" name="IsDead" visibility="public" isStatic="false" isReadOnly="true" type="prim_bool" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_ILifespan" name="ILifespan" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_ILifespan_TicksLeft" name="TicksLeft" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IMoving" name="IMoving" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IMoving_Velocity" name="Velocity" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IFacing" name="IFacing" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_IFacing_Rotation" name="Rotation" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Entity" name="Entity" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Entity_Id" name="Id" visibility="public" isStatic="false" isReadOnly="true" type="cls_EntityId" association="assoc_Entity_Id_EntityId" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Entity_Position" name="Position" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_Entity_1" name="Entity" visibility="protected" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Entity_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Entity_1_position" name="position" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Entity_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Entity_Copy_1_ret" direction="return" type="cls_Entity" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Entity_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Entity_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Bullet" name="Bullet" visibility="public" isAbstract="true">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_Bullet_Entity" general="cls_Entity" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Bullet_FiredBy" name="FiredBy" visibility="public" isStatic="false" isReadOnly="true" type="cls_EntityId" association="assoc_Bullet_FiredBy_EntityId" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_Bullet_1" name="Bullet" visibility="protected" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Bullet_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Bullet_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Bullet_1_firedBy" name="firedBy" direction="in" type="cls_EntityId" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Bullet_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Bullet_Copy_1_ret" direction="return" type="cls_Bullet" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Bullet_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Bullet_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_HeavyBullet" name="HeavyBullet" visibility="public" isAbstract="false" clientDependency="real_HeavyBullet_IBinarySerializable real_HeavyBullet_ICollidable real_HeavyBullet_IDamaging real_HeavyBullet_IGravityAffected real_HeavyBullet_ILifespan real_HeavyBullet_IMoving">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_HeavyBullet_Bullet" general="cls_Bullet" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_IBinarySerializable" client="cls_HeavyBullet" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_ICollidable" client="cls_HeavyBullet" supplier="iface_ICollidable" contract="iface_ICollidable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_IDamaging" client="cls_HeavyBullet" supplier="iface_IDamaging" contract="iface_IDamaging" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_IGravityAffected" client="cls_HeavyBullet" supplier="iface_IGravityAffected" contract="iface_IGravityAffected" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_ILifespan" client="cls_HeavyBullet" supplier="iface_ILifespan" contract="iface_ILifespan" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_HeavyBullet_IMoving" client="cls_HeavyBullet" supplier="iface_IMoving" contract="iface_IMoving" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_CollisionSize" name="CollisionSize" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_Damage" name="Damage" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_DamageBox" name="DamageBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_KnockBackMultiplier" name="KnockBackMultiplier" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_GravitationalAcceleration" name="GravitationalAcceleration" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_Velocity" name="Velocity" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_HeavyBullet_TicksLeft" name="TicksLeft" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_HeavyBullet_1" name="HeavyBullet" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_firedBy" name="firedBy" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_collisionSize" name="collisionSize" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_damage" name="damage" direction="in" type="prim_int" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_damageBox" name="damageBox" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_knockBackMultiplier" name="knockBackMultiplier" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_gravitationalAcceleration" name="gravitationalAcceleration" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_velocity" name="velocity" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_HeavyBullet_1_ticksLeft" name="ticksLeft" direction="in" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_HeavyBullet_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_HeavyBullet_Copy_1_ret" direction="return" type="cls_HeavyBullet" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_HeavyBullet_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_HeavyBullet_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_HeavyBullet_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_HeavyBullet_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_HeavyBullet_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_HeavyBullet_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_HeavyBullet_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Slime" name="Slime" visibility="public" isAbstract="false" clientDependency="real_Slime_IBinarySerializable real_Slime_ICollidable real_Slime_IDamaging real_Slime_IFacing real_Slime_IGravityAffected real_Slime_IHealth real_Slime_IMoving">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_Slime_Entity" general="cls_Entity" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IBinarySerializable" client="cls_Slime" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_ICollidable" client="cls_Slime" supplier="iface_ICollidable" contract="iface_ICollidable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IDamaging" client="cls_Slime" supplier="iface_IDamaging" contract="iface_IDamaging" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IFacing" client="cls_Slime" supplier="iface_IFacing" contract="iface_IFacing" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IGravityAffected" client="cls_Slime" supplier="iface_IGravityAffected" contract="iface_IGravityAffected" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IHealth" client="cls_Slime" supplier="iface_IHealth" contract="iface_IHealth" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Slime_IMoving" client="cls_Slime" supplier="iface_IMoving" contract="iface_IMoving" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_Slime_DetectionRange" name="DetectionRange" visibility="public" isStatic="false" isReadOnly="true" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_Slime_JumpVelocity" name="JumpVelocity" visibility="public" isStatic="true" isReadOnly="true" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_Slime_WeakJumpVelocity" name="WeakJumpVelocity" visibility="public" isStatic="true" isReadOnly="true" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_Slime_JumpIntervalTicks" name="JumpIntervalTicks" visibility="public" isStatic="false" isReadOnly="true" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_CollisionSize" name="CollisionSize" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_Damage" name="Damage" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_DamageBox" name="DamageBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_KnockBackMultiplier" name="KnockBackMultiplier" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_MaxHealth" name="MaxHealth" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_Health" name="Health" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_HitBox" name="HitBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_InvincibleUntil" name="InvincibleUntil" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_Rotation" name="Rotation" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_GravitationalAcceleration" name="GravitationalAcceleration" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_Velocity" name="Velocity" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Slime_JumpTimer" name="JumpTimer" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_Slime_1" name="Slime" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_rotation" name="rotation" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_rotation_default" value="0" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_gravitationalAcceleration" name="gravitationalAcceleration" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_gravitationalAcceleration_default" value="16.0f" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_velocity" name="velocity" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_velocity_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_maxHealth" name="maxHealth" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_maxHealth_default" value="100" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_health" name="health" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_health_default" value="100" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_hitBox" name="hitBox" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_hitBox_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_invincibleUntil" name="invincibleUntil" direction="in" type="prim_long">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_invincibleUntil_default" value="0" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_damage" name="damage" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_damage_default" value="10" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_damageBox" name="damageBox" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_damageBox_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_knockBackMultiplier" name="knockBackMultiplier" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_knockBackMultiplier_default" value="0" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Slime_1_jumpTimer" name="jumpTimer" direction="in" type="prim_long">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Slime_1_jumpTimer_default" value="0" />
+        </ownedParameter>
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Slime_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Slime_Copy_1_ret" direction="return" type="cls_Slime" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Slime_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Slime_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Slime_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Slime_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Slime_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Slime_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Slime_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_SimpleBullet" name="SimpleBullet" visibility="public" isAbstract="false" clientDependency="real_SimpleBullet_IBinarySerializable real_SimpleBullet_ICollidable real_SimpleBullet_IDamaging real_SimpleBullet_ILifespan real_SimpleBullet_IMoving">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_SimpleBullet_Bullet" general="cls_Bullet" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_SimpleBullet_IBinarySerializable" client="cls_SimpleBullet" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_SimpleBullet_ICollidable" client="cls_SimpleBullet" supplier="iface_ICollidable" contract="iface_ICollidable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_SimpleBullet_IDamaging" client="cls_SimpleBullet" supplier="iface_IDamaging" contract="iface_IDamaging" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_SimpleBullet_ILifespan" client="cls_SimpleBullet" supplier="iface_ILifespan" contract="iface_ILifespan" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_SimpleBullet_IMoving" client="cls_SimpleBullet" supplier="iface_IMoving" contract="iface_IMoving" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_CollisionSize" name="CollisionSize" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_Damage" name="Damage" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_DamageBox" name="DamageBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_KnockBackMultiplier" name="KnockBackMultiplier" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_Velocity" name="Velocity" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_SimpleBullet_TicksLeft" name="TicksLeft" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_SimpleBullet_1" name="SimpleBullet" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_firedBy" name="firedBy" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_collisionSize" name="collisionSize" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_damage" name="damage" direction="in" type="prim_int" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_damageBox" name="damageBox" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_knockBackMultiplier" name="knockBackMultiplier" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_velocity" name="velocity" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_SimpleBullet_1_ticksLeft" name="ticksLeft" direction="in" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SimpleBullet_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_SimpleBullet_Copy_1_ret" direction="return" type="cls_SimpleBullet" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SimpleBullet_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_SimpleBullet_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SimpleBullet_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_SimpleBullet_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SimpleBullet_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_SimpleBullet_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_SimpleBullet_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_EntityId" name="EntityId" visibility="public" isAbstract="false" clientDependency="real_EntityId_IBinarySerializable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_EntityId_IBinarySerializable" client="cls_EntityId" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_EntityId_Value" name="Value" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_EntityId_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_EntityId_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_EntityId_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_EntityId_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_EntityId_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_EntityId_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_EntityId_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Player" name="Player" visibility="public" isAbstract="false" clientDependency="real_Player_IBinarySerializable real_Player_ICollidable real_Player_IDamaging real_Player_IFacing real_Player_IGravityAffected real_Player_IHealth real_Player_IMoving">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_Player_Entity" general="cls_Entity" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IBinarySerializable" client="cls_Player" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_ICollidable" client="cls_Player" supplier="iface_ICollidable" contract="iface_ICollidable" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IDamaging" client="cls_Player" supplier="iface_IDamaging" contract="iface_IDamaging" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IFacing" client="cls_Player" supplier="iface_IFacing" contract="iface_IFacing" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IGravityAffected" client="cls_Player" supplier="iface_IGravityAffected" contract="iface_IGravityAffected" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IHealth" client="cls_Player" supplier="iface_IHealth" contract="iface_IHealth" />
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Player_IMoving" client="cls_Player" supplier="iface_IMoving" contract="iface_IMoving" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_UserId" name="UserId" visibility="public" isStatic="false" isReadOnly="false" type="ext_Guid" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_LastCommand" name="LastCommand" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_CollisionSize" name="CollisionSize" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_Damage" name="Damage" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_DamageBox" name="DamageBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_KnockBackMultiplier" name="KnockBackMultiplier" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_MaxHealth" name="MaxHealth" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_Health" name="Health" visibility="public" isStatic="false" isReadOnly="false" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_HitBox" name="HitBox" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_InvincibleUntil" name="InvincibleUntil" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_Rotation" name="Rotation" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_GravitationalAcceleration" name="GravitationalAcceleration" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Player_Velocity" name="Velocity" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_Player_1" name="Player" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_id" name="id" direction="in" type="cls_EntityId" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_userId" name="userId" direction="in" type="ext_Guid" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_lastCommand" name="lastCommand" direction="in" type="prim_long">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_lastCommand_default" value="-1" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_rotation" name="rotation" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_rotation_default" value="0" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_gravitationalAcceleration" name="gravitationalAcceleration" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_gravitationalAcceleration_default" value="16.0f" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_velocity" name="velocity" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_velocity_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_maxHealth" name="maxHealth" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_maxHealth_default" value="10000" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_health" name="health" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_health_default" value="10000" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_hitBox" name="hitBox" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_hitBox_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_invincibleUntil" name="invincibleUntil" direction="in" type="prim_long">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_invincibleUntil_default" value="0" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_damage" name="damage" direction="in" type="prim_int">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_damage_default" value="10" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_damageBox" name="damageBox" direction="in" type="ext_Vector2">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_damageBox_default" value="new Vector2()" />
+        </ownedParameter>
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_Player_1_knockBackMultiplier" name="knockBackMultiplier" direction="in" type="prim_float">
+          <defaultValue xmi:type="uml:LiteralString" xmi:id="param_ctor_Player_1_knockBackMultiplier_default" value="0" />
+        </ownedParameter>
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Player_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Player_Copy_1_ret" direction="return" type="cls_Player" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Player_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Player_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Player_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Player_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Player_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Player_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Player_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_SpawnSystem" name="SpawnSystem" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_SpawnSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_SpawnSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Simulation" name="Simulation" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Simulation_Tick_1" name="Tick" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Simulation_Tick_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Simulation_Tick_1_commands" name="commands" direction="in" type="cls_InputCommand" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Simulation_Tick_1_ret" direction="return" type="cls_World" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_AiSystem" name="AiSystem" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_AiSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_AiSystem_ProcessSlime_1" name="ProcessSlime" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_ProcessSlime_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_ProcessSlime_1_slime" name="slime" direction="in" type="cls_Slime" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_AiSystem_FindNearestPlayer_1" name="FindNearestPlayer" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_FindNearestPlayer_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_FindNearestPlayer_1_slime" name="slime" direction="in" type="cls_Slime" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_AiSystem_FindNearestPlayer_1_ret" direction="return" type="cls_Player" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_AiSystem_IsObstacleAhead_1" name="IsObstacleAhead" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_IsObstacleAhead_1_slime" name="slime" direction="in" type="cls_Slime" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_IsObstacleAhead_1_direction" name="direction" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_AiSystem_IsObstacleAhead_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_AiSystem_IsObstacleAhead_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_CleanupSystem" name="CleanupSystem" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CleanupSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CleanupSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_MovementSystem" name="MovementSystem" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_MovementSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_MovementSystem_MoveCollidable_1" name="MoveCollidable" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveCollidable_1_entity" name="entity" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveCollidable_1_moving" name="moving" direction="in" type="iface_IMoving" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveCollidable_1_collidable" name="collidable" direction="in" type="iface_ICollidable" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveCollidable_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveCollidable_1_movement" name="movement" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_MovementSystem_MoveCollidable_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_MovementSystem_MoveHorizontal_1" name="MoveHorizontal" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveHorizontal_1_entity" name="entity" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveHorizontal_1_moving" name="moving" direction="in" type="iface_IMoving" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveHorizontal_1_collidable" name="collidable" direction="in" type="iface_ICollidable" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveHorizontal_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveHorizontal_1_amount" name="amount" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_MovementSystem_MoveHorizontal_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_MovementSystem_MoveVertical_1" name="MoveVertical" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveVertical_1_entity" name="entity" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveVertical_1_moving" name="moving" direction="in" type="iface_IMoving" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveVertical_1_collidable" name="collidable" direction="in" type="iface_ICollidable" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveVertical_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_MovementSystem_MoveVertical_1_amount" name="amount" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_MovementSystem_MoveVertical_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_DamageSystem" name="DamageSystem" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_DamageSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_DamageSystem_Intersects_1" name="Intersects" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_Intersects_1_minA" name="minA" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_Intersects_1_maxA" name="maxA" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_Intersects_1_minB" name="minB" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_Intersects_1_maxB" name="maxB" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_DamageSystem_Intersects_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_DamageSystem_ApplyKnockBack_1" name="ApplyKnockBack" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_ApplyKnockBack_1_attacker" name="attacker" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_ApplyKnockBack_1_target" name="target" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_DamageSystem_ApplyKnockBack_1_damaging" name="damaging" direction="in" type="iface_IDamaging" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_PlayerCommandSystem" name="PlayerCommandSystem" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_PlayerCommandSystem_PlayerSpeed" name="PlayerSpeed" visibility="private" isStatic="false" isReadOnly="true" type="prim_float" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_PlayerCommandSystem_Process_1" name="Process" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_PlayerCommandSystem_Process_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_PlayerCommandSystem_Process_1_commands" name="commands" direction="in" type="cls_InputCommand" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_PlayerCommandSystem_CreateBullet_1" name="CreateBullet" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_PlayerCommandSystem_CreateBullet_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_PlayerCommandSystem_CreateBullet_1_player" name="player" direction="in" type="cls_Player" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_PlayerCommandSystem_CreateBullet_1_clickPosition" name="clickPosition" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_CollisionService" name="CollisionService" visibility="public" isAbstract="false">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CollisionService_CollidesWithBlock_1" name="CollidesWithBlock" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_CollidesWithBlock_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_CollidesWithBlock_1_size" name="size" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_CollidesWithBlock_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_CollisionService_CollidesWithBlock_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CollisionService_IsGrounded_1" name="IsGrounded" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_IsGrounded_1_position" name="position" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_IsGrounded_1_size" name="size" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_IsGrounded_1_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_CollisionService_IsGrounded_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CollisionService_OverlapsHorizontally_1" name="OverlapsHorizontally" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsHorizontally_1_bounds1Min" name="bounds1Min" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsHorizontally_1_bounds1Max" name="bounds1Max" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsHorizontally_1_bounds2Min" name="bounds2Min" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsHorizontally_1_bounds2Max" name="bounds2Max" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_CollisionService_OverlapsHorizontally_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_CollisionService_OverlapsVertically_1" name="OverlapsVertically" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsVertically_1_bounds1Min" name="bounds1Min" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsVertically_1_bounds1Max" name="bounds1Max" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsVertically_1_bounds2Min" name="bounds2Min" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_CollisionService_OverlapsVertically_1_bounds2Max" name="bounds2Max" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_CollisionService_OverlapsVertically_1_ret" direction="return" type="prim_bool" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Interface" xmi:id="iface_IBinarySerializable" name="IBinarySerializable" visibility="public" isAbstract="true">
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_IBinarySerializable_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_IBinarySerializable_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_IBinarySerializable_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="true">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_IBinarySerializable_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_IBinarySerializable_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_Block" name="Block" visibility="public" isAbstract="false" clientDependency="real_Block_IBinarySerializable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_Block_IBinarySerializable" client="cls_Block" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Block_Position" name="Position" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_Block_Type" name="Type" visibility="public" isStatic="false" isReadOnly="true" type="enum_BlockType" association="assoc_Block_Type_BlockType" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Block_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Block_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Block_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Block_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_Block_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_Block_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_Block_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RegisterUserMessage" name="RegisterUserMessage" visibility="public" isAbstract="false" clientDependency="real_RegisterUserMessage_IBinarySerializable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_RegisterUserMessage_IBinarySerializable" client="cls_RegisterUserMessage" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RegisterUserMessage_ClientId" name="ClientId" visibility="public" isStatic="false" isReadOnly="false" type="ext_Guid" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RegisterUserMessage_1" name="RegisterUserMessage" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RegisterUserMessage_2" name="RegisterUserMessage" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RegisterUserMessage_2_clientId" name="clientId" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RegisterUserMessage_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RegisterUserMessage_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RegisterUserMessage_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RegisterUserMessage_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_RegisterUserMessage_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_World" name="World" visibility="public" isAbstract="false" clientDependency="real_World_IBinarySerializable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_World_IBinarySerializable" client="cls_World" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_World_Tick" name="Tick" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_World_Blocks" name="Blocks" visibility="public" isStatic="false" isReadOnly="false" type="cls_Block" association="assoc_World_Blocks_Block">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_World_Blocks_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_World_Blocks_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_World_Entities" name="Entities" visibility="public" isStatic="false" isReadOnly="true" type="cls_Entity" association="assoc_World_Entities_Entity">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_World_Entities_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_World_Entities_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_World_NextEntityId" name="NextEntityId" visibility="public" isStatic="false" isReadOnly="false" type="cls_EntityId" association="assoc_World_NextEntityId_EntityId" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_Get_1" name="Get" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_World_Get_1_ret" direction="return" type="ext_T">
+          <lowerValue xmi:type="uml:LiteralInteger" xmi:id="op_World_Get_1_ret_lower" value="0" />
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="op_World_Get_1_ret_upper" value="*" />
+        </ownedParameter>
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_World_1" name="World" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_World_2" name="World" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_World_2_tick" name="tick" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_World_2_blocks" name="blocks" direction="in" type="cls_Block" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_World_2_entities" name="entities" direction="in" type="cls_Entity" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_World_2_nextEntityId" name="nextEntityId" direction="in" type="cls_EntityId" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_World_3" name="World" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_World_3_path" name="path" direction="in" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_Copy_1" name="Copy" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_World_Copy_1_ret" direction="return" type="cls_World" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_Save_1" name="Save" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_World_Save_1_path" name="path" direction="in" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_World_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_World_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_World_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_World_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_World_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_InputCommand" name="InputCommand" visibility="public" isAbstract="false" clientDependency="real_InputCommand_IBinarySerializable">
+      <interfaceRealization xmi:type="uml:InterfaceRealization" xmi:id="real_InputCommand_IBinarySerializable" client="cls_InputCommand" supplier="iface_IBinarySerializable" contract="iface_IBinarySerializable" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_InputCommand_Sequence" name="Sequence" visibility="public" isStatic="false" isReadOnly="true" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_InputCommand_PlayerId" name="PlayerId" visibility="public" isStatic="false" isReadOnly="true" type="ext_Guid" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_InputCommand_Keys" name="Keys" visibility="public" isStatic="false" isReadOnly="true" type="enum_KeyState" association="assoc_InputCommand_Keys_KeyState" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_InputCommand_Pointer" name="Pointer" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_InputCommand_ToString_1" name="ToString" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_InputCommand_ToString_1_ret" direction="return" type="prim_string" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_InputCommand_Serialize_1" name="Serialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_InputCommand_Serialize_1_writer" name="writer" direction="in" type="cls_BinaryStreamHandler" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_InputCommand_Deserialize_1" name="Deserialize" visibility="public" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_InputCommand_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_InputCommand_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="enum_BlockType" name="BlockType" visibility="public">
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_BlockType_Grass" name="Grass" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_BlockType_Rock" name="Rock" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_BlockType_Iron" name="Iron" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_BinaryStreamHandler" name="BinaryStreamHandler" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_BinaryStreamHandler_ClassRegistry" name="ClassRegistry" visibility="public" isStatic="true" isReadOnly="true" type="cls_ClassRegistry" association="assoc_BinaryStreamHandler_ClassRegistry_ClassRegistry" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_BinaryStreamHandler_writer" name="writer" visibility="private" isStatic="false" isReadOnly="false" type="ext_BinaryWriter" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_BinaryStreamHandler_reader" name="reader" visibility="private" isStatic="false" isReadOnly="false" type="ext_BinaryReader" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_BinaryStreamHandler_stream" name="stream" visibility="private" isStatic="false" isReadOnly="false" type="ext_Stream" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_1" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_1_stream" name="stream" direction="in" type="ext_Stream" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_1_value" name="value" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Read_1" name="Read" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Read_1_stream" name="stream" direction="in" type="ext_Stream" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_BinaryStreamHandler_Read_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_2" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_2_value" name="value" direction="in" type="prim_byte" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_3" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_3_value" name="value" direction="in" type="prim_byte" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_4" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_4_value" name="value" direction="in" type="prim_short" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_5" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_5_value" name="value" direction="in" type="prim_short" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_6" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_6_value" name="value" direction="in" type="prim_int" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_7" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_7_value" name="value" direction="in" type="prim_int" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_8" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_8_value" name="value" direction="in" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_9" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_9_value" name="value" direction="in" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_10" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_10_value" name="value" direction="in" type="prim_float" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_11" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_11_value" name="value" direction="in" type="prim_double" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_12" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_12_value" name="value" direction="in" type="prim_bool" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_13" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_13_value" name="value" direction="in" type="ext_Guid" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_14" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_14_value" name="value" direction="in" type="enum_BlockType" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_15" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_15_value" name="value" direction="in" type="enum_KeyState" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_16" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_16_value" name="value" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Write_17" name="Write" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_Write_17_value" name="value" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_WriteTagged_1" name="WriteTagged" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_BinaryStreamHandler_WriteTagged_1_value" name="value" direction="in" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_Read_2" name="Read" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_BinaryStreamHandler_Read_2_ret" direction="return" type="ext_T" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_BinaryStreamHandler_ReadTagged_1" name="ReadTagged" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_BinaryStreamHandler_ReadTagged_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Enumeration" xmi:id="enum_KeyState" name="KeyState" visibility="public">
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_None" name="None" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_Left" name="Left" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_Right" name="Right" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_Up" name="Up" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_MouseLeft" name="MouseLeft" />
+      <ownedLiteral xmi:type="uml:EnumerationLiteral" xmi:id="lit_enum_KeyState_MouseRight" name="MouseRight" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_GameConstants" name="GameConstants" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_SnapshotIntervalTicks" name="SnapshotIntervalTicks" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_TargetFrameRate" name="TargetFrameRate" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_InterpolationBufferTicks" name="InterpolationBufferTicks" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_InterpolationDelayTicks" name="InterpolationDelayTicks" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_InterpolationBufferSize" name="InterpolationBufferSize" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_SimulationTickRate" name="SimulationTickRate" visibility="public" isStatic="false" isReadOnly="true" type="prim_int" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_GameConstants_SimulationTickDuration" name="SimulationTickDuration" visibility="public" isStatic="false" isReadOnly="true" type="prim_double" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_ClassRegistry" name="ClassRegistry" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClassRegistry_types" name="types" visibility="private" isStatic="false" isReadOnly="true" type="ext_Type">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_ClassRegistry_types_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_ClassRegistry_types_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_ClassRegistry_deserializers" name="deserializers" visibility="private" isStatic="false" isReadOnly="true" type="ext_Func_BinaryStreamHandler__object_">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_ClassRegistry_deserializers_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_ClassRegistry_deserializers_upper" value="*" />
+      </ownedAttribute>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_ClassRegistry_1" name="ClassRegistry" visibility="public" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_RegisterTypes_1" name="RegisterTypes" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_GetType_1" name="GetType" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_GetType_1_id" name="id" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_GetType_1_ret" direction="return" type="ext_Type" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_GetId_1" name="GetId" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_GetId_1_ret" direction="return" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_GetId_2" name="GetId" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_GetId_2_type" name="type" direction="in" type="ext_Type" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_GetId_2_ret" direction="return" type="prim_long" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_Deserialize_1" name="Deserialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_Deserialize_1_id" name="id" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_Deserialize_1_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_Deserialize_1_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_Deserialize_2" name="Deserialize" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_Deserialize_2_type" name="type" direction="in" type="ext_Type" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_Deserialize_2_reader" name="reader" direction="in" type="cls_BinaryStreamHandler" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_Deserialize_2_ret" direction="return" type="iface_IBinarySerializable" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_ClassRegistry_Hash_1" name="Hash" visibility="private" isStatic="true" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_ClassRegistry_Hash_1_value" name="value" direction="in" type="prim_string" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_ClassRegistry_Hash_1_ret" direction="return" type="prim_long" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RemoteServer_commandQueue_CommandQueue" memberEnd="field_RemoteServer_commandQueue assoc_RemoteServer_commandQueue_CommandQueue_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RemoteServer_commandQueue_CommandQueue_end_source" type="cls_RemoteServer" association="assoc_RemoteServer_commandQueue_CommandQueue" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RemoteServer_clients_ClientConnection" memberEnd="field_RemoteServer_clients assoc_RemoteServer_clients_ClientConnection_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RemoteServer_clients_ClientConnection_end_source" type="cls_RemoteServer" association="assoc_RemoteServer_clients_ClientConnection" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RemoteServer_world_World" memberEnd="field_RemoteServer_world assoc_RemoteServer_world_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RemoteServer_world_World_end_source" type="cls_RemoteServer" association="assoc_RemoteServer_world_World" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_CommandQueue_commands_InputCommand" memberEnd="field_CommandQueue_commands assoc_CommandQueue_commands_InputCommand_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_CommandQueue_commands_InputCommand_end_source" type="cls_CommandQueue" association="assoc_CommandQueue_commands_InputCommand" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_World_World" memberEnd="prop_RenderInput_World assoc_RenderInput_World_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_World_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_World_World" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_AuthoritativeSnapshots_World" memberEnd="prop_RenderInput_AuthoritativeSnapshots assoc_RenderInput_AuthoritativeSnapshots_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_AuthoritativeSnapshots_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_AuthoritativeSnapshots_World" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_SharedInputState_state_Snapshot" memberEnd="field_SharedInputState_state assoc_SharedInputState_state_Snapshot_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_SharedInputState_state_Snapshot_end_source" type="cls_SharedInputState" association="assoc_SharedInputState_state_Snapshot" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_Snapshot_Keys_KeyState" memberEnd="prop_Snapshot_Keys assoc_Snapshot_Keys_KeyState_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_Snapshot_Keys_KeyState_end_source" type="cls_Snapshot" association="assoc_Snapshot_Keys_KeyState" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable" memberEnd="field_RemoteServerConnection_reconnectMessage assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable_end_source" type="cls_RemoteServerConnection" association="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_input_SharedInputState" memberEnd="field_LocalServer_input assoc_LocalServer_input_SharedInputState_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_input_SharedInputState_end_source" type="cls_LocalServer" association="assoc_LocalServer_input_SharedInputState" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_remoteServer_RemoteServerConnection" memberEnd="field_LocalServer_remoteServer assoc_LocalServer_remoteServer_RemoteServerConnection_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_remoteServer_RemoteServerConnection_end_source" type="cls_LocalServer" association="assoc_LocalServer_remoteServer_RemoteServerConnection" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_pendingCommands_InputCommand" memberEnd="field_LocalServer_pendingCommands assoc_LocalServer_pendingCommands_InputCommand_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_pendingCommands_InputCommand_end_source" type="cls_LocalServer" association="assoc_LocalServer_pendingCommands_InputCommand" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_world_World" memberEnd="field_LocalServer_world assoc_LocalServer_world_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_world_World_end_source" type="cls_LocalServer" association="assoc_LocalServer_world_World" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_Entity_Id_EntityId" memberEnd="prop_Entity_Id assoc_Entity_Id_EntityId_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_Entity_Id_EntityId_end_source" type="cls_Entity" association="assoc_Entity_Id_EntityId" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_Bullet_FiredBy_EntityId" memberEnd="prop_Bullet_FiredBy assoc_Bullet_FiredBy_EntityId_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_Bullet_FiredBy_EntityId_end_source" type="cls_Bullet" association="assoc_Bullet_FiredBy_EntityId" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_Block_Type_BlockType" memberEnd="prop_Block_Type assoc_Block_Type_BlockType_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_Block_Type_BlockType_end_source" type="cls_Block" association="assoc_Block_Type_BlockType" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_World_Blocks_Block" memberEnd="prop_World_Blocks assoc_World_Blocks_Block_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_World_Blocks_Block_end_source" type="cls_World" association="assoc_World_Blocks_Block" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_World_Entities_Entity" memberEnd="prop_World_Entities assoc_World_Entities_Entity_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_World_Entities_Entity_end_source" type="cls_World" association="assoc_World_Entities_Entity" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_World_NextEntityId_EntityId" memberEnd="prop_World_NextEntityId assoc_World_NextEntityId_EntityId_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_World_NextEntityId_EntityId_end_source" type="cls_World" association="assoc_World_NextEntityId_EntityId" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_InputCommand_Keys_KeyState" memberEnd="prop_InputCommand_Keys assoc_InputCommand_Keys_KeyState_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_InputCommand_Keys_KeyState_end_source" type="cls_InputCommand" association="assoc_InputCommand_Keys_KeyState" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_BinaryStreamHandler_ClassRegistry_ClassRegistry" memberEnd="field_BinaryStreamHandler_ClassRegistry assoc_BinaryStreamHandler_ClassRegistry_ClassRegistry_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_BinaryStreamHandler_ClassRegistry_ClassRegistry_end_source" type="cls_BinaryStreamHandler" association="assoc_BinaryStreamHandler_ClassRegistry_ClassRegistry" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClientConnection_IBinarySerializable" client="cls_ClientConnection" supplier="iface_IBinarySerializable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SharedInputState_KeyState" client="cls_SharedInputState" supplier="enum_KeyState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_LocalServer" client="cls_GameWindow" supplier="cls_LocalServer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_SharedInputState" client="cls_GameWindow" supplier="cls_SharedInputState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_World" client="cls_GameWindow" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_Entity" client="cls_GameWindow" supplier="cls_Entity" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_RenderInput" client="cls_LocalServer" supplier="cls_RenderInput" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_HeavyBullet_EntityId" client="cls_HeavyBullet" supplier="cls_EntityId" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_HeavyBullet_BinaryStreamHandler" client="cls_HeavyBullet" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Slime_EntityId" client="cls_Slime" supplier="cls_EntityId" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Slime_BinaryStreamHandler" client="cls_Slime" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SimpleBullet_EntityId" client="cls_SimpleBullet" supplier="cls_EntityId" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SimpleBullet_BinaryStreamHandler" client="cls_SimpleBullet" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_EntityId_BinaryStreamHandler" client="cls_EntityId" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Player_EntityId" client="cls_Player" supplier="cls_EntityId" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Player_BinaryStreamHandler" client="cls_Player" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SpawnSystem_World" client="cls_SpawnSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_World" client="cls_Simulation" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_InputCommand" client="cls_Simulation" supplier="cls_InputCommand" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_World" client="cls_AiSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_Slime" client="cls_AiSystem" supplier="cls_Slime" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_Player" client="cls_AiSystem" supplier="cls_Player" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_Block" client="cls_AiSystem" supplier="cls_Block" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_CleanupSystem_World" client="cls_CleanupSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_World" client="cls_MovementSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_Entity" client="cls_MovementSystem" supplier="cls_Entity" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_IMoving" client="cls_MovementSystem" supplier="iface_IMoving" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_ICollidable" client="cls_MovementSystem" supplier="iface_ICollidable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_Block" client="cls_MovementSystem" supplier="cls_Block" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_World" client="cls_DamageSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_Entity" client="cls_DamageSystem" supplier="cls_Entity" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_IDamaging" client="cls_DamageSystem" supplier="iface_IDamaging" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_World" client="cls_PlayerCommandSystem" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_InputCommand" client="cls_PlayerCommandSystem" supplier="cls_InputCommand" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_Player" client="cls_PlayerCommandSystem" supplier="cls_Player" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_CollisionService_Block" client="cls_CollisionService" supplier="cls_Block" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_IBinarySerializable_BinaryStreamHandler" client="iface_IBinarySerializable" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Block_BinaryStreamHandler" client="cls_Block" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RegisterUserMessage_BinaryStreamHandler" client="cls_RegisterUserMessage" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_World_BinaryStreamHandler" client="cls_World" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_InputCommand_BinaryStreamHandler" client="cls_InputCommand" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_BinaryStreamHandler_IBinarySerializable" client="cls_BinaryStreamHandler" supplier="iface_IBinarySerializable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_BinaryStreamHandler_BlockType" client="cls_BinaryStreamHandler" supplier="enum_BlockType" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_BinaryStreamHandler_KeyState" client="cls_BinaryStreamHandler" supplier="enum_KeyState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClassRegistry_IBinarySerializable" client="cls_ClassRegistry" supplier="iface_IBinarySerializable" />
+  </uml:Model>
+</xmi:XMI>
