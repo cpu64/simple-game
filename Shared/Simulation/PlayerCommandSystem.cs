@@ -77,11 +77,11 @@ public static class PlayerCommandSystem
         //     world.NextEntityId++,
         //     player.Position,
         //     player.Id,
-        //     new Vector2(0.1f, 0.1f),
         //     10,
         //     new Vector2(0.1f, 0.1f),
         //     10,
         //     player.Velocity + velocity,
+        //     new Vector2(0.1f, 0.1f),
         //     300
         // );
 
@@ -89,12 +89,12 @@ public static class PlayerCommandSystem
             world.NextEntityId++,
             player.Position,
             player.Id,
-            new Vector2(0.1f, 0.1f),
             50,
             new Vector2(0.1f, 0.1f),
             10,
-            8.0f,
             player.Velocity + velocity,
+            new Vector2(0.1f, 0.1f),
+            8.0f,
             120
         );
 

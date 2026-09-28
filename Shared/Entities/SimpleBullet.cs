@@ -1,32 +1,24 @@
 using System.Numerics;
 
-public class SimpleBullet : Bullet, IBinarySerializable, ICollidable, IDamaging, ILifespan, IMoving
+public class SimpleBullet : Bullet, IBinarySerializable, ICollidable, ILifespan
 {
     public Vector2 CollisionSize { get; set; }
-    public int Damage { get; set; }
-    public Vector2 DamageBox { get; set; }
-    public float KnockBackMultiplier { get; set; }
-    public Vector2 Velocity { get; set; }
     public long TicksLeft { get; set; }
 
     public SimpleBullet(
         EntityId id,
         Vector2 position,
         EntityId firedBy,
-        Vector2 collisionSize,
         int damage,
         Vector2 damageBox,
         float knockBackMultiplier,
         Vector2 velocity,
+        Vector2 collisionSize,
         long ticksLeft
     )
-        : base(id, position, firedBy)
+        : base(id, position, firedBy, damage, damageBox, knockBackMultiplier, velocity)
     {
         CollisionSize = collisionSize;
-        Damage = damage;
-        DamageBox = damageBox;
-        KnockBackMultiplier = knockBackMultiplier;
-        Velocity = velocity;
         TicksLeft = ticksLeft;
     }
 
@@ -37,8 +29,7 @@ public class SimpleBullet : Bullet, IBinarySerializable, ICollidable, IDamaging,
 
     public override string ToString()
     {
-        return $"{base.ToString()}, CollisionSize={CollisionSize}, Damage={Damage}, "
-            + $"DamageBox={DamageBox}, KnockBackMultiplier={KnockBackMultiplier}, Velocity={Velocity}, TicksLeft={TicksLeft}";
+        return $"{base.ToString()}, CollisionSize={CollisionSize}, TicksLeft={TicksLeft}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
@@ -46,11 +37,11 @@ public class SimpleBullet : Bullet, IBinarySerializable, ICollidable, IDamaging,
         writer.Write(Id);
         writer.Write(Position);
         writer.Write(FiredBy);
-        writer.Write(CollisionSize);
         writer.Write(Damage);
         writer.Write(DamageBox);
         writer.Write(KnockBackMultiplier);
         writer.Write(Velocity);
+        writer.Write(CollisionSize);
         writer.Write(TicksLeft);
     }
 
@@ -60,10 +51,10 @@ public class SimpleBullet : Bullet, IBinarySerializable, ICollidable, IDamaging,
             reader.Read<EntityId>(),
             reader.Read<Vector2>(),
             reader.Read<EntityId>(),
-            reader.Read<Vector2>(),
             reader.Read<int>(),
             reader.Read<Vector2>(),
             reader.Read<float>(),
+            reader.Read<Vector2>(),
             reader.Read<Vector2>(),
             reader.Read<long>()
         );

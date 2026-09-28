@@ -6,10 +6,10 @@ public static class CleanupSystem
     {
         world.Entities.RemoveAll(entity =>
         {
-            if (entity is IHealth alive && alive.IsDead)
+            if (entity is ILifespan lifespan && lifespan.TicksLeft-- <= 0)
                 return true;
 
-            if (entity is ILifespan lifespan && lifespan.TicksLeft-- <= 0)
+            if (entity is IHealth alive && alive.IsDead)
                 return true;
 
             return false;

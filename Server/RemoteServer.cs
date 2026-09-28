@@ -178,7 +178,7 @@ public class RemoteServer
 
             if (player == null)
             {
-                world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId));
+                world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId, -1, new Vector2(1.0f, 1.0f)));
             }
 
             snapshot = world.Copy();

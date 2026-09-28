@@ -30,6 +30,9 @@ public static class DamageSystem
                 if (attacker is Bullet bullet && bullet.FiredBy == target.Id)
                     continue;
 
+                if (health.InvincibleUntil > world.Tick)
+                    continue;
+
                 Vector2 targetMin = target.Position - health.HitBox * 0.5f;
 
                 Vector2 targetMax = target.Position + health.HitBox * 0.5f;
@@ -38,9 +41,6 @@ public static class DamageSystem
                 {
                     continue;
                 }
-
-                if (health.InvincibleUntil > world.Tick)
-                    continue;
 
                 health.Health -= damaging.Damage;
                 health.Health = System.Math.Max(health.Health, 0);
