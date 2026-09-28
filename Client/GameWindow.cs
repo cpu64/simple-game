@@ -6,6 +6,8 @@ using Raylib_cs;
 
 public static class GameWindow
 {
+    private const float PixelsPerUnit = 20.0f;
+
     public static void Run(LocalServer server, SharedInputState input, Guid playerId)
     {
         Raylib.InitWindow(800, 600, "Terraria Prototype");
@@ -28,6 +30,8 @@ public static class GameWindow
 
                 RenderBullets(renderInput.World);
 
+                RenderSlimes(renderInput.World);
+
                 RenderLocalPlayer(renderInput.World, playerId);
 
                 RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
@@ -46,7 +50,37 @@ public static class GameWindow
     {
         foreach (SimpleBullet bullet in world.Entities.OfType<SimpleBullet>())
         {
-            Raylib.DrawRectangle((int)Math.Round(bullet.Position.X * 20.0), (int)Math.Round(bullet.Position.Y * 20.0), 5, 5, Color.Green);
+            Vector2 size = bullet.CollisionSize * PixelsPerUnit;
+            Vector2 topLeft = bullet.Position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Yellow);
+        }
+
+        foreach (HeavyBullet bullet in world.Entities.OfType<HeavyBullet>())
+        {
+            Vector2 size = bullet.CollisionSize * PixelsPerUnit;
+            Vector2 topLeft = bullet.Position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Yellow);
+        }
+    }
+
+    private static void RenderSlimes(World world)
+    {
+        foreach (Slime slime in world.Entities.OfType<Slime>())
+        {
+            Vector2 size = slime.CollisionSize * PixelsPerUnit;
+            Vector2 topLeft = slime.Position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle(
+                (int)Math.Round(topLeft.X),
+                (int)Math.Round(topLeft.Y),
+                (int)Math.Round(size.X),
+                (int)Math.Round(size.Y),
+                new Color(50, 150, 255, 230)
+            );
+
+            RenderHealthBar(slime);
         }
     }
 
@@ -54,7 +88,13 @@ public static class GameWindow
     {
         foreach (Block block in world.Blocks)
         {
-            Raylib.DrawRectangle((int)Math.Round(block.Position.X * 20.0), (int)Math.Round(block.Position.Y * 20.0), 20, 20, Color.Green);
+            Raylib.DrawRectangle(
+                (int)Math.Round(block.Position.X * PixelsPerUnit),
+                (int)Math.Round(block.Position.Y * PixelsPerUnit),
+                (int)Math.Round(PixelsPerUnit),
+                (int)Math.Round(PixelsPerUnit),
+                Color.Green
+            );
         }
     }
 
@@ -65,7 +105,12 @@ public static class GameWindow
         if (player == null)
             return;
 
-        Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);
+        Vector2 size = player.CollisionSize * PixelsPerUnit;
+        Vector2 topLeft = player.Position * PixelsPerUnit - size * 0.5f;
+
+        Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Red);
+
+        RenderHealthBar(player);
     }
 
     private static void RenderRemotePlayers(IReadOnlyList<World> snapshots, long worldTick, Guid localPlayerId)
@@ -153,7 +198,82 @@ public static class GameWindow
 
             Vector2 position = Vector2.Lerp(beforePlayer.Position, afterPlayer.Position, (float)alpha);
 
-            Raylib.DrawRectangle((int)Math.Round(position.X * 20.0), (int)Math.Round(position.Y * 20.0), 20, 20, Color.Red);
+            Vector2 size = beforePlayer.CollisionSize * PixelsPerUnit;
+            Vector2 topLeft = position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Red);
+
+            RenderHealthBar(beforePlayer, position);
+        }
+    }
+
+    private static void RenderHealthBar(Entity entity)
+    {
+        if (entity is not IHealth health)
+            return;
+
+        if (health.IsDead)
+            return;
+
+        if (health.Health >= health.MaxHealth)
+            return;
+
+        if (health.MaxHealth <= 0)
+            return;
+
+        int barWidth = (int)Math.Round(PixelsPerUnit);
+        int barHeight = 4;
+
+        float centerX = entity.Position.X * PixelsPerUnit;
+        float topY = entity.Position.Y * PixelsPerUnit;
+
+        int barX = (int)Math.Round(centerX - barWidth * 0.5f);
+        int barY = (int)Math.Round(topY - barHeight - 6);
+
+        Raylib.DrawRectangle(barX, barY, barWidth, barHeight, Color.Maroon);
+
+        double healthPercent = Math.Clamp((double)health.Health / health.MaxHealth, 0.0, 1.0);
+
+        int healthWidth = (int)Math.Round(barWidth * healthPercent);
+
+        if (healthWidth > 0)
+        {
+            Raylib.DrawRectangle(barX, barY, healthWidth, barHeight, Color.Green);
+        }
+    }
+
+    private static void RenderHealthBar(Entity entity, Vector2 position)
+    {
+        if (entity is not IHealth health)
+            return;
+
+        if (health.IsDead)
+            return;
+
+        if (health.Health >= health.MaxHealth)
+            return;
+
+        if (health.MaxHealth <= 0)
+            return;
+
+        int barWidth = (int)Math.Round(PixelsPerUnit);
+        int barHeight = 4;
+
+        float centerX = position.X * PixelsPerUnit;
+        float topY = position.Y * PixelsPerUnit;
+
+        int barX = (int)Math.Round(centerX - barWidth * 0.5f);
+        int barY = (int)Math.Round(topY - barHeight - 6);
+
+        Raylib.DrawRectangle(barX, barY, barWidth, barHeight, Color.Maroon);
+
+        double healthPercent = Math.Clamp((double)health.Health / health.MaxHealth, 0.0, 1.0);
+
+        int healthWidth = (int)Math.Round(barWidth * healthPercent);
+
+        if (healthWidth > 0)
+        {
+            Raylib.DrawRectangle(barX, barY, healthWidth, barHeight, Color.Green);
         }
     }
 
@@ -165,7 +285,10 @@ public static class GameWindow
             if (player.UserId == localPlayerId)
                 continue;
 
-            Raylib.DrawRectangle((int)Math.Round(player.Position.X * 20.0), (int)Math.Round(player.Position.Y * 20.0), 20, 20, Color.Red);
+            Vector2 size = player.CollisionSize * PixelsPerUnit;
+            Vector2 topLeft = player.Position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Red);
         }
     }
 
@@ -186,7 +309,7 @@ public static class GameWindow
             keys |= KeyState.MouseLeft;
 
         Vector2 mouseScreen = Raylib.GetMousePosition();
-        Vector2 pointer = mouseScreen / 20f;
+        Vector2 pointer = mouseScreen / PixelsPerUnit;
 
         input.Write(keys, pointer);
     }

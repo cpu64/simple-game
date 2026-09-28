@@ -1,10 +1,13 @@
-using System;
 using System.Numerics;
 
-public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFacing, IGravityAffected, IHealth, IMoving
+public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacing, IGravityAffected, IHealth, IMoving
 {
-    public Guid UserId { get; private set; }
-    public long LastCommand { get; set; }
+    public const float DetectionRange = 20.0f;
+
+    public static readonly Vector2 JumpVelocity = new Vector2(3.5f, -7.0f);
+    public static readonly Vector2 WeakJumpVelocity = new Vector2(2.2f, -3.8f);
+
+    public const long JumpIntervalTicks = 72;
 
     public Vector2 CollisionSize { get; set; }
 
@@ -21,26 +24,25 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
     public float GravitationalAcceleration { get; set; }
     public Vector2 Velocity { get; set; }
 
-    public Player(
+    public long JumpTimer { get; set; }
+
+    public Slime(
         EntityId id,
         Vector2 position,
-        Guid userId,
-        long lastCommand = -1,
         float rotation = 0,
         float gravitationalAcceleration = 16.0f,
         Vector2 velocity = new Vector2(),
-        int maxHealth = 10000,
-        int health = 10000,
+        int maxHealth = 100,
+        int health = 100,
         Vector2 hitBox = new Vector2(),
         long invincibleUntil = 0,
         int damage = 10,
         Vector2 damageBox = new Vector2(),
-        float knockBackMultiplier = 0
+        float knockBackMultiplier = 0,
+        long jumpTimer = 0
     )
         : base(id, position)
     {
-        UserId = userId;
-        LastCommand = lastCommand;
         Rotation = rotation;
         GravitationalAcceleration = gravitationalAcceleration;
         Velocity = velocity;
@@ -54,24 +56,24 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         Damage = damage;
         DamageBox = new Vector2(1.0f, 1.0f);
         KnockBackMultiplier = knockBackMultiplier;
+
+        JumpTimer = jumpTimer;
     }
 
-    public override Player Copy()
+    public override Slime Copy()
     {
-        return (Player)MemberwiseClone();
+        return (Slime)MemberwiseClone();
     }
 
     public override string ToString()
     {
-        return $"{base.ToString()}, UserId={UserId}, LastCommand={LastCommand}, " + $"Rotation={Rotation:F2}, Velocity={Velocity}, Health={Health}/{MaxHealth}";
+        return $"{base.ToString()}, Rotation={Rotation:F2}, Velocity={Velocity}, Health={Health}/{MaxHealth}, JumpTimer={JumpTimer}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
     {
         writer.Write(Id);
         writer.Write(Position);
-        writer.Write(UserId);
-        writer.Write(LastCommand);
         writer.Write(Rotation);
         writer.Write(GravitationalAcceleration);
         writer.Write(Velocity);
@@ -83,16 +85,16 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         writer.Write(InvincibleUntil);
 
         writer.Write(Damage);
-        writer.Write(HitBox);
+        writer.Write(DamageBox);
         writer.Write(KnockBackMultiplier);
+
+        writer.Write(JumpTimer);
     }
 
     public static IBinarySerializable Deserialize(BinaryStreamHandler reader)
     {
         var id = reader.Read<EntityId>();
         var position = reader.Read<Vector2>();
-        var userId = reader.Read<Guid>();
-        var lastCommand = reader.Read<long>();
         var rotation = reader.Read<float>();
         var gravitationalAcceleration = reader.Read<float>();
         var velocity = reader.Read<Vector2>();
@@ -107,11 +109,11 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         var damageBox = reader.Read<Vector2>();
         var knockBackMultiplier = reader.Read<float>();
 
-        var player = new Player(
+        var jumpTimer = reader.Read<long>();
+
+        var slime = new Slime(
             id,
             position,
-            userId,
-            lastCommand,
             rotation,
             gravitationalAcceleration,
             velocity,
@@ -121,11 +123,12 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
             invincibleUntil,
             damage,
             damageBox,
-            knockBackMultiplier
+            knockBackMultiplier,
+            jumpTimer
         );
 
-        player.CollisionSize = collisionSize;
+        slime.CollisionSize = collisionSize;
 
-        return player;
+        return slime;
     }
 }
