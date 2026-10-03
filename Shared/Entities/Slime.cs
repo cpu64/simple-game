@@ -1,10 +1,15 @@
-using System;
 using System.Numerics;
 
-public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFacing, IGravityAffected, IHealth, IMoving
+public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacing, IGravityAffected, IHealth, IMoving
 {
-    public Guid UserId { get; private set; }
-    public long LastCommand { get; set; }
+    public const float DetectionRange = 20.0f;
+
+    public static readonly Vector2 JumpVelocity = new Vector2(3.5f, -7.0f);
+    public static readonly Vector2 WeakJumpVelocity = new Vector2(2.2f, -3.8f);
+
+    public const long JumpIntervalTicks = 72;
+
+    public long JumpTimer { get; set; }
 
     public Vector2 CollisionSize { get; set; }
 
@@ -23,27 +28,25 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
 
     public Vector2 Velocity { get; set; }
 
-    public Player(
+    public Slime(
         EntityId id,
         Vector2 position,
-        Guid userId,
-        long lastCommand = -1,
+        long jumpTimer = 0,
         Vector2 collisionSize = new Vector2(),
         int damage = 10,
         Vector2 damageBox = new Vector2(),
         float knockBackMultiplier = 0,
         float rotation = 0,
         float gravitationalAcceleration = 16.0f,
-        int maxHealth = 10000,
-        int health = 10000,
+        int maxHealth = 100,
+        int health = 100,
         Vector2 hitBox = new Vector2(),
         long invincibleUntil = 0,
         Vector2 velocity = new Vector2()
     )
         : base(id, position)
     {
-        UserId = userId;
-        LastCommand = lastCommand;
+        JumpTimer = jumpTimer;
 
         CollisionSize = collisionSize;
 
@@ -63,14 +66,14 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         Velocity = velocity;
     }
 
-    public override Player Copy()
+    public override Slime Copy()
     {
-        return (Player)MemberwiseClone();
+        return (Slime)MemberwiseClone();
     }
 
     public override string ToString()
     {
-        return $"{base.ToString()}, UserId={UserId}, LastCommand={LastCommand}, " + $"Rotation={Rotation:F2}, Velocity={Velocity}, Health={Health}/{MaxHealth}";
+        return $"{base.ToString()}, JumpTimer={JumpTimer}, Rotation={Rotation:F2}, Velocity={Velocity}, Health={Health}/{MaxHealth}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
@@ -78,8 +81,7 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         writer.Write(Id);
         writer.Write(Position);
 
-        writer.Write(UserId);
-        writer.Write(LastCommand);
+        writer.Write(JumpTimer);
 
         writer.Write(CollisionSize);
 
@@ -104,8 +106,7 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
         var id = reader.Read<EntityId>();
         var position = reader.Read<Vector2>();
 
-        var userId = reader.Read<Guid>();
-        var lastCommand = reader.Read<long>();
+        var jumpTimer = reader.Read<long>();
 
         var collisionSize = reader.Read<Vector2>();
 
@@ -124,11 +125,10 @@ public class Player : Entity, IBinarySerializable, ICollidable, IDamaging, IFaci
 
         var velocity = reader.Read<Vector2>();
 
-        return new Player(
+        return new Slime(
             id,
             position,
-            userId,
-            lastCommand,
+            jumpTimer,
             collisionSize,
             damage,
             damageBox,
