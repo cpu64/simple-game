@@ -6,14 +6,21 @@ public static class AiSystem
 {
     public static void Process(World world)
     {
-        foreach (Slime slime in world.Entities.OfType<Slime>())
+        foreach (Mob mob in world.Entities.OfType<Mob>())
         {
-            IHealth health = slime;
+            IHealth health = mob;
 
             if (health.IsDead)
                 continue;
 
-            ProcessSlime(world, slime);
+            if (mob is Slime slime)
+            {
+                ProcessSlime(world, slime);
+            }
+            else
+            {
+                ProcessWanderingMob(world, mob);
+            }
         }
     }
 
@@ -47,7 +54,7 @@ public static class AiSystem
             float direction = offset.X >= 0.0f ? 1.0f : -1.0f;
             float horizontalDistance = MathF.Abs(offset.X);
 
-            bool obstacleAhead = IsObstacleAhead(slime, direction, world.Blocks);
+            bool obstacleAhead = IsObstacleAhead(slime.Position, slime.CollisionSize, direction, world.Blocks);
 
             // Use a weak jump when the target is nearby and on roughly the same level, provided there is no obstacle ahead.
             if (!obstacleAhead && horizontalDistance < 3.5f && offset.Y >= -0.5f)
@@ -68,6 +75,34 @@ public static class AiSystem
         }
 
         slime.JumpTimer = Slime.JumpIntervalTicks;
+    }
+
+    private static void ProcessWanderingMob(World world, Mob mob)
+    {
+        if (mob is not ICollidable collidable)
+            return;
+
+        float direction = mob.Rotation >= 0.0f && mob.Rotation < MathF.PI ? 1.0f : -1.0f;
+
+        bool obstacleAhead = IsObstacleAhead(mob.Position, collidable.CollisionSize, direction, world.Blocks);
+
+        if (obstacleAhead)
+        {
+            direction *= -1.0f;
+            mob.Rotation = direction > 0.0f ? 0.0f : MathF.PI;
+        }
+
+        float speed = mob switch
+        {
+            Harpy => 1.5f,
+            Eagle => 1.5f,
+            Bat => 1.5f,
+            Spider => 1.0f,
+            Cow => 1.0f,
+            _ => 1.0f,
+        };
+
+        mob.Velocity = new Vector2(direction * speed, mob.Velocity.Y);
     }
 
     private static Player? FindNearestPlayer(World world, Slime slime)
@@ -95,11 +130,10 @@ public static class AiSystem
         return nearestPlayer;
     }
 
-    private static bool IsObstacleAhead(Slime slime, float direction, System.Collections.Generic.List<Block> blocks)
+    private static bool IsObstacleAhead(Vector2 position, Vector2 collisionSize, float direction, System.Collections.Generic.List<Block> blocks)
     {
-        // Check slightly in front of the slime at its feet/body height.
-        Vector2 checkPosition = slime.Position + new Vector2(direction * (slime.CollisionSize.X * 0.5f + 0.05f), 0.0f);
+        Vector2 checkPosition = position + new Vector2(direction * (collisionSize.X * 0.5f + 0.05f), 0.0f);
 
-        return CollisionService.CollidesWithBlock(checkPosition, slime.CollisionSize, blocks);
+        return CollisionService.CollidesWithBlock(checkPosition, collisionSize, blocks);
     }
 }

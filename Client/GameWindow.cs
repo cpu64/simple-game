@@ -30,7 +30,7 @@ public static class GameWindow
 
                 RenderBullets(renderInput.World);
 
-                RenderSlimes(renderInput.World);
+                RenderMobs(renderInput.World);
 
                 RenderLocalPlayer(renderInput.World, playerId);
 
@@ -73,22 +73,37 @@ public static class GameWindow
         }
     }
 
-    private static void RenderSlimes(World world)
+    private static void RenderMobs(World world)
     {
-        foreach (Slime slime in world.Entities.OfType<Slime>())
+        foreach (Mob mob in world.Entities.OfType<Mob>())
         {
-            Vector2 size = slime.CollisionSize * PixelsPerUnit;
-            Vector2 topLeft = slime.Position * PixelsPerUnit - size * 0.5f;
+            Vector2 size = mob switch
+            {
+                ICollidable collidable => collidable.CollisionSize * PixelsPerUnit,
+                IDamaging damaging => damaging.DamageBox * PixelsPerUnit,
+                IHealth health => health.HitBox * PixelsPerUnit,
+                _ => Vector2.Zero,
+            };
 
-            Raylib.DrawRectangle(
-                (int)Math.Round(topLeft.X),
-                (int)Math.Round(topLeft.Y),
-                (int)Math.Round(size.X),
-                (int)Math.Round(size.Y),
-                new Color(50, 150, 255, 230)
-            );
+            if (size.X <= 0 || size.Y <= 0)
+                continue;
 
-            RenderHealthBar(slime);
+            Vector2 topLeft = mob.Position * PixelsPerUnit - size * 0.5f;
+
+            Color color = mob switch
+            {
+                Harpy => new Color(220, 80, 80, 230),
+                Slime => new Color(50, 150, 255, 230),
+                Spider => new Color(130, 60, 40, 230),
+                Eagle => new Color(220, 180, 60, 230),
+                Cow => new Color(160, 100, 70, 230),
+                Bat => new Color(100, 70, 150, 230),
+                _ => new Color(200, 200, 200, 230),
+            };
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), color);
+
+            RenderHealthBar(mob);
         }
     }
 

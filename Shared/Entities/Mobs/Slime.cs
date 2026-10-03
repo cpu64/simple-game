@@ -1,6 +1,6 @@
 using System.Numerics;
 
-public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacing, IGravityAffected, IHealth, IMoving
+public class Slime : Mob, IBinarySerializable, ICollidable, IDamaging, IGravityAffected
 {
     public const float DetectionRange = 20.0f;
 
@@ -17,16 +17,7 @@ public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacin
     public Vector2 DamageBox { get; set; }
     public float KnockBackMultiplier { get; set; }
 
-    public float Rotation { get; set; }
-
     public float GravitationalAcceleration { get; set; }
-
-    public int MaxHealth { get; set; }
-    public int Health { get; set; }
-    public Vector2 HitBox { get; set; }
-    public long InvincibleUntil { get; set; }
-
-    public Vector2 Velocity { get; set; }
 
     public Slime(
         EntityId id,
@@ -44,7 +35,7 @@ public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacin
         long invincibleUntil = 0,
         Vector2 velocity = new Vector2()
     )
-        : base(id, position)
+        : base(id, position, rotation, maxHealth, health, hitBox, invincibleUntil, velocity)
     {
         JumpTimer = jumpTimer;
 
@@ -54,16 +45,7 @@ public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacin
         DamageBox = damageBox;
         KnockBackMultiplier = knockBackMultiplier;
 
-        Rotation = rotation;
-
         GravitationalAcceleration = gravitationalAcceleration;
-
-        MaxHealth = maxHealth;
-        Health = health;
-        HitBox = hitBox;
-        InvincibleUntil = invincibleUntil;
-
-        Velocity = velocity;
     }
 
     public override Slime Copy()
@@ -73,7 +55,7 @@ public class Slime : Entity, IBinarySerializable, ICollidable, IDamaging, IFacin
 
     public override string ToString()
     {
-        return $"{base.ToString()}, JumpTimer={JumpTimer}, Rotation={Rotation:F2}, Velocity={Velocity}, Health={Health}/{MaxHealth}";
+        return $"{base.ToString()}, JumpTimer={JumpTimer}, CollisionSize={CollisionSize}, Damage={Damage}, DamageBox={DamageBox}, KnockBackMultiplier={KnockBackMultiplier:F2}, GravitationalAcceleration={GravitationalAcceleration:F2}";
     }
 
     public void Serialize(BinaryStreamHandler writer)
