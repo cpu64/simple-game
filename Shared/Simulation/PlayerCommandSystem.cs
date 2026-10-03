@@ -65,38 +65,15 @@ public static class PlayerCommandSystem
 
     public static void CreateBullet(World world, Player player, Vector2 clickPosition)
     {
-        Vector2 velocity = clickPosition - player.Position;
+        Vector2 direction = clickPosition - player.Position;
 
         // Ignore clicks directly on the player.
-        if (velocity.LengthSquared() <= 0.0001f)
+        if (direction.LengthSquared() <= 0.0001f)
             return;
 
-        velocity = Vector2.Normalize(velocity) * 10;
+        direction = Vector2.Normalize(direction);
 
-        // Entity bullet = new SimpleBullet(
-        //     world.NextEntityId++,
-        //     player.Position,
-        //     player.Id,
-        //     10,
-        //     new Vector2(0.1f, 0.1f),
-        //     10,
-        //     player.Velocity + velocity,
-        //     new Vector2(0.1f, 0.1f),
-        //     300
-        // );
-
-        Entity bullet = new HeavyBullet(
-            world.NextEntityId++,
-            player.Position,
-            player.Id,
-            50,
-            new Vector2(0.1f, 0.1f),
-            10,
-            player.Velocity + velocity,
-            new Vector2(0.1f, 0.1f),
-            8.0f,
-            120
-        );
+        Entity bullet = BulletFactory.Create(BulletType.Piercing, world.NextEntityId++, player.Position, player.Id, direction);
 
         world.Entities.Add(bullet);
     }

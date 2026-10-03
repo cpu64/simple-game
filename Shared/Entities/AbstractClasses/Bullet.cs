@@ -1,4 +1,3 @@
-// AbstractClasses/Bullet.cs
 using System.Numerics;
 
 public abstract class Bullet : Entity, IDamaging, IMoving

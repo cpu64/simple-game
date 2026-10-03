@@ -63,6 +63,14 @@ public static class GameWindow
 
             Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Yellow);
         }
+
+        foreach (PiercingBullet bullet in world.Entities.OfType<PiercingBullet>())
+        {
+            Vector2 size = bullet.DamageBox * PixelsPerUnit;
+            Vector2 topLeft = bullet.Position * PixelsPerUnit - size * 0.5f;
+
+            Raylib.DrawRectangle((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y), (int)Math.Round(size.X), (int)Math.Round(size.Y), Color.Yellow);
+        }
     }
 
     private static void RenderSlimes(World world)

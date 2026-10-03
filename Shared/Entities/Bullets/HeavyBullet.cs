@@ -1,4 +1,3 @@
-// HeavyBullet.cs
 using System.Numerics;
 
 public class HeavyBullet : Bullet, IBinarySerializable, ICollidable, IGravityAffected, ILifespan
