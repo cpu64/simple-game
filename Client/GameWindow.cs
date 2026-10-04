@@ -18,23 +18,26 @@ public static class GameWindow
         {
             while (!Raylib.WindowShouldClose())
             {
-                UpdateInput(input);
+                using (Logger.Instance.Info("Drawing", LogCategory.Rendering).Every("render", GameConstants.TargetFrameRate).Time())
+                {
+                    UpdateInput(input);
 
-                RenderInput renderInput = server.GetRenderInput();
+                    RenderInput renderInput = server.GetRenderInput();
 
-                Raylib.BeginDrawing();
+                    Raylib.BeginDrawing();
 
-                Raylib.ClearBackground(Color.Black);
+                    Raylib.ClearBackground(Color.Black);
 
-                RenderWorld(renderInput.World);
+                    RenderWorld(renderInput.World);
 
-                RenderBullets(renderInput.World);
+                    RenderBullets(renderInput.World);
 
-                RenderMobs(renderInput.World);
+                    RenderMobs(renderInput.World);
 
-                RenderLocalPlayer(renderInput.World, playerId);
+                    RenderLocalPlayer(renderInput.World, playerId);
 
-                RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
+                    RenderRemotePlayers(renderInput.AuthoritativeSnapshots, renderInput.World.Tick, playerId);
+                }
 
                 Raylib.EndDrawing();
             }
