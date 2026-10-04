@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 public class CommandQueue
@@ -23,6 +24,27 @@ public class CommandQueue
             commands.Clear();
 
             return result;
+        }
+    }
+
+    public void RemovePlayer(Guid playerId)
+    {
+        lock (queueLock)
+        {
+            Queue<InputCommand> remaining = new Queue<InputCommand>();
+
+            while (commands.Count > 0)
+            {
+                InputCommand command = commands.Dequeue();
+
+                if (command.PlayerId != playerId)
+                    remaining.Enqueue(command);
+            }
+
+            while (remaining.Count > 0)
+            {
+                commands.Enqueue(remaining.Dequeue());
+            }
         }
     }
 }

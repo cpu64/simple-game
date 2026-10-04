@@ -127,6 +127,8 @@ public class RemoteServer
 
     private void HandleClient(ClientConnection client)
     {
+        Guid? registeredPlayerId = null;
+
         try
         {
             while (running && client.Connected)
@@ -137,6 +139,7 @@ public class RemoteServer
 
                 if (registerMessage != null)
                 {
+                    registeredPlayerId = registerMessage.ClientId;
                     RegisterPlayer(client, registerMessage.ClientId);
                     continue;
                 }
@@ -160,6 +163,16 @@ public class RemoteServer
             lock (clientsLock)
             {
                 clients.Remove(client);
+            }
+
+            if (registeredPlayerId.HasValue)
+            {
+                commandQueue.RemovePlayer(registeredPlayerId.Value);
+
+                lock (worldLock)
+                {
+                    world.Entities.RemoveAll(entity => entity is Player player && player.UserId == registeredPlayerId.Value);
+                }
             }
 
             client.Dispose();
