@@ -14,6 +14,8 @@ public static class Client
 
         SharedInputState input = new SharedInputState();
 
+        RenderWorldUpdater renderWorldUpdater = new RenderWorldUpdater();
+
         Guid playerId = Guid.NewGuid();
 
         Console.WriteLine("Player ID: " + playerId);
@@ -22,7 +24,7 @@ public static class Client
 
         if (string.IsNullOrEmpty(serverAddress))
         {
-            localServer = new LocalServer(input, playerId, "world.json");
+            localServer = new LocalServer(input, renderWorldUpdater, playerId, "world.json");
         }
         else
         {
@@ -50,11 +52,11 @@ public static class Client
                 return;
             }
 
-            localServer = new LocalServer(input, playerId, new IPEndPoint(address, port));
+            localServer = new LocalServer(input, renderWorldUpdater, playerId, new IPEndPoint(address, port));
         }
 
         localServer.Start();
 
-        GameWindow.Run(localServer, input, playerId);
+        GameWindow.Run(localServer, input, renderWorldUpdater, playerId);
     }
 }
