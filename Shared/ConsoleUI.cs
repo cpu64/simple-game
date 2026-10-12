@@ -9,6 +9,14 @@ public sealed class ConsoleUI
     private readonly StringBuilder _input = new();
     private readonly object _lock = new();
 
+    private readonly CommandFactory _commandFactory;
+    private readonly Stack<Command> _commandHistory = new();
+
+    public ConsoleUI(CommandFactory commandFactory)
+    {
+        _commandFactory = commandFactory;
+    }
+
     public void WriteLine(string message)
     {
         lock (_lock)
@@ -71,17 +79,19 @@ public sealed class ConsoleUI
         }
     }
 
-    private void ExecuteCommand(string command)
+    private void ExecuteCommand(string input)
     {
-        switch (command.Trim().ToLowerInvariant())
-        {
-            case "hello":
-                WriteLine("Hello world!");
-                break;
+        string command = input.Trim();
 
+        switch (command.ToLowerInvariant())
+        {
             case "help":
-                WriteLine("Available commands: hello, help, clear, exit");
-                break;
+                WriteLine("Available commands:");
+                WriteLine("  help             - Show available commands");
+                WriteLine("  loglevel <level> - Change the minimum log level");
+                WriteLine("  undo             - Undo the last command");
+                WriteLine("  clear            - Clear the console");
+                return;
 
             case "clear":
                 lock (_lock)
@@ -89,19 +99,32 @@ public sealed class ConsoleUI
                     _messages.Clear();
                     Redraw();
                 }
-                break;
+                return;
 
-            case "exit":
-                WriteLine("Press Escape to exit.");
-                break;
-
-            case "":
-                break;
-
-            default:
-                WriteLine($"Unknown command: {command}");
-                break;
+            case "undo":
+                if (_commandHistory.TryPop(out Command? previousCommand))
+                {
+                    previousCommand.Undo();
+                    WriteLine("Command undone.");
+                }
+                else
+                {
+                    WriteLine("Nothing to undo.");
+                }
+                return;
         }
+
+        Command? newCommand = _commandFactory.Create(command);
+
+        if (newCommand == null)
+        {
+            WriteLine($"Unknown command: {command}");
+            return;
+        }
+
+        newCommand.Execute();
+        _commandHistory.Push(newCommand);
+        WriteLine($"Executed: {command}");
     }
 
     private void Redraw()

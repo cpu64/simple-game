@@ -7,15 +7,13 @@ public static class Client
 {
     public static void Main(string[] args)
     {
-        Logger.Instance.MinimumLevel = LogLevel.Trace;
-
-        var console = new ConsoleUI();
-
+        var console = new ConsoleUI(new ClientCommandFactory());
         Thread consoleThread = new Thread(console.Run) { IsBackground = true };
-
         consoleThread.Start();
 
         Logger.Instance.AddSink(new ConsoleUISink(console));
+        Logger.Instance.MinimumLevel = LogLevel.Trace;
+        console.WriteLine("Logger Minimum Level: Trace");
 
         string serverAddress = args.Length == 0 ? null : args[0];
 
