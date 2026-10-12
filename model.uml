@@ -2,19 +2,21 @@
 <xmi:XMI xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:version="20131001">
   <uml:Model xmi:type="uml:Model" xmi:id="model_terraria-clone" name="terraria-clone">
     <packagedElement xmi:type="uml:Package" xmi:id="pkg_PrimitiveTypes" name="PrimitiveTypes">
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_void" name="void" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_float" name="float" />
+      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_long" name="long" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_string" name="string" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_int" name="int" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_object" name="object" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_bool" name="bool" />
-      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_void" name="void" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_byte" name="byte" />
-      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_long" name="long" />
-      <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_float" name="float" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_double" name="double" />
       <packagedElement xmi:type="uml:PrimitiveType" xmi:id="prim_short" name="short" />
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="pkg_ExternalTypes" name="ExternalTypes">
       <packagedElement xmi:type="uml:Interface" xmi:id="iface_ext_IDisposable" name="IDisposable" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Vector2" name="Vector2" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Color" name="Color" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_IPEndPoint" name="IPEndPoint" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_ConcurrentQueue_object_" name="ConcurrentQueue&lt;object&gt;" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_SemaphoreSlim" name="SemaphoreSlim" />
@@ -25,9 +27,8 @@
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_CancellationToken" name="CancellationToken" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_Exception" name="Exception" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_DateTime" name="DateTime" />
-      <packagedElement xmi:type="uml:DataType" xmi:id="ext_RingBuffer_World_" name="RingBuffer&lt;World&gt;" />
+      <packagedElement xmi:type="uml:DataType" xmi:id="ext_RingBuffer_RemotePlayerSnapshot_" name="RingBuffer&lt;RemotePlayerSnapshot&gt;" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_Guid" name="Guid" />
-      <packagedElement xmi:type="uml:DataType" xmi:id="ext_Vector2" name="Vector2" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext__KeyState_Keys__Vector2_Pointer_" name="(KeyState Keys, Vector2 Pointer)" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_T" name="T" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_Action" name="Action" />
@@ -44,6 +45,81 @@
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_ConcurrentQueue_LogWorkItem_" name="ConcurrentQueue&lt;LogWorkItem&gt;" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_AutoResetEvent" name="AutoResetEvent" />
       <packagedElement xmi:type="uml:DataType" xmi:id="ext_ManualResetEventSlim" name="ManualResetEventSlim" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderRectangle" name="RenderRectangle" visibility="private" isAbstract="false">
+      <generalization xmi:type="uml:Generalization" xmi:id="gen_RenderRectangle_RenderEntity" general="cls_RenderEntity" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RenderRectangle_size" name="size" visibility="private" isStatic="false" isReadOnly="true" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RenderRectangle_color" name="color" visibility="private" isStatic="false" isReadOnly="true" type="ext_Color" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RenderRectangle_1" name="RenderRectangle" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderRectangle_1_previousPosition" name="previousPosition" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderRectangle_1_currentPosition" name="currentPosition" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderRectangle_1_size" name="size" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderRectangle_1_color" name="color" direction="in" type="ext_Color" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RenderRectangle_Render_1" name="Render" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderRectangle_Render_1_alpha" name="alpha" direction="in" type="prim_float" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderEntity" name="RenderEntity" visibility="public" isAbstract="true">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RenderEntity_PreviousPosition" name="PreviousPosition" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RenderEntity_CurrentPosition" name="CurrentPosition" visibility="public" isStatic="false" isReadOnly="false" type="ext_Vector2" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RenderEntity_1" name="RenderEntity" visibility="protected" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderEntity_1_previousPosition" name="previousPosition" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderEntity_1_currentPosition" name="currentPosition" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RenderEntity_InterpolatedPosition_1" name="InterpolatedPosition" visibility="protected" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderEntity_InterpolatedPosition_1_alpha" name="alpha" direction="in" type="prim_float" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_RenderEntity_InterpolatedPosition_1_ret" direction="return" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RenderEntity_Render_1" name="Render" visibility="public" isStatic="false" isAbstract="true">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderEntity_Render_1_alpha" name="alpha" direction="in" type="prim_float" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderWorld" name="RenderWorld" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderWorld_Blocks" name="Blocks" visibility="public" isStatic="false" isReadOnly="false" type="cls_Block" association="assoc_RenderWorld_Blocks_Block">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderWorld_Blocks_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderWorld_Blocks_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderWorld_Entities" name="Entities" visibility="public" isStatic="false" isReadOnly="true" type="cls_RenderEntity" association="assoc_RenderWorld_Entities_RenderEntity">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderWorld_Entities_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderWorld_Entities_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderWorld_Alpha" name="Alpha" visibility="public" isStatic="false" isReadOnly="false" type="prim_float" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderWorld_Tick" name="Tick" visibility="public" isStatic="false" isReadOnly="false" type="prim_long" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderWorldUpdater" name="RenderWorldUpdater" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_RenderWorldUpdater__latest" name="_latest" visibility="private" isStatic="false" isReadOnly="false" type="cls_RenderInput" association="assoc_RenderWorldUpdater__latest_RenderInput">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_RenderWorldUpdater__latest_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_RenderWorldUpdater__latest_upper" value="1" />
+      </ownedAttribute>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RenderWorldUpdater_UpdateData_1" name="UpdateData" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderWorldUpdater_UpdateData_1_oldWorld" name="oldWorld" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderWorldUpdater_UpdateData_1_newWorld" name="newWorld" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderWorldUpdater_UpdateData_1_previousRemotePlayerPositions" name="previousRemotePlayerPositions" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderWorldUpdater_UpdateData_1_currentRemotePlayerPositions" name="currentRemotePlayerPositions" direction="in" type="ext_Vector2" />
+      </ownedOperation>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_RenderWorldUpdater_UpdateRenderWorld_1" name="UpdateRenderWorld" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_RenderWorldUpdater_UpdateRenderWorld_1_renderWorld" name="renderWorld" direction="in" type="cls_RenderWorld" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_RenderWorldUpdater_UpdateRenderWorld_1_ret" direction="return" type="cls_RenderWorld" />
+      </ownedOperation>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderInput" name="RenderInput" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_Old" name="Old" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_Old_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_New" name="New" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_New_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_PreviousRemotePlayerPositions" name="PreviousRemotePlayerPositions" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderInput_PreviousRemotePlayerPositions_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderInput_PreviousRemotePlayerPositions_upper" value="*" />
+      </ownedAttribute>
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_CurrentRemotePlayerPositions" name="CurrentRemotePlayerPositions" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderInput_CurrentRemotePlayerPositions_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderInput_CurrentRemotePlayerPositions_upper" value="*" />
+      </ownedAttribute>
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RenderInput_1" name="RenderInput" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_oldWorld" name="oldWorld" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_newWorld" name="newWorld" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_previousRemotePlayerPositions" name="previousRemotePlayerPositions" direction="in" type="ext_Vector2" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_currentRemotePlayerPositions" name="currentRemotePlayerPositions" direction="in" type="ext_Vector2" />
+      </ownedOperation>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="cls_ClientCommandFactory" name="ClientCommandFactory" visibility="public" isAbstract="false">
       <generalization xmi:type="uml:Generalization" xmi:id="gen_ClientCommandFactory_CommandFactory" general="cls_CommandFactory" />
@@ -117,8 +193,14 @@
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="cls_LocalServer" name="LocalServer" visibility="public" isAbstract="false">
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_input" name="input" visibility="private" isStatic="false" isReadOnly="true" type="cls_SharedInputState" association="assoc_LocalServer_input_SharedInputState" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_renderWorldUpdater" name="renderWorldUpdater" visibility="private" isStatic="false" isReadOnly="true" type="cls_RenderWorldUpdater" association="assoc_LocalServer_renderWorldUpdater_RenderWorldUpdater" />
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_remoteServer" name="remoteServer" visibility="private" isStatic="false" isReadOnly="true" type="cls_RemoteServerConnection" association="assoc_LocalServer_remoteServer_RemoteServerConnection" />
-      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_authoritativeWorlds" name="authoritativeWorlds" visibility="private" isStatic="false" isReadOnly="true" type="ext_RingBuffer_World_" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_remoteSnapshots" name="remoteSnapshots" visibility="private" isStatic="false" isReadOnly="true" type="ext_RingBuffer_RemotePlayerSnapshot_" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_currentWorld" name="currentWorld" visibility="private" isStatic="false" isReadOnly="false" type="cls_World" association="assoc_LocalServer_currentWorld_World" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_currentRemotePlayerPosition" name="currentRemotePlayerPosition" visibility="private" isStatic="false" isReadOnly="false" type="ext_Vector2">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="field_LocalServer_currentRemotePlayerPosition_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="field_LocalServer_currentRemotePlayerPosition_upper" value="*" />
+      </ownedAttribute>
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_worldLock" name="worldLock" visibility="private" isStatic="false" isReadOnly="true" type="prim_object" />
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_playerId" name="playerId" visibility="private" isStatic="false" isReadOnly="true" type="ext_Guid" />
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_pendingCommands" name="pendingCommands" visibility="private" isStatic="false" isReadOnly="true" type="cls_InputCommand" association="assoc_LocalServer_pendingCommands_InputCommand">
@@ -131,11 +213,13 @@
       <ownedAttribute xmi:type="uml:Property" xmi:id="field_LocalServer_running" name="running" visibility="private" isStatic="false" isReadOnly="false" type="prim_bool" />
       <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_LocalServer_1" name="LocalServer" visibility="public" isStatic="false" isAbstract="false">
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_renderWorldUpdater" name="renderWorldUpdater" direction="in" type="cls_RenderWorldUpdater" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_playerId" name="playerId" direction="in" type="ext_Guid" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_1_worldPath" name="worldPath" direction="in" type="prim_string" />
       </ownedOperation>
       <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_LocalServer_2" name="LocalServer" visibility="public" isStatic="false" isAbstract="false">
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_renderWorldUpdater" name="renderWorldUpdater" direction="in" type="cls_RenderWorldUpdater" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_playerId" name="playerId" direction="in" type="ext_Guid" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_LocalServer_2_endpoint" name="endpoint" direction="in" type="ext_IPEndPoint" />
       </ownedOperation>
@@ -143,6 +227,13 @@
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Stop_1" name="Stop" visibility="public" isStatic="false" isAbstract="false" />
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Run_1" name="Run" visibility="private" isStatic="false" isAbstract="false" />
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_Tick_1" name="Tick" visibility="private" isStatic="false" isAbstract="false" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_GetRemotePlayerPositions_1" name="GetRemotePlayerPositions" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_GetRemotePlayerPositions_1_tick" name="tick" direction="in" type="prim_long" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LocalServer_GetRemotePlayerPositions_1_ret" direction="return" type="ext_Vector2">
+          <lowerValue xmi:type="uml:LiteralInteger" xmi:id="op_LocalServer_GetRemotePlayerPositions_1_ret_lower" value="0" />
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="op_LocalServer_GetRemotePlayerPositions_1_ret_upper" value="*" />
+        </ownedParameter>
+      </ownedOperation>
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_ApplyCommand_1" name="ApplyCommand" visibility="private" isStatic="false" isAbstract="false">
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_ApplyCommand_1_command" name="command" direction="in" type="cls_InputCommand" />
       </ownedOperation>
@@ -154,11 +245,8 @@
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_GetLastAcknowledgedSequence_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LocalServer_GetLastAcknowledgedSequence_1_ret" direction="return" type="prim_long" />
       </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_AddAuthoritativeWorld_1" name="AddAuthoritativeWorld" visibility="private" isStatic="false" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_AddAuthoritativeWorld_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_GetRenderInput_1" name="GetRenderInput" visibility="public" isStatic="false" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LocalServer_GetRenderInput_1_ret" direction="return" type="cls_RenderInput" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="op_LocalServer_AddRemoteSnapshot_1" name="AddRemoteSnapshot" visibility="private" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_LocalServer_AddRemoteSnapshot_1_authoritativeWorld" name="authoritativeWorld" direction="in" type="cls_World" />
       </ownedOperation>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="cls_GameWindow" name="GameWindow" visibility="public" isAbstract="false">
@@ -166,62 +254,25 @@
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_Run_1" name="Run" visibility="public" isStatic="true" isAbstract="false">
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_server" name="server" direction="in" type="cls_LocalServer" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_input" name="input" direction="in" type="cls_SharedInputState" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_renderWorldUpdater" name="renderWorldUpdater" direction="in" type="cls_RenderWorldUpdater" />
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_Run_1_playerId" name="playerId" direction="in" type="ext_Guid" />
       </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderBullets_1" name="RenderBullets" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderBullets_1_world" name="world" direction="in" type="cls_World" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderMobs_1" name="RenderMobs" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderMobs_1_world" name="world" direction="in" type="cls_World" />
-      </ownedOperation>
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderWorld_1" name="RenderWorld" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderWorld_1_world" name="world" direction="in" type="cls_World" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderLocalPlayer_1" name="RenderLocalPlayer" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderLocalPlayer_1_world" name="world" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderLocalPlayer_1_playerId" name="playerId" direction="in" type="ext_Guid" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderRemotePlayers_1" name="RenderRemotePlayers" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_snapshots" name="snapshots" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_worldTick" name="worldTick" direction="in" type="prim_long" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemotePlayers_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_FindSnapshots_1" name="FindSnapshots" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_snapshots" name="snapshots" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_renderTick" name="renderTick" direction="in" type="prim_long" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_before" name="before" direction="out" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_FindSnapshots_1_after" name="after" direction="out" type="cls_World" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderInterpolatedRemotePlayers_1" name="RenderInterpolatedRemotePlayers" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_before" name="before" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_after" name="after" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_alpha" name="alpha" direction="in" type="prim_double" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderInterpolatedRemotePlayers_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderHealthBar_1" name="RenderHealthBar" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_1_entity" name="entity" direction="in" type="cls_Entity" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderHealthBar_2" name="RenderHealthBar" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_2_entity" name="entity" direction="in" type="cls_Entity" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderHealthBar_2_position" name="position" direction="in" type="ext_Vector2" />
-      </ownedOperation>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_RenderRemoteWorld_1" name="RenderRemoteWorld" visibility="private" isStatic="true" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemoteWorld_1_world" name="world" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderRemoteWorld_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_RenderWorld_1_world" name="world" direction="in" type="cls_RenderWorld" />
       </ownedOperation>
       <ownedOperation xmi:type="uml:Operation" xmi:id="op_GameWindow_UpdateInput_1" name="UpdateInput" visibility="private" isStatic="true" isAbstract="false">
         <ownedParameter xmi:type="uml:Parameter" xmi:id="param_op_GameWindow_UpdateInput_1_input" name="input" direction="in" type="cls_SharedInputState" />
       </ownedOperation>
     </packagedElement>
-    <packagedElement xmi:type="uml:Class" xmi:id="cls_RenderInput" name="RenderInput" visibility="public" isAbstract="false">
-      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_World" name="World" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_World_World" />
-      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RenderInput_AuthoritativeSnapshots" name="AuthoritativeSnapshots" visibility="public" isStatic="false" isReadOnly="true" type="cls_World" association="assoc_RenderInput_AuthoritativeSnapshots_World">
-        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RenderInput_AuthoritativeSnapshots_lower" value="0" />
-        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RenderInput_AuthoritativeSnapshots_upper" value="*" />
+    <packagedElement xmi:type="uml:Class" xmi:id="cls_RemotePlayerSnapshot" name="RemotePlayerSnapshot" visibility="public" isAbstract="false">
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RemotePlayerSnapshot_Tick" name="Tick" visibility="public" isStatic="false" isReadOnly="true" type="prim_long" />
+      <ownedAttribute xmi:type="uml:Property" xmi:id="prop_RemotePlayerSnapshot_Positions" name="Positions" visibility="public" isStatic="false" isReadOnly="true" type="ext_Vector2">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="prop_RemotePlayerSnapshot_Positions_lower" value="0" />
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="prop_RemotePlayerSnapshot_Positions_upper" value="*" />
       </ownedAttribute>
-      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RenderInput_1" name="RenderInput" visibility="public" isStatic="false" isAbstract="false">
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_world" name="world" direction="in" type="cls_World" />
-        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RenderInput_1_authoritativeSnapshots" name="authoritativeSnapshots" direction="in" type="ext_RingBuffer_World_" />
+      <ownedOperation xmi:type="uml:Operation" xmi:id="ctor_RemotePlayerSnapshot_1" name="RemotePlayerSnapshot" visibility="public" isStatic="false" isAbstract="false">
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RemotePlayerSnapshot_1_world" name="world" direction="in" type="cls_World" />
+        <ownedParameter xmi:type="uml:Parameter" xmi:id="param_ctor_RemotePlayerSnapshot_1_localPlayerId" name="localPlayerId" direction="in" type="ext_Guid" />
       </ownedOperation>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="cls_SharedInputState" name="SharedInputState" visibility="public" isAbstract="false">
@@ -1913,26 +1964,41 @@
         <ownedParameter xmi:type="uml:Parameter" xmi:id="op_LogWorkItem_Flush_1_ret" direction="return" type="cls_LogWorkItem" />
       </ownedOperation>
     </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderWorld_Blocks_Block" memberEnd="prop_RenderWorld_Blocks assoc_RenderWorld_Blocks_Block_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderWorld_Blocks_Block_end_source" type="cls_RenderWorld" association="assoc_RenderWorld_Blocks_Block" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderWorld_Entities_RenderEntity" memberEnd="prop_RenderWorld_Entities assoc_RenderWorld_Entities_RenderEntity_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderWorld_Entities_RenderEntity_end_source" type="cls_RenderWorld" association="assoc_RenderWorld_Entities_RenderEntity" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderWorldUpdater__latest_RenderInput" memberEnd="field_RenderWorldUpdater__latest assoc_RenderWorldUpdater__latest_RenderInput_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderWorldUpdater__latest_RenderInput_end_source" type="cls_RenderWorldUpdater" association="assoc_RenderWorldUpdater__latest_RenderInput" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_Old_World" memberEnd="prop_RenderInput_Old assoc_RenderInput_Old_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_Old_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_Old_World" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_New_World" memberEnd="prop_RenderInput_New assoc_RenderInput_New_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_New_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_New_World" />
+    </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable" memberEnd="field_RemoteServerConnection_reconnectMessage assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable_end_source" type="cls_RemoteServerConnection" association="assoc_RemoteServerConnection_reconnectMessage_IBinarySerializable" />
     </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_input_SharedInputState" memberEnd="field_LocalServer_input assoc_LocalServer_input_SharedInputState_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_input_SharedInputState_end_source" type="cls_LocalServer" association="assoc_LocalServer_input_SharedInputState" />
     </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_renderWorldUpdater_RenderWorldUpdater" memberEnd="field_LocalServer_renderWorldUpdater assoc_LocalServer_renderWorldUpdater_RenderWorldUpdater_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_renderWorldUpdater_RenderWorldUpdater_end_source" type="cls_LocalServer" association="assoc_LocalServer_renderWorldUpdater_RenderWorldUpdater" />
+    </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_remoteServer_RemoteServerConnection" memberEnd="field_LocalServer_remoteServer assoc_LocalServer_remoteServer_RemoteServerConnection_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_remoteServer_RemoteServerConnection_end_source" type="cls_LocalServer" association="assoc_LocalServer_remoteServer_RemoteServerConnection" />
+    </packagedElement>
+    <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_currentWorld_World" memberEnd="field_LocalServer_currentWorld assoc_LocalServer_currentWorld_World_end_source">
+      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_currentWorld_World_end_source" type="cls_LocalServer" association="assoc_LocalServer_currentWorld_World" />
     </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_pendingCommands_InputCommand" memberEnd="field_LocalServer_pendingCommands assoc_LocalServer_pendingCommands_InputCommand_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_pendingCommands_InputCommand_end_source" type="cls_LocalServer" association="assoc_LocalServer_pendingCommands_InputCommand" />
     </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_LocalServer_world_World" memberEnd="field_LocalServer_world assoc_LocalServer_world_World_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LocalServer_world_World_end_source" type="cls_LocalServer" association="assoc_LocalServer_world_World" />
-    </packagedElement>
-    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_World_World" memberEnd="prop_RenderInput_World assoc_RenderInput_World_World_end_source">
-      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_World_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_World_World" />
-    </packagedElement>
-    <packagedElement xmi:type="uml:Association" xmi:id="assoc_RenderInput_AuthoritativeSnapshots_World" memberEnd="prop_RenderInput_AuthoritativeSnapshots assoc_RenderInput_AuthoritativeSnapshots_World_end_source">
-      <ownedEnd xmi:type="uml:Property" xmi:id="assoc_RenderInput_AuthoritativeSnapshots_World_end_source" type="cls_RenderInput" association="assoc_RenderInput_AuthoritativeSnapshots_World" />
     </packagedElement>
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_SharedInputState_state_Snapshot" memberEnd="field_SharedInputState_state assoc_SharedInputState_state_Snapshot_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_SharedInputState_state_Snapshot_end_source" type="cls_SharedInputState" association="assoc_SharedInputState_state_Snapshot" />
@@ -2042,12 +2108,14 @@
     <packagedElement xmi:type="uml:Association" xmi:id="assoc_LogWorkItem_Entry_LogEntry" memberEnd="prop_LogWorkItem_Entry assoc_LogWorkItem_Entry_LogEntry_end_source">
       <ownedEnd xmi:type="uml:Property" xmi:id="assoc_LogWorkItem_Entry_LogEntry_end_source" type="cls_LogWorkItem" association="assoc_LogWorkItem_Entry_LogEntry" />
     </packagedElement>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RenderWorldUpdater_World" client="cls_RenderWorldUpdater" supplier="cls_World" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RenderWorldUpdater_RenderWorld" client="cls_RenderWorldUpdater" supplier="cls_RenderWorld" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClientCommandFactory_Command" client="cls_ClientCommandFactory" supplier="cls_Command" />
-    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_RenderInput" client="cls_LocalServer" supplier="cls_RenderInput" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_LocalServer" client="cls_GameWindow" supplier="cls_LocalServer" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_SharedInputState" client="cls_GameWindow" supplier="cls_SharedInputState" />
-    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_World" client="cls_GameWindow" supplier="cls_World" />
-    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_Entity" client="cls_GameWindow" supplier="cls_Entity" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_RenderWorldUpdater" client="cls_GameWindow" supplier="cls_RenderWorldUpdater" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_RenderWorld" client="cls_GameWindow" supplier="cls_RenderWorld" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemotePlayerSnapshot_World" client="cls_RemotePlayerSnapshot" supplier="cls_World" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SharedInputState_KeyState" client="cls_SharedInputState" supplier="enum_KeyState" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ServerCommandFactory_Command" client="cls_ServerCommandFactory" supplier="cls_Command" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClientConnection_IBinarySerializable" client="cls_ClientConnection" supplier="iface_IBinarySerializable" />
