@@ -130,6 +130,13 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
             return;
         }
 
+        if (_classifierStack.Count > 0)
+        {
+            var outer = _classifierStack.Peek();
+            outer.ReferencedTypeNames.Add(classifier.Name);
+            classifier.ReferencedTypeNames.Add(outer.Name);
+        }
+
         _classifierStack.Push(classifier);
 
         // Extract base types and interface realizations
@@ -199,6 +206,12 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
         var qualifiedName = string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
         if (_discoveredClassifiers.TryGetValue(qualifiedName, out var classifier))
         {
+            if (_classifierStack.Count > 0)
+            {
+                var outer = _classifierStack.Peek();
+                outer.ReferencedTypeNames.Add(classifier.Name);
+                classifier.ReferencedTypeNames.Add(outer.Name);
+            }
             _classifierStack.Push(classifier);
         }
     }
@@ -208,6 +221,94 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
         if (_classifierStack.Count > 0)
         {
             _classifierStack.Pop();
+        }
+    }
+
+    private void RecordType(TypeSyntax? typeSyntax)
+    {
+        if (typeSyntax == null || CurrentClassifier == null) return;
+
+        switch (typeSyntax)
+        {
+            case IdentifierNameSyntax id:
+                var name = id.Identifier.Text;
+                if (name != "var" && name != "dynamic" && !TypeHelper.IsPrimitive(name))
+                {
+                    CurrentClassifier.ReferencedTypeNames.Add(name);
+                }
+                break;
+
+            case GenericNameSyntax gen:
+                var genName = gen.Identifier.Text;
+                if (!TypeHelper.IsPrimitive(genName))
+                {
+                    CurrentClassifier.ReferencedTypeNames.Add(genName);
+                }
+                foreach (var arg in gen.TypeArgumentList.Arguments)
+                {
+                    RecordType(arg);
+                }
+                break;
+
+            case QualifiedNameSyntax q:
+                CurrentClassifier.ReferencedTypeNames.Add(q.ToString());
+                RecordType(q.Right);
+                break;
+
+            case ArrayTypeSyntax arr:
+                RecordType(arr.ElementType);
+                break;
+
+            case NullableTypeSyntax n:
+                RecordType(n.ElementType);
+                break;
+
+            case TupleTypeSyntax tuple:
+                foreach (var elem in tuple.Elements)
+                {
+                    RecordType(elem.Type);
+                }
+                break;
+
+            case RefTypeSyntax r:
+                RecordType(r.Type);
+                break;
+
+            case PointerTypeSyntax p:
+                RecordType(p.ElementType);
+                break;
+
+            case AliasQualifiedNameSyntax a:
+                RecordType(a.Name);
+                break;
+        }
+    }
+
+    private void RecordPattern(PatternSyntax? pattern)
+    {
+        if (pattern == null || CurrentClassifier == null) return;
+
+        switch (pattern)
+        {
+            case TypePatternSyntax tp:
+                RecordType(tp.Type);
+                break;
+            case DeclarationPatternSyntax dp:
+                RecordType(dp.Type);
+                break;
+            case RecursivePatternSyntax rp:
+                if (rp.Type != null) RecordType(rp.Type);
+                break;
+            case UnaryPatternSyntax up:
+                RecordPattern(up.Pattern);
+                break;
+            case BinaryPatternSyntax bp:
+                RecordPattern(bp.Left);
+                RecordPattern(bp.Right);
+                break;
+            case ParenthesizedPatternSyntax pp:
+                RecordPattern(pp.Pattern);
+                break;
         }
     }
 
@@ -232,6 +333,7 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
 
     public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
     {
+        RecordType(node.Type);
         var current = CurrentClassifier;
         if (current == null) return;
 
@@ -331,6 +433,7 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
 
     public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
+        RecordType(node.ReturnType);
         var current = CurrentClassifier;
         if (current == null) return;
 
@@ -437,5 +540,170 @@ public class MemberExtractionWalker : CSharpSyntaxWalker
 
         cls.Operations.Add(op);
         base.VisitConstructorDeclaration(node);
+    }
+
+    public override void VisitVariableDeclaration(VariableDeclarationSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitVariableDeclaration(node);
+    }
+
+    public override void VisitParameter(ParameterSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitParameter(node);
+    }
+
+    public override void VisitLocalFunctionStatement(LocalFunctionStatementSyntax node)
+    {
+        RecordType(node.ReturnType);
+        base.VisitLocalFunctionStatement(node);
+    }
+
+    public override void VisitEventDeclaration(EventDeclarationSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitEventDeclaration(node);
+    }
+
+    public override void VisitEventFieldDeclaration(EventFieldDeclarationSyntax node)
+    {
+        RecordType(node.Declaration.Type);
+        base.VisitEventFieldDeclaration(node);
+    }
+
+    public override void VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitObjectCreationExpression(node);
+    }
+
+    public override void VisitCastExpression(CastExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitCastExpression(node);
+    }
+
+    public override void VisitBinaryExpression(BinaryExpressionSyntax node)
+    {
+        if ((node.IsKind(SyntaxKind.AsExpression) || node.IsKind(SyntaxKind.IsExpression)) && node.Right is TypeSyntax t)
+        {
+            RecordType(t);
+        }
+        base.VisitBinaryExpression(node);
+    }
+
+    public override void VisitArrayCreationExpression(ArrayCreationExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitArrayCreationExpression(node);
+    }
+
+    public override void VisitStackAllocArrayCreationExpression(StackAllocArrayCreationExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitStackAllocArrayCreationExpression(node);
+    }
+
+    public override void VisitIsPatternExpression(IsPatternExpressionSyntax node)
+    {
+        RecordPattern(node.Pattern);
+        base.VisitIsPatternExpression(node);
+    }
+
+    public override void VisitDeclarationPattern(DeclarationPatternSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitDeclarationPattern(node);
+    }
+
+    public override void VisitTypePattern(TypePatternSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitTypePattern(node);
+    }
+
+    public override void VisitRecursivePattern(RecursivePatternSyntax node)
+    {
+        if (node.Type != null)
+        {
+            RecordType(node.Type);
+        }
+        base.VisitRecursivePattern(node);
+    }
+
+    public override void VisitTypeOfExpression(TypeOfExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitTypeOfExpression(node);
+    }
+
+    public override void VisitDefaultExpression(DefaultExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitDefaultExpression(node);
+    }
+
+    public override void VisitSizeOfExpression(SizeOfExpressionSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitSizeOfExpression(node);
+    }
+
+    public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitCatchDeclaration(node);
+    }
+
+    public override void VisitForEachStatement(ForEachStatementSyntax node)
+    {
+        RecordType(node.Type);
+        base.VisitForEachStatement(node);
+    }
+
+    public override void VisitTypeArgumentList(TypeArgumentListSyntax node)
+    {
+        foreach (var arg in node.Arguments)
+        {
+            RecordType(arg);
+        }
+        base.VisitTypeArgumentList(node);
+    }
+
+    public override void VisitTypeParameterConstraintClause(TypeParameterConstraintClauseSyntax node)
+    {
+        foreach (var constraint in node.Constraints)
+        {
+            if (constraint is TypeConstraintSyntax tc)
+            {
+                RecordType(tc.Type);
+            }
+        }
+        base.VisitTypeParameterConstraintClause(node);
+    }
+
+    public override void VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+    {
+        if (CurrentClassifier != null)
+        {
+            if (node.Expression is SimpleNameSyntax sn && _classifiersBySimpleName.ContainsKey(sn.Identifier.Text))
+            {
+                CurrentClassifier.ReferencedTypeNames.Add(sn.Identifier.Text);
+            }
+            else if (node.Expression is MemberAccessExpressionSyntax ma)
+            {
+                var qualified = ma.ToString();
+                if (_discoveredClassifiers.ContainsKey(qualified))
+                {
+                    CurrentClassifier.ReferencedTypeNames.Add(qualified);
+                }
+                else if (_classifiersBySimpleName.ContainsKey(ma.Name.Identifier.Text))
+                {
+                    CurrentClassifier.ReferencedTypeNames.Add(ma.Name.Identifier.Text);
+                }
+            }
+        }
+        base.VisitMemberAccessExpression(node);
     }
 }

@@ -1083,5 +1083,59 @@
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_BinaryStreamHandler_BlockType" client="cls_BinaryStreamHandler" supplier="enum_BlockType" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_BinaryStreamHandler_KeyState" client="cls_BinaryStreamHandler" supplier="enum_KeyState" />
     <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClassRegistry_IBinarySerializable" client="cls_ClassRegistry" supplier="iface_IBinarySerializable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClassRegistry_BinaryStreamHandler" client="cls_ClassRegistry" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServerMain_RemoteServer" client="cls_RemoteServerMain" supplier="cls_RemoteServer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_IBinarySerializable" client="cls_RemoteServer" supplier="iface_IBinarySerializable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_RegisterUserMessage" client="cls_RemoteServer" supplier="cls_RegisterUserMessage" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_InputCommand" client="cls_RemoteServer" supplier="cls_InputCommand" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_Player" client="cls_RemoteServer" supplier="cls_Player" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_GameConstants" client="cls_RemoteServer" supplier="cls_GameConstants" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServer_Simulation" client="cls_RemoteServer" supplier="cls_Simulation" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_ClientConnection_BinaryStreamHandler" client="cls_ClientConnection" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RenderInput_RingBuffer" client="cls_RenderInput" supplier="cls_RingBuffer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Client_SharedInputState" client="cls_Client" supplier="cls_SharedInputState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Client_LocalServer" client="cls_Client" supplier="cls_LocalServer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Client_GameWindow" client="cls_Client" supplier="cls_GameWindow" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Snapshot_SharedInputState" client="cls_Snapshot" supplier="cls_SharedInputState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_GameConstants" client="cls_GameWindow" supplier="cls_GameConstants" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_RenderInput" client="cls_GameWindow" supplier="cls_RenderInput" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_SimpleBullet" client="cls_GameWindow" supplier="cls_SimpleBullet" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_HeavyBullet" client="cls_GameWindow" supplier="cls_HeavyBullet" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_Slime" client="cls_GameWindow" supplier="cls_Slime" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_Block" client="cls_GameWindow" supplier="cls_Block" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_Player" client="cls_GameWindow" supplier="cls_Player" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_IHealth" client="cls_GameWindow" supplier="iface_IHealth" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_GameWindow_KeyState" client="cls_GameWindow" supplier="enum_KeyState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServerConnection_StopwatchTimer" client="cls_RemoteServerConnection" supplier="cls_StopwatchTimer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_RemoteServerConnection_BinaryStreamHandler" client="cls_RemoteServerConnection" supplier="cls_BinaryStreamHandler" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_StopwatchTimer_RemoteServerConnection" client="cls_StopwatchTimer" supplier="cls_RemoteServerConnection" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_RingBuffer" client="cls_LocalServer" supplier="cls_RingBuffer" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_GameConstants" client="cls_LocalServer" supplier="cls_GameConstants" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_Player" client="cls_LocalServer" supplier="cls_Player" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_RegisterUserMessage" client="cls_LocalServer" supplier="cls_RegisterUserMessage" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_IBinarySerializable" client="cls_LocalServer" supplier="iface_IBinarySerializable" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_LocalServer_Simulation" client="cls_LocalServer" supplier="cls_Simulation" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_SpawnSystem_Slime" client="cls_SpawnSystem" supplier="cls_Slime" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_PlayerCommandSystem" client="cls_Simulation" supplier="cls_PlayerCommandSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_SpawnSystem" client="cls_Simulation" supplier="cls_SpawnSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_AiSystem" client="cls_Simulation" supplier="cls_AiSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_MovementSystem" client="cls_Simulation" supplier="cls_MovementSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_DamageSystem" client="cls_Simulation" supplier="cls_DamageSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_Simulation_CleanupSystem" client="cls_Simulation" supplier="cls_CleanupSystem" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_IHealth" client="cls_AiSystem" supplier="iface_IHealth" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_AiSystem_CollisionService" client="cls_AiSystem" supplier="cls_CollisionService" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_CleanupSystem_IHealth" client="cls_CleanupSystem" supplier="iface_IHealth" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_CleanupSystem_ILifespan" client="cls_CleanupSystem" supplier="iface_ILifespan" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_GameConstants" client="cls_MovementSystem" supplier="cls_GameConstants" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_IGravityAffected" client="cls_MovementSystem" supplier="iface_IGravityAffected" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_Bullet" client="cls_MovementSystem" supplier="cls_Bullet" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_MovementSystem_CollisionService" client="cls_MovementSystem" supplier="cls_CollisionService" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_IHealth" client="cls_DamageSystem" supplier="iface_IHealth" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_Bullet" client="cls_DamageSystem" supplier="cls_Bullet" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_DamageSystem_IMoving" client="cls_DamageSystem" supplier="iface_IMoving" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_KeyState" client="cls_PlayerCommandSystem" supplier="enum_KeyState" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_CollisionService" client="cls_PlayerCommandSystem" supplier="cls_CollisionService" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_Entity" client="cls_PlayerCommandSystem" supplier="cls_Entity" />
+    <packagedElement xmi:type="uml:Dependency" xmi:id="dep_PlayerCommandSystem_HeavyBullet" client="cls_PlayerCommandSystem" supplier="cls_HeavyBullet" />
   </uml:Model>
 </xmi:XMI>

@@ -213,4 +213,146 @@ namespace Game.Core
         Assert.Contains("iface_ICollidable", allIds);
         Assert.Contains("iface_IBinarySerializable", allIds);
     }
+
+    [Fact]
+    public void TestOptionB_ExtractsDirectMentionDependencies()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "uml_test_optb_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var code = @"
+namespace Test.DirectMentions
+{
+    public interface IPatternTarget { }
+    public interface IGenericTarget { }
+    public interface IEventTarget { }
+    public interface IConstraintTarget { }
+    public interface IKeyTarget { }
+    public interface IValueTarget { }
+
+    public static class HelperService
+    {
+        public static void DoStaticWork() { }
+    }
+
+    public class InstantiatedMonster { }
+
+    public class ConsumerService
+    {
+        // Event (Option B #5)
+        public event System.Action<IEventTarget>? OnEventOccurred;
+
+        // Multi-arg generic property (Option B #7)
+        public System.Collections.Generic.Dictionary<IKeyTarget, IValueTarget> Map { get; set; } = new();
+
+        public void TestMethod(object obj)
+        {
+            // Instantiation (Option B #2)
+            var m = new InstantiatedMonster();
+
+            // Static invocation (Option B #1)
+            HelperService.DoStaticWork();
+
+            // Pattern matching (Option B #3)
+            if (obj is IPatternTarget target) { }
+
+            // Generic method invocation (Option B #4)
+            GenericCall<IGenericTarget>();
+        }
+
+        private void GenericCall<T>() { }
+    }
+
+    // Generic constraint (Option B #6)
+    public class ConstrainedHolder<T> where T : IConstraintTarget
+    {
+    }
+
+    // Nested class bidirectional dependency (Option B #8)
+    public class OuterClass
+    {
+        public class InnerClass
+        {
+        }
+    }
+
+    // Directional association suppression test
+    public class ClassA
+    {
+        public ClassB NavigableB { get; set; } = new();
+    }
+
+    public class ClassB
+    {
+        public void TouchA()
+        {
+            var a = new ClassA();
+        }
+    }
+}
+";
+            File.WriteAllText(Path.Combine(tempDir, "OptionB.cs"), code);
+
+            var analyzer = new CSharpCodebaseAnalyzer(new AnalyzerOptions { ModelName = "OptionBTest" });
+            var model = analyzer.Analyze(tempDir);
+
+            var consumer = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "ConsumerService");
+            var helper = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "HelperService");
+            var monster = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "InstantiatedMonster");
+            var patternTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IPatternTarget");
+            var genericTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IGenericTarget");
+            var eventTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IEventTarget");
+            var keyTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IKeyTarget");
+            var valueTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IValueTarget");
+            var constrained = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "ConstrainedHolder");
+            var constraintTarget = model.AllClassifiersById.Values.OfType<UmlInterface>().First(c => c.Name == "IConstraintTarget");
+            var outer = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "OuterClass");
+            var inner = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "InnerClass");
+            var classA = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "ClassA");
+            var classB = model.AllClassifiersById.Values.OfType<UmlClass>().First(c => c.Name == "ClassB");
+
+            // 1. Instantiation dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == monster.Id);
+
+            // 2. Static method invocation dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == helper.Id);
+
+            // 3. Pattern matching dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == patternTarget.Id);
+
+            // 4. Generic method invocation dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == genericTarget.Id);
+
+            // 5. Event dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == eventTarget.Id);
+
+            // 6. Generic constraint dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == constrained.Id && d.SupplierId == constraintTarget.Id);
+
+            // 7. Multi-arg generic property: IKeyTarget receives dependency, IValueTarget receives association
+            Assert.Contains(model.Dependencies, d => d.ClientId == consumer.Id && d.SupplierId == keyTarget.Id);
+            Assert.Contains(model.Associations, a => a.SourceId == consumer.Id && a.TargetId == valueTarget.Id);
+
+            // 8. Nested class bidirectional dependency
+            Assert.Contains(model.Dependencies, d => d.ClientId == outer.Id && d.SupplierId == inner.Id);
+            Assert.Contains(model.Dependencies, d => d.ClientId == inner.Id && d.SupplierId == outer.Id);
+
+            // 9. Directional association suppression test:
+            // A has Association to B, so A -> B Dependency is suppressed.
+            Assert.Contains(model.Associations, a => a.SourceId == classA.Id && a.TargetId == classB.Id);
+            Assert.DoesNotContain(model.Dependencies, d => d.ClientId == classA.Id && d.SupplierId == classB.Id);
+
+            // B touches A, so B -> A Dependency MUST exist and NOT be suppressed by A's association!
+            Assert.Contains(model.Dependencies, d => d.ClientId == classB.Id && d.SupplierId == classA.Id);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, true);
+            }
+        }
+    }
 }

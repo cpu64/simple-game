@@ -19,6 +19,7 @@ public abstract class UmlClassifier
     public bool IsAbstract { get; init; }
     public bool IsStatic { get; init; }
     public string? SourceFilePath { get; init; }
+    public HashSet<string> ReferencedTypeNames { get; } = new(StringComparer.Ordinal);
 
     public string QualifiedName => string.IsNullOrEmpty(Namespace) ? Name : $"{Namespace}.{Name}";
 }

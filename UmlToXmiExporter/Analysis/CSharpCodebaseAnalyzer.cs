@@ -388,6 +388,15 @@ public class CSharpCodebaseAnalyzer
                 ProcessOperations(iface, iface.Operations, ResolveTypeId, model, discoveredClassifiers, classifiersBySimpleName, existingDependencies);
             }
         }
+
+        // Pass 3: Process all referenced types from AST for all classifiers
+        foreach (var classifier in initialClassifiers)
+        {
+            foreach (var refTypeName in classifier.ReferencedTypeNames)
+            {
+                CheckDependency(classifier, refTypeName, model, discoveredClassifiers, classifiersBySimpleName, existingDependencies);
+            }
+        }
     }
 
     private void ProcessProperties(
@@ -487,8 +496,8 @@ public class CSharpCodebaseAnalyzer
                 return;
             }
 
-            // Do NOT create dependency if an association already exists between source and target
-            if (model.Associations.Any(a => (a.SourceId == source.Id && a.TargetId == target.Id) || (a.SourceId == target.Id && a.TargetId == source.Id)))
+            // Do NOT create dependency if an association already exists from source to target
+            if (model.Associations.Any(a => a.SourceId == source.Id && a.TargetId == target.Id))
             {
                 return;
             }
