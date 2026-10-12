@@ -67,6 +67,25 @@ public interface ILogSink : IDisposable
     void Flush();
 }
 
+public sealed class ConsoleUISink : ILogSink
+{
+    private readonly ConsoleUI _console;
+
+    public ConsoleUISink(ConsoleUI console)
+    {
+        _console = console;
+    }
+
+    public void Write(LogEntry entry)
+    {
+        _console.WriteLine(entry.ToString());
+    }
+
+    public void Flush() { }
+
+    public void Dispose() { }
+}
+
 public sealed class ConsoleSink : ILogSink
 {
     private readonly object _lock = new();
