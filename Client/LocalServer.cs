@@ -10,9 +10,14 @@ using System.Threading;
 public class LocalServer
 {
     private readonly SharedInputState input;
+    private readonly RenderWorldUpdater renderWorldUpdater;
     private readonly RemoteServerConnection remoteServer;
 
-    private readonly RingBuffer<World> authoritativeWorlds = new RingBuffer<World>(GameConstants.InterpolationBufferSize);
+    private readonly RingBuffer<RemotePlayerSnapshot> remoteSnapshots = new RingBuffer<RemotePlayerSnapshot>(GameConstants.InterpolationBufferSize);
+
+    private World currentWorld;
+
+    private Dictionary<Guid, Vector2> currentRemotePlayerPosition = new Dictionary<Guid, Vector2>();
 
     private readonly object worldLock = new object();
 
@@ -29,9 +34,10 @@ public class LocalServer
     private Thread simulationThread;
     private volatile bool running;
 
-    public LocalServer(SharedInputState input, Guid playerId, string worldPath)
+    public LocalServer(SharedInputState input, RenderWorldUpdater renderWorldUpdater, Guid playerId, string worldPath)
     {
         this.input = input;
+        this.renderWorldUpdater = renderWorldUpdater;
         this.playerId = playerId;
 
         remoteServer = null;
@@ -41,11 +47,13 @@ public class LocalServer
         world = new World(worldPath);
 
         world.Entities.Add(new Player(world.NextEntityId++, new Vector2(20, 18), playerId, -1, new Vector2(1.0f, 1.0f)));
+        currentWorld = world.Copy();
     }
 
-    public LocalServer(SharedInputState input, Guid playerId, IPEndPoint endpoint)
+    public LocalServer(SharedInputState input, RenderWorldUpdater renderWorldUpdater, Guid playerId, IPEndPoint endpoint)
     {
         this.input = input;
+        this.renderWorldUpdater = renderWorldUpdater;
         this.playerId = playerId;
 
         remoteServer = new RemoteServerConnection(endpoint);
@@ -68,8 +76,9 @@ public class LocalServer
                 if (worldMessage != null)
                 {
                     world = worldMessage;
+                    currentWorld = world.Copy();
 
-                    AddAuthoritativeWorld(worldMessage);
+                    AddRemoteSnapshot(worldMessage);
                 }
             }
 
@@ -155,8 +164,67 @@ public class LocalServer
                 remoteServer.Send(command);
             }
 
+            World oldWorld = currentWorld;
+
+            Dictionary<Guid, Vector2> previousRemotePlayerPosition = currentRemotePlayerPosition;
+
             ApplyCommand(command);
+
+            currentRemotePlayerPosition = GetRemotePlayerPositions(world.Tick - GameConstants.InterpolationDelayTicks);
+
+            currentWorld = world.Copy();
+
+            renderWorldUpdater.UpdateData(oldWorld, currentWorld, previousRemotePlayerPosition, currentRemotePlayerPosition);
         }
+    }
+
+    private Dictionary<Guid, Vector2> GetRemotePlayerPositions(long tick)
+    {
+        Dictionary<Guid, Vector2> positions = new Dictionary<Guid, Vector2>();
+
+        if (remoteSnapshots.Count == 0)
+            return positions;
+
+        RemotePlayerSnapshot first = remoteSnapshots.Get(0);
+
+        if (tick <= first.Tick)
+        {
+            foreach (var pair in first.Positions)
+                positions[pair.Key] = pair.Value;
+
+            return positions;
+        }
+
+        for (int i = 0; i < remoteSnapshots.Count - 1; i++)
+        {
+            RemotePlayerSnapshot before = remoteSnapshots.Get(i);
+            RemotePlayerSnapshot after = remoteSnapshots.Get(i + 1);
+
+            if (before.Tick <= tick && tick <= after.Tick)
+            {
+                float alpha = (float)((tick - before.Tick) / (double)(after.Tick - before.Tick));
+
+                foreach (var pair in before.Positions)
+                {
+                    Guid playerId = pair.Key;
+
+                    if (!after.Positions.TryGetValue(playerId, out Vector2 nextPosition))
+                        continue;
+
+                    positions[playerId] = Vector2.Lerp(pair.Value, nextPosition, alpha);
+                }
+
+                return positions;
+            }
+        }
+
+        // No future snapshot exists: hold the latest known positions.
+        RemotePlayerSnapshot latest = remoteSnapshots.Get(remoteSnapshots.Count - 1);
+
+        foreach (var pair in latest.Positions)
+            positions[pair.Key] = pair.Value;
+
+        return positions;
     }
 
     private void ApplyCommand(InputCommand command)
@@ -181,7 +249,7 @@ public class LocalServer
             if (authoritativeWorld == null)
                 continue;
 
-            AddAuthoritativeWorld(authoritativeWorld);
+            AddRemoteSnapshot(authoritativeWorld);
         }
 
         if (authoritativeWorld != null)
@@ -217,14 +285,14 @@ public class LocalServer
         return player.LastCommand;
     }
 
-    private void AddAuthoritativeWorld(World authoritativeWorld)
+    private void AddRemoteSnapshot(World authoritativeWorld)
     {
         if (authoritativeWorld == null)
             return;
 
-        if (authoritativeWorlds.Count > 0)
+        if (remoteSnapshots.Count > 0)
         {
-            World latest = authoritativeWorlds.Get(authoritativeWorlds.Count - 1);
+            RemotePlayerSnapshot latest = remoteSnapshots.Get(remoteSnapshots.Count - 1);
 
             if (authoritativeWorld.Tick <= latest.Tick)
             {
@@ -232,14 +300,6 @@ public class LocalServer
             }
         }
 
-        authoritativeWorlds.Add(authoritativeWorld.Copy());
-    }
-
-    public RenderInput GetRenderInput()
-    {
-        lock (worldLock)
-        {
-            return new RenderInput(world.Copy(), authoritativeWorlds);
-        }
+        remoteSnapshots.Add(new RemotePlayerSnapshot(authoritativeWorld, playerId));
     }
 }

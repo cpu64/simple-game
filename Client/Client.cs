@@ -24,10 +24,11 @@ public static class Client
         console.WriteLine("Player ID: " + playerId);
 
         LocalServer localServer = null;
+        RenderWorldUpdater renderWorldUpdater = new RenderWorldUpdater();
 
         if (string.IsNullOrEmpty(serverAddress))
         {
-            localServer = new LocalServer(input, playerId, "world.json");
+            localServer = new LocalServer(input, renderWorldUpdater, playerId, "world.json");
         }
         else
         {
@@ -55,11 +56,11 @@ public static class Client
                 return;
             }
 
-            localServer = new LocalServer(input, playerId, new IPEndPoint(address, port));
+            localServer = new LocalServer(input, renderWorldUpdater, playerId, new IPEndPoint(address, port));
         }
 
         localServer.Start();
 
-        GameWindow.Run(localServer, input, playerId);
+        GameWindow.Run(localServer, input, renderWorldUpdater, playerId);
     }
 }

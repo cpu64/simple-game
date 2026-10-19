@@ -10,7 +10,7 @@ public static class GameConstants
     public const int InterpolationBufferSize = 2 + (InterpolationDelayTicks - 1) / SnapshotIntervalTicks;
 
     // Simulation
-    public const int SimulationTickRate = 120;
+    public const int SimulationTickRate = 60;
     public const double SimulationTickDuration = 1.0 / SimulationTickRate;
 
     // Day / Night
