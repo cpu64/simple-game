@@ -1,14 +1,19 @@
 using System;
 using System.Net;
 using System.Text.Json;
+using System.Threading;
 
 public static class Client
 {
     public static void Main(string[] args)
     {
-        Logger.Instance.MinimumLevel = LogLevel.Trace;
+        var console = new ConsoleUI(new ClientCommandFactory());
+        Thread consoleThread = new Thread(console.Run) { IsBackground = true };
+        consoleThread.Start();
 
-        Logger.Instance.AddSink(new ConsoleSink());
+        Logger.Instance.AddSink(new ConsoleUISink(console));
+        Logger.Instance.MinimumLevel = LogLevel.Trace;
+        console.WriteLine("Logger Minimum Level: Trace");
 
         string serverAddress = args.Length == 0 ? null : args[0];
 
@@ -16,7 +21,7 @@ public static class Client
 
         Guid playerId = Guid.NewGuid();
 
-        Console.WriteLine("Player ID: " + playerId);
+        console.WriteLine("Player ID: " + playerId);
 
         LocalServer localServer = null;
 
@@ -30,7 +35,7 @@ public static class Client
 
             if (parts.Length != 2)
             {
-                Console.WriteLine("Invalid server address. " + "Expected ip:port.");
+                console.WriteLine("Invalid server address. " + "Expected ip:port.");
                 return;
             }
 
@@ -38,7 +43,7 @@ public static class Client
 
             if (!IPAddress.TryParse(parts[0], out address))
             {
-                Console.WriteLine("Invalid IP address: " + parts[0]);
+                console.WriteLine("Invalid IP address: " + parts[0]);
                 return;
             }
 
@@ -46,7 +51,7 @@ public static class Client
 
             if (!int.TryParse(parts[1], out port) || port < 1 || port > 65535)
             {
-                Console.WriteLine("Invalid port: " + parts[1]);
+                console.WriteLine("Invalid port: " + parts[1]);
                 return;
             }
 
