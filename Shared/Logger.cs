@@ -44,21 +44,44 @@ public sealed class LogEntry
         Exception = exception;
     }
 
-    public override string ToString()
+    public DecoratedString ToDecoratedString()
     {
-        string message = Message?.ToString() ?? string.Empty;
+        DecoratedString result = new ItalicString(new CyanString($"{Timestamp:yyyy-MM-dd HH:mm:ss.fff}")) + " " + FormatLevel(Level);
 
-        string category = Category == LogCategory.None ? string.Empty : $" [{Category}]";
+        if (Category != LogCategory.None)
+        {
+            result += new PurpleString($" [{Category}]");
+        }
 
-        string result = $"{Timestamp:yyyy-MM-dd HH:mm:ss.fff} " + $"[{Level}]" + $"{category} " + $"[T{ThreadId}] " + message;
+        result += new BlueString($" [T{ThreadId}] ");
+
+        result += Message?.ToString() ?? string.Empty;
 
         if (Exception != null)
         {
-            result += Environment.NewLine + Exception;
+            result += Environment.NewLine + new RedString(new BoldString(Exception.ToString()));
         }
 
         return result;
     }
+
+    private static DecoratedString FormatLevel(LogLevel level)
+    {
+        string label = $"[{level}]";
+
+        return level switch
+        {
+            LogLevel.Trace => new ItalicString(label),
+            LogLevel.Debug => new CyanString(label),
+            LogLevel.Info => new GreenString(label),
+            LogLevel.Warning => new BoldString(new OrangeString(label)),
+            LogLevel.Error => new BoldString(new RedString(label)),
+            LogLevel.Fatal => new SlowBlinkString(new BoldString(new RedString(label))),
+            _ => new PlainString(label),
+        };
+    }
+
+    public override string ToString() => ToDecoratedString().PlainText();
 }
 
 public interface ILogSink : IDisposable
@@ -78,7 +101,7 @@ public sealed class ConsoleUISink : ILogSink
 
     public void Write(LogEntry entry)
     {
-        _console.WriteLine(entry.ToString());
+        _console.WriteLine(entry.ToDecoratedString().StyledText());
     }
 
     public void Flush() { }
@@ -94,7 +117,7 @@ public sealed class ConsoleSink : ILogSink
     {
         lock (_lock)
         {
-            Console.WriteLine(entry);
+            Console.WriteLine(entry.ToDecoratedString().StyledText());
         }
     }
 
@@ -117,7 +140,7 @@ public sealed class DebugSink : ILogSink
 {
     public void Write(LogEntry entry)
     {
-        Debug.WriteLine(entry);
+        Debug.WriteLine(entry.ToDecoratedString().StyledText());
     }
 
     public void Flush() { }
@@ -139,7 +162,7 @@ public sealed class AppendFileSink : ILogSink
     {
         lock (_lock)
         {
-            _writer.WriteLine(entry);
+            _writer.WriteLine(entry.ToString());
         }
     }
 
@@ -175,7 +198,7 @@ public sealed class FileSink : ILogSink
     {
         lock (_lock)
         {
-            _writer.WriteLine(entry);
+            _writer.WriteLine(entry.ToString());
         }
     }
 
