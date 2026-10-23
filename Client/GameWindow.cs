@@ -28,7 +28,8 @@ public static class GameWindow
 
                     Raylib.BeginDrawing();
 
-                    Raylib.ClearBackground(Color.Black);
+                    bool isDay = (world.Tick % GameConstants.FullDayNightCycleTicks) < GameConstants.DayNightDurationTicks;
+                    Raylib.ClearBackground(isDay ? new Color(45, 55, 70, 255) : new Color(15, 15, 25, 255));
 
                     RenderWorld(world);
 
