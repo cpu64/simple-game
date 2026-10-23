@@ -110,6 +110,19 @@ public class LocalServer
             remoteServer.Disconnect();
     }
 
+    public Player? GetLocalPlayer(Guid playerId)
+    {
+        lock (worldLock)
+        {
+            return currentWorld?.Entities.OfType<Player>().FirstOrDefault(p => p.UserId == playerId);
+        }
+    }
+
+    public Player? GetLocalPlayer()
+    {
+        return GetLocalPlayer(playerId);
+    }
+
     private void Run()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
