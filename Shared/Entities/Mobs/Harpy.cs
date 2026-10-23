@@ -28,6 +28,7 @@ public class Harpy : Mob, IBinarySerializable, ICollidable, IDamaging
         Damage = damage;
         DamageBox = damageBox;
         KnockBackMultiplier = knockBackMultiplier;
+        MovementStrategy = new PassiveAerialStrategy();
     }
 
     public override Harpy Copy()

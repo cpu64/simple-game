@@ -84,6 +84,13 @@ public sealed class LogEntry
     public override string ToString() => ToDecoratedString().PlainText();
 }
 
+public interface ILogSubject
+{
+    void Attach(ILogSink sink);
+    void Detach(ILogSink sink);
+    void Notify(LogEntry entry);
+}
+
 public interface ILogSink : IDisposable
 {
     void Write(LogEntry entry);
@@ -251,7 +258,7 @@ public interface ILogAfterEvery
     void Write();
 }
 
-public sealed class Logger : IDisposable
+public sealed class Logger : ILogSubject, IDisposable
 {
     public static Logger Instance { get; } = new();
 
@@ -311,7 +318,7 @@ public sealed class Logger : IDisposable
         _enabledCategories &= ~category;
     }
 
-    public void AddSink(ILogSink sink)
+    public void Attach(ILogSink sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
 
@@ -320,11 +327,14 @@ public sealed class Logger : IDisposable
             if (!_running)
                 throw new ObjectDisposedException(nameof(Logger));
 
-            _sinks.Add(sink);
+            if (!_sinks.Contains(sink))
+            {
+                _sinks.Add(sink);
+            }
         }
     }
 
-    public void RemoveSink(ILogSink sink)
+    public void Detach(ILogSink sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
 
@@ -683,7 +693,7 @@ public sealed class Logger : IDisposable
 
                     if (work.Entry != null)
                     {
-                        WriteToSinks(work.Entry);
+                        Notify(work.Entry);
                     }
 
                     break;
@@ -703,7 +713,7 @@ public sealed class Logger : IDisposable
         }
     }
 
-    private void WriteToSinks(LogEntry entry)
+    public void Notify(LogEntry entry)
     {
         ILogSink[] sinks;
 

@@ -11,6 +11,8 @@ public abstract class Mob : Entity, IFacing, IHealth, IMoving
 
     public Vector2 Velocity { get; set; }
 
+    public IMobMovementStrategy? MovementStrategy { get; set; }
+
     protected Mob(EntityId id, Vector2 position, float rotation, int maxHealth, int health, Vector2 hitBox, long invincibleUntil, Vector2 velocity)
         : base(id, position)
     {

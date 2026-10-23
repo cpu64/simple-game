@@ -46,6 +46,7 @@ public class Slime : Mob, IBinarySerializable, ICollidable, IDamaging, IGravityA
         KnockBackMultiplier = knockBackMultiplier;
 
         GravitationalAcceleration = gravitationalAcceleration;
+        MovementStrategy = new SlimeJumpStrategy();
     }
 
     public override Slime Copy()
