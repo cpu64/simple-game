@@ -5,6 +5,7 @@ using System.Numerics;
 public static class PlayerCommandSystem
 {
     private const float PlayerSpeed = 8.0f;
+    private const float PlayerJumpSpeed = 11.31f;
 
     public static void Process(World world, List<InputCommand> commands)
     {
@@ -52,7 +53,7 @@ public static class PlayerCommandSystem
             {
                 if (CollisionService.IsGrounded(player.Position, player.CollisionSize, world.Blocks))
                 {
-                    player.Velocity = new Vector2(player.Velocity.X, -PlayerSpeed);
+                    player.Velocity = new Vector2(player.Velocity.X, -PlayerJumpSpeed);
                 }
             }
 
