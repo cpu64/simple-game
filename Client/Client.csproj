@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Client</AssemblyName>
     <RootNamespace>Client</RootNamespace>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Raylib_cs;
+using Client.UI.Rendering;
+using Client.UI.Widgets;
 
 public static class GameWindow
 {
@@ -14,6 +16,32 @@ public static class GameWindow
 
         Raylib.SetTargetFPS(GameConstants.TargetFrameRate);
 
+        var spriteRenderer = new SpriteRenderer();
+        var primitiveRenderer = new PrimitiveRenderer();
+        IRenderer currentRenderer = primitiveRenderer;
+
+        var healthBar = new PlayerHealthBar(
+            new Rectangle(16, 16, 220, 26),
+            currentRenderer,
+            () => server.GetLocalPlayer(playerId)
+        );
+
+        var itemSlots = new ItemSlot[4]
+        {
+            new ItemSlot(new Rectangle(292, 536, 48, 48), currentRenderer, 1, "Pickaxe", "Pickaxe") { IsSelected = true },
+            new ItemSlot(new Rectangle(348, 536, 48, 48), currentRenderer, 2, "Sword", "Sword"),
+            new ItemSlot(new Rectangle(404, 536, 48, 48), currentRenderer, 3, "Platforms", "Platforms"),
+            new ItemSlot(new Rectangle(460, 536, 48, 48), currentRenderer, 4, "Ropes", "Ropes")
+        };
+
+        void SelectSlot(int index)
+        {
+            for (int i = 0; i < itemSlots.Length; i++)
+            {
+                itemSlots[i].IsSelected = (i == index);
+            }
+        }
+
         try
         {
             RenderWorld world = new RenderWorld();
@@ -23,6 +51,21 @@ public static class GameWindow
                 using (Logger.Instance.Info("Drawing", LogCategory.Rendering).Every("render", GameConstants.TargetFrameRate).Time())
                 {
                     UpdateInput(input);
+
+                    if (Raylib.IsKeyPressed(KeyboardKey.F1))
+                    {
+                        currentRenderer = (currentRenderer == primitiveRenderer) ? spriteRenderer : primitiveRenderer;
+                        healthBar.SetRenderer(currentRenderer);
+                        for (int i = 0; i < itemSlots.Length; i++)
+                        {
+                            itemSlots[i].SetRenderer(currentRenderer);
+                        }
+                    }
+
+                    if (Raylib.IsKeyPressed(KeyboardKey.One)) SelectSlot(0);
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Two)) SelectSlot(1);
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Three)) SelectSlot(2);
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Four)) SelectSlot(3);
 
                     world = renderWorldUpdater.UpdateRenderWorld(world);
 
@@ -38,6 +81,12 @@ public static class GameWindow
                     }
                     float alphaStep = 1.0f / (GameConstants.TargetFrameRate / GameConstants.SimulationTickRate);
                     world.Alpha += alphaStep;
+
+                    healthBar.Draw();
+                    for (int i = 0; i < itemSlots.Length; i++)
+                    {
+                        itemSlots[i].Draw();
+                    }
                 }
 
                 Raylib.EndDrawing();
@@ -45,6 +94,7 @@ public static class GameWindow
         }
         finally
         {
+            spriteRenderer.Dispose();
             server.Stop();
             Raylib.CloseWindow();
         }
