@@ -18,6 +18,7 @@ public class Bat : Mob, IBinarySerializable, ICollidable
         : base(id, position, rotation, maxHealth, health, hitBox, invincibleUntil, velocity)
     {
         CollisionSize = collisionSize;
+        MovementStrategy = new PassiveAerialStrategy();
     }
 
     public override Bat Copy()

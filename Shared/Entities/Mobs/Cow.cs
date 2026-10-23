@@ -22,6 +22,7 @@ public class Cow : Mob, IBinarySerializable, ICollidable, IGravityAffected
     {
         CollisionSize = collisionSize;
         GravitationalAcceleration = gravitationalAcceleration;
+        MovementStrategy = new PassiveGroundStrategy();
     }
 
     public override Cow Copy()

@@ -32,6 +32,7 @@ public class Spider : Mob, IBinarySerializable, ICollidable, IDamaging, IGravity
         DamageBox = damageBox;
         KnockBackMultiplier = knockBackMultiplier;
         GravitationalAcceleration = gravitationalAcceleration;
+        MovementStrategy = new PassiveGroundStrategy();
     }
 
     public override Spider Copy()
