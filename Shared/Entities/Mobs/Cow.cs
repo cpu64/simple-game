@@ -27,7 +27,7 @@ public class Cow : Mob, IBinarySerializable, ICollidable, IGravityAffected
 
     public override Cow Copy()
     {
-        return (Cow)MemberwiseClone();
+        return (Cow)DeepCopy();
     }
 
     public override string ToString()

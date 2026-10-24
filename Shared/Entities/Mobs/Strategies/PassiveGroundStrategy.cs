@@ -5,7 +5,12 @@ public class PassiveGroundStrategy : IMobMovementStrategy
 {
     public float Speed { get; }
 
-    public PassiveGroundStrategy(float speed = 1.0f)
+    public PassiveGroundStrategy()
+        : this(1.0f)
+    {
+    }
+
+    public PassiveGroundStrategy(float speed)
     {
         Speed = speed;
     }

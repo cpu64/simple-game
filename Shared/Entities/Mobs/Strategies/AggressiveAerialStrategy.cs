@@ -5,7 +5,12 @@ public class AggressiveAerialStrategy : IMobMovementStrategy
 {
     public float Speed { get; }
 
-    public AggressiveAerialStrategy(float speed = 1.5f)
+    public AggressiveAerialStrategy()
+        : this(1.5f)
+    {
+    }
+
+    public AggressiveAerialStrategy(float speed)
     {
         Speed = speed;
     }

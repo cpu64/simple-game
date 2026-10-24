@@ -26,9 +26,37 @@ public abstract class Mob : Entity, IFacing, IHealth, IMoving
         Velocity = velocity;
     }
 
-    public override Mob Copy()
+    public virtual Mob ShallowCopy()
     {
         return (Mob)MemberwiseClone();
+    }
+
+    public virtual Mob DeepCopy()
+    {
+        Mob clone = (Mob)MemberwiseClone();
+        if (MovementStrategy != null)
+        {
+            clone.MovementStrategy = (IMobMovementStrategy)Activator.CreateInstance(MovementStrategy.GetType())!;
+        }
+        return clone;
+    }
+
+    public override Mob Copy() => DeepCopy();
+
+    public static void PrintPrototypeAddressReport()
+    {
+        Mob prototype = new Slime(new EntityId(0), Vector2.Zero);
+        Mob shallow = prototype.ShallowCopy();
+        Mob deep = prototype.DeepCopy();
+
+        static string Addr(object? obj) => obj == null ? "null" : $"0x{System.Runtime.CompilerServices.Unsafe.As<object, nint>(ref obj):X16}";
+
+        Console.WriteLine("Mob Copy Type  | Mob Instance       | MovementStrategy Instance");
+        Console.WriteLine(new string('-', 68));
+        Console.WriteLine($"{"Prototype",-14} | {Addr(prototype)} | {Addr(prototype.MovementStrategy)}");
+        Console.WriteLine($"{"ShallowCopy",-14} | {Addr(shallow)} | {Addr(shallow.MovementStrategy)} (Shared pointer)");
+        Console.WriteLine($"{"DeepCopy",-14} | {Addr(deep)} | {Addr(deep.MovementStrategy)} (New allocation)");
+        Console.WriteLine(new string('-', 68));
     }
 
     public override string ToString()

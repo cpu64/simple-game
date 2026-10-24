@@ -2,11 +2,15 @@ using System.Numerics;
 
 public class HostileMobFactory : IMobFactory
 {
-    public Mob CreateSkyMob(EntityId id, Vector2 position)
+    private readonly Mob _harpyPrototype;
+    private readonly Mob _slimePrototype;
+    private readonly Mob _spiderPrototype;
+
+    public HostileMobFactory()
     {
-        return new Harpy(
-            id,
-            position,
+        _harpyPrototype = new Harpy(
+            new EntityId(0),
+            Vector2.Zero,
             collisionSize: new Vector2(1.0f, 1.0f),
             damage: 10,
             damageBox: new Vector2(1.0f, 1.0f),
@@ -18,13 +22,10 @@ public class HostileMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
-    }
 
-    public Mob CreateGroundMob(EntityId id, Vector2 position)
-    {
-        return new Slime(
-            id,
-            position,
+        _slimePrototype = new Slime(
+            new EntityId(0),
+            Vector2.Zero,
             jumpTimer: 0,
             collisionSize: new Vector2(1.0f, 1.0f),
             damage: 10,
@@ -38,13 +39,10 @@ public class HostileMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
-    }
 
-    public Mob CreateUndergroundMob(EntityId id, Vector2 position)
-    {
-        return new Spider(
-            id,
-            position,
+        _spiderPrototype = new Spider(
+            new EntityId(0),
+            Vector2.Zero,
             collisionSize: new Vector2(1.0f, 1.0f),
             damage: 10,
             damageBox: new Vector2(1.0f, 1.0f),
@@ -57,5 +55,31 @@ public class HostileMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
+    }
+
+    // Hostile mobs engage in dynamic combat AI that mutates strategies at runtime.
+    // DeepCopy ensures each hostile mob owns an independent strategy instance on the heap.
+    public Mob CreateSkyMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _harpyPrototype.DeepCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
+    }
+
+    public Mob CreateGroundMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _slimePrototype.DeepCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
+    }
+
+    public Mob CreateUndergroundMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _spiderPrototype.DeepCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
     }
 }

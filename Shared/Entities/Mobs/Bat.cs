@@ -23,7 +23,7 @@ public class Bat : Mob, IBinarySerializable, ICollidable
 
     public override Bat Copy()
     {
-        return (Bat)MemberwiseClone();
+        return (Bat)DeepCopy();
     }
 
     public override string ToString()

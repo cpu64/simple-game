@@ -51,7 +51,7 @@ public class Slime : Mob, IBinarySerializable, ICollidable, IDamaging, IGravityA
 
     public override Slime Copy()
     {
-        return (Slime)MemberwiseClone();
+        return (Slime)DeepCopy();
     }
 
     public override string ToString()

@@ -33,7 +33,7 @@ public class Harpy : Mob, IBinarySerializable, ICollidable, IDamaging
 
     public override Harpy Copy()
     {
-        return (Harpy)MemberwiseClone();
+        return (Harpy)DeepCopy();
     }
 
     public override string ToString()

@@ -23,7 +23,7 @@ public class Eagle : Mob, IBinarySerializable, ICollidable
 
     public override Eagle Copy()
     {
-        return (Eagle)MemberwiseClone();
+        return (Eagle)DeepCopy();
     }
 
     public override string ToString()

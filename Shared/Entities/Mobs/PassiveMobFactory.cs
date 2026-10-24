@@ -2,11 +2,15 @@ using System.Numerics;
 
 public class PassiveMobFactory : IMobFactory
 {
-    public Mob CreateSkyMob(EntityId id, Vector2 position)
+    private readonly Mob _eaglePrototype;
+    private readonly Mob _cowPrototype;
+    private readonly Mob _batPrototype;
+
+    public PassiveMobFactory()
     {
-        return new Eagle(
-            id,
-            position,
+        _eaglePrototype = new Eagle(
+            new EntityId(0),
+            Vector2.Zero,
             collisionSize: new Vector2(1.0f, 1.0f),
             rotation: 0.0f,
             maxHealth: 60,
@@ -15,13 +19,10 @@ public class PassiveMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
-    }
 
-    public Mob CreateGroundMob(EntityId id, Vector2 position)
-    {
-        return new Cow(
-            id,
-            position,
+        _cowPrototype = new Cow(
+            new EntityId(0),
+            Vector2.Zero,
             collisionSize: new Vector2(1.2f, 1.2f),
             rotation: 0.0f,
             gravitationalAcceleration: 16.0f,
@@ -31,13 +32,10 @@ public class PassiveMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
-    }
 
-    public Mob CreateUndergroundMob(EntityId id, Vector2 position)
-    {
-        return new Bat(
-            id,
-            position,
+        _batPrototype = new Bat(
+            new EntityId(0),
+            Vector2.Zero,
             collisionSize: new Vector2(0.8f, 0.8f),
             rotation: 0.0f,
             maxHealth: 50,
@@ -46,5 +44,31 @@ public class PassiveMobFactory : IMobFactory
             invincibleUntil: 0,
             velocity: Vector2.Zero
         );
+    }
+
+    // Passive mobs use stateless wandering strategies.
+    // ShallowCopy clones mob stats while safely sharing the strategy reference on the heap.
+    public Mob CreateSkyMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _eaglePrototype.ShallowCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
+    }
+
+    public Mob CreateGroundMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _cowPrototype.ShallowCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
+    }
+
+    public Mob CreateUndergroundMob(EntityId id, Vector2 position)
+    {
+        Mob mob = _batPrototype.ShallowCopy();
+        mob.Id = id;
+        mob.Position = position;
+        return mob;
     }
 }

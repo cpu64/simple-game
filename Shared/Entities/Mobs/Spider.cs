@@ -37,7 +37,7 @@ public class Spider : Mob, IBinarySerializable, ICollidable, IDamaging, IGravity
 
     public override Spider Copy()
     {
-        return (Spider)MemberwiseClone();
+        return (Spider)DeepCopy();
     }
 
     public override string ToString()
