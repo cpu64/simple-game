@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 
 public static class RemoteServerMain
@@ -11,15 +12,37 @@ public static class RemoteServerMain
         consoleThread.Start();
 
         Logger.Instance.Attach(new ConsoleUISinkAdapter(console));
+
+        string? logArg = args.FirstOrDefault(a => a.StartsWith("--log=", StringComparison.OrdinalIgnoreCase))?[6..];
+        if (logArg != null)
+        {
+            string[] targets = logArg.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (targets.Contains("append", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new AppendFileSink("server.log"));
+            if (targets.Contains("file", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new FileSink("server.log"));
+            if (targets.Contains("console", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new ConsoleSink());
+            if (targets.Contains("debug", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new DebugSink());
+        }
+
         Logger.Instance.MinimumLevel = LogLevel.Trace;
         console.WriteLine("Logger Minimum Level: Trace");
 
         int port = 1234;
 
-        if (args.Length > 0 && (!int.TryParse(args[0], out port) || port < 1 || port > 65535))
+        foreach (string arg in args)
         {
-            console.WriteLine("Invalid port: " + args[0]);
-            return;
+            if (arg.StartsWith("--"))
+                continue;
+
+            if (!int.TryParse(arg, out port) || port < 1 || port > 65535)
+            {
+                console.WriteLine("Invalid port: " + arg);
+                return;
+            }
+            break;
         }
 
         RemoteServer server = new RemoteServer("world.json");

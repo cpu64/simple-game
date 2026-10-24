@@ -1,6 +1,7 @@
 namespace Client;
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
@@ -14,10 +15,34 @@ public static class Client
         consoleThread.Start();
 
         Logger.Instance.Attach(new ConsoleUISinkAdapter(console));
+
+        string? logArg = args.FirstOrDefault(a => a.StartsWith("--log=", StringComparison.OrdinalIgnoreCase))?[6..];
+        if (logArg != null)
+        {
+            string[] targets = logArg.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (targets.Contains("append", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new AppendFileSink("client.log"));
+            if (targets.Contains("file", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new FileSink("client.log"));
+            if (targets.Contains("console", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new ConsoleSink());
+            if (targets.Contains("debug", StringComparer.OrdinalIgnoreCase))
+                Logger.Instance.Attach(new DebugSink());
+        }
+
         Logger.Instance.MinimumLevel = LogLevel.Trace;
         console.WriteLine("Logger Minimum Level: Trace");
 
-        string serverAddress = args.Length == 0 ? null : args[0];
+        string serverAddress = null;
+
+        foreach (string arg in args)
+        {
+            if (arg.StartsWith("--"))
+                continue;
+
+            serverAddress = arg;
+            break;
+        }
 
         SharedInputState input = new SharedInputState();
 
