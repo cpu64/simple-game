@@ -97,11 +97,11 @@ public interface ILogSink : IDisposable
     void Flush();
 }
 
-public sealed class ConsoleUISink : ILogSink
+public sealed class ConsoleUISinkAdapter : ILogSink
 {
     private readonly ConsoleUI _console;
 
-    public ConsoleUISink(ConsoleUI console)
+    public ConsoleUISinkAdapter(ConsoleUI console)
     {
         _console = console;
     }

@@ -13,7 +13,7 @@ public static class Client
         Thread consoleThread = new Thread(console.Run) { IsBackground = true };
         consoleThread.Start();
 
-        Logger.Instance.Attach(new ConsoleUISink(console));
+        Logger.Instance.Attach(new ConsoleUISinkAdapter(console));
         Logger.Instance.MinimumLevel = LogLevel.Trace;
         console.WriteLine("Logger Minimum Level: Trace");
 
