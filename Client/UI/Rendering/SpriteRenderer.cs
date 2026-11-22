@@ -6,18 +6,15 @@ using System.IO;
 using System.Numerics;
 using Raylib_cs;
 
-public sealed class SpriteRenderer : IRenderer, IDisposable
+public sealed class SpriteRenderer : RendererBase, IDisposable
 {
     private readonly Dictionary<string, Texture2D> _textures = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _missingAssets = new(StringComparer.OrdinalIgnoreCase);
 
-    public void DrawSurface(Rectangle bounds, VisualKey key)
-    {
-        if (bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
+    protected override float TextHorizontalPadding => 4.0f;
 
+    protected override void RenderSurface(Rectangle bounds, VisualKey key)
+    {
         if (TryGetTexture(key.AssetId, out Texture2D texture))
         {
             DrawLoadedTexture(texture, bounds);
@@ -27,35 +24,8 @@ public sealed class SpriteRenderer : IRenderer, IDisposable
         DrawSurfaceFallback(bounds, key);
     }
 
-    public void DrawClippedSurface(Rectangle bounds, VisualKey key, float ratio, ClipAxis axis)
+    protected override void RenderClippedSurface(Rectangle bounds, Rectangle clipped, VisualKey key, ClipAxis axis)
     {
-        if (bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
-
-        float clamped = Math.Clamp(ratio, 0.0f, 1.0f);
-        if (clamped <= 0.0f)
-        {
-            return;
-        }
-
-        Rectangle clipped = axis switch
-        {
-            ClipAxis.Horizontal => new Rectangle(bounds.X, bounds.Y, bounds.Width * clamped, bounds.Height),
-
-            ClipAxis.Vertical => key.Role == VisualRole.OverlayShade
-                ? new Rectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height * clamped)
-                : new Rectangle(bounds.X, bounds.Y + bounds.Height * (1.0f - clamped), bounds.Width, bounds.Height * clamped),
-
-            _ => bounds,
-        };
-
-        if (clipped.Width <= 0 || clipped.Height <= 0)
-        {
-            return;
-        }
-
         if (TryGetTexture(key.AssetId, out Texture2D texture))
         {
             DrawClippedTexture(texture, bounds, clipped);
@@ -65,28 +35,10 @@ public sealed class SpriteRenderer : IRenderer, IDisposable
         DrawClippedSurfaceFallback(clipped, key, axis);
     }
 
-    public void DrawText(Rectangle bounds, string text, TextAlign align, TextSize size)
+    protected override void RenderText(string text, int x, int y, int fontSize)
     {
-        if (string.IsNullOrEmpty(text) || bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
-
-        int fontSize = (int)size;
-        int textWidth = Raylib.MeasureText(text, fontSize);
-
-        float x = align switch
-        {
-            TextAlign.Left => bounds.X + 4.0f,
-            TextAlign.Center => bounds.X + (bounds.Width - textWidth) * 0.5f,
-            TextAlign.Right => bounds.X + bounds.Width - textWidth - 4.0f,
-            _ => bounds.X,
-        };
-
-        float y = bounds.Y + (bounds.Height - fontSize) * 0.5f;
-
-        Raylib.DrawText(text, (int)Math.Round(x) + 1, (int)Math.Round(y) + 1, fontSize, new Color(15, 15, 20, 230));
-        Raylib.DrawText(text, (int)Math.Round(x), (int)Math.Round(y), fontSize, new Color(245, 245, 250, 255));
+        Raylib.DrawText(text, x + 1, y + 1, fontSize, new Color(15, 15, 20, 230));
+        Raylib.DrawText(text, x, y, fontSize, new Color(245, 245, 250, 255));
     }
 
     public void Dispose()

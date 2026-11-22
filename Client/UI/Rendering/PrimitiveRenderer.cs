@@ -3,7 +3,7 @@ namespace Client.UI.Rendering;
 using System;
 using Raylib_cs;
 
-public class PrimitiveRenderer : IRenderer
+public class PrimitiveRenderer : RendererBase
 {
     private static readonly Color SurfaceFillColor = new(35, 35, 40, 255);
     private static readonly Color SurfaceWireColor = new(160, 160, 170, 255);
@@ -27,13 +27,8 @@ public class PrimitiveRenderer : IRenderer
 
     private static readonly Color DefaultTextColor = Color.White;
 
-    public void DrawSurface(Rectangle bounds, VisualKey key)
+    protected override void RenderSurface(Rectangle bounds, VisualKey key)
     {
-        if (bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
-
         switch (key.Role)
         {
             case VisualRole.Surface:
@@ -90,53 +85,7 @@ public class PrimitiveRenderer : IRenderer
         }
     }
 
-    public void DrawClippedSurface(Rectangle bounds, VisualKey key, float ratio, ClipAxis axis)
-    {
-        if (bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
+    protected override void RenderClippedSurface(Rectangle bounds, Rectangle clipped, VisualKey key, ClipAxis axis) => RenderSurface(clipped, key);
 
-        float clampedRatio = Math.Clamp(ratio, 0.0f, 1.0f);
-        if (clampedRatio <= 0.0f)
-        {
-            return;
-        }
-
-        Rectangle clipped = axis switch
-        {
-            ClipAxis.Horizontal => new Rectangle(bounds.X, bounds.Y, bounds.Width * clampedRatio, bounds.Height),
-
-            ClipAxis.Vertical => key.Role == VisualRole.OverlayShade
-                ? new Rectangle(bounds.X, bounds.Y, bounds.Width, bounds.Height * clampedRatio)
-                : new Rectangle(bounds.X, bounds.Y + bounds.Height * (1.0f - clampedRatio), bounds.Width, bounds.Height * clampedRatio),
-
-            _ => bounds,
-        };
-
-        DrawSurface(clipped, key);
-    }
-
-    public void DrawText(Rectangle bounds, string text, TextAlign align, TextSize size)
-    {
-        if (string.IsNullOrEmpty(text) || bounds.Width <= 0 || bounds.Height <= 0)
-        {
-            return;
-        }
-
-        int fontSize = (int)size;
-        int textWidth = Raylib.MeasureText(text, fontSize);
-
-        int posY = (int)Math.Round(bounds.Y + (bounds.Height - fontSize) / 2.0f);
-
-        int posX = align switch
-        {
-            TextAlign.Left => (int)Math.Round(bounds.X + 2.0f),
-            TextAlign.Center => (int)Math.Round(bounds.X + (bounds.Width - textWidth) / 2.0f),
-            TextAlign.Right => (int)Math.Round(bounds.X + bounds.Width - textWidth - 2.0f),
-            _ => (int)Math.Round(bounds.X),
-        };
-
-        Raylib.DrawText(text, posX, posY, fontSize, DefaultTextColor);
-    }
+    protected override void RenderText(string text, int x, int y, int fontSize) => Raylib.DrawText(text, x, y, fontSize, DefaultTextColor);
 }
