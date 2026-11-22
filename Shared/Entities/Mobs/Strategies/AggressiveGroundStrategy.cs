@@ -6,9 +6,7 @@ public class AggressiveGroundStrategy : IMobMovementStrategy
     public float Speed { get; }
 
     public AggressiveGroundStrategy()
-        : this(1.0f)
-    {
-    }
+        : this(1.0f) { }
 
     public AggressiveGroundStrategy(float speed)
     {

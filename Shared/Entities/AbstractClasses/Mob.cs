@@ -53,9 +53,9 @@ public abstract class Mob : Entity, IFacing, IHealth, IMoving
 
         Console.WriteLine("Mob Copy Type  | Mob Instance       | MovementStrategy Instance");
         Console.WriteLine(new string('-', 68));
-        Console.WriteLine($"{"Prototype",-14} | {Addr(prototype)} | {Addr(prototype.MovementStrategy)}");
-        Console.WriteLine($"{"ShallowCopy",-14} | {Addr(shallow)} | {Addr(shallow.MovementStrategy)} (Shared pointer)");
-        Console.WriteLine($"{"DeepCopy",-14} | {Addr(deep)} | {Addr(deep.MovementStrategy)} (New allocation)");
+        Console.WriteLine($"{"Prototype", -14} | {Addr(prototype)} | {Addr(prototype.MovementStrategy)}");
+        Console.WriteLine($"{"ShallowCopy", -14} | {Addr(shallow)} | {Addr(shallow.MovementStrategy)} (Shared pointer)");
+        Console.WriteLine($"{"DeepCopy", -14} | {Addr(deep)} | {Addr(deep.MovementStrategy)} (New allocation)");
         Console.WriteLine(new string('-', 68));
     }
 
