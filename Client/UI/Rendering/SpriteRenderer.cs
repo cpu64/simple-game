@@ -6,40 +6,160 @@ using System.IO;
 using System.Numerics;
 using Raylib_cs;
 
-public sealed class SpriteRenderer : RendererBase, IDisposable
+public sealed class SpriteRenderer : RendererBase, IDisposable // ConcreteClass
 {
     private readonly Dictionary<string, Texture2D> _textures = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _missingAssets = new(StringComparer.OrdinalIgnoreCase);
 
-    protected override float TextHorizontalPadding => 4.0f;
+    protected override float TextHorizontalPadding => 4.0f; // Hook
 
-    protected override void RenderSurface(Rectangle bounds, VisualKey key)
+    protected override bool TryRenderAsset(Rectangle bounds, VisualKey key) // Hook
     {
-        if (TryGetTexture(key.AssetId, out Texture2D texture))
+        if (!TryGetTexture(key.AssetId, out Texture2D texture))
         {
-            DrawLoadedTexture(texture, bounds);
-            return;
+            return false;
         }
 
-        DrawSurfaceFallback(bounds, key);
+        DrawLoadedTexture(texture, bounds);
+        return true;
     }
 
-    protected override void RenderClippedSurface(Rectangle bounds, Rectangle clipped, VisualKey key, ClipAxis axis)
+    protected override void RenderSurfaceFallback(Rectangle bounds, VisualKey key) // PrimitiveOperation
     {
-        if (TryGetTexture(key.AssetId, out Texture2D texture))
+        switch (key.Role)
         {
-            DrawClippedTexture(texture, bounds, clipped);
-            return;
+            case VisualRole.Surface:
+                DrawSurfaceStyled(bounds);
+                break;
+
+            case VisualRole.SurfaceHighlight:
+                DrawSurfaceHighlightStyled(bounds);
+                break;
+
+            case VisualRole.FillDanger:
+                DrawFillDangerStyled(bounds);
+                break;
+
+            case VisualRole.FillAccent:
+                DrawFillAccentStyled(bounds);
+                break;
+
+            case VisualRole.OverlayShade:
+                DrawOverlayShadeStyled(bounds);
+                break;
+
+            case VisualRole.Graphic:
+                DrawGraphicStyled(bounds, key.AssetId);
+                break;
+        }
+    }
+
+    protected override bool TryRenderClippedAsset(Rectangle bounds, Rectangle clipped, VisualKey key) // Hook
+    {
+        if (!TryGetTexture(key.AssetId, out Texture2D texture))
+        {
+            return false;
         }
 
-        DrawClippedSurfaceFallback(clipped, key, axis);
+        DrawClippedTexture(texture, bounds, clipped);
+        return true;
     }
 
-    protected override void RenderText(string text, int x, int y, int fontSize)
+    protected override void RenderClippedFill(Rectangle clipped, VisualKey key) // PrimitiveOperation
     {
-        Raylib.DrawText(text, x + 1, y + 1, fontSize, new Color(15, 15, 20, 230));
-        Raylib.DrawText(text, x, y, fontSize, new Color(245, 245, 250, 255));
+        switch (key.Role)
+        {
+            case VisualRole.FillDanger:
+                Raylib.DrawRectangleGradientV(
+                    (int)clipped.X,
+                    (int)clipped.Y,
+                    (int)clipped.Width,
+                    (int)clipped.Height,
+                    new Color(235, 45, 70, 255),
+                    new Color(130, 12, 28, 255)
+                );
+                int highH = Math.Max(2, (int)(clipped.Height * 0.35f));
+                Raylib.DrawRectangleGradientV(
+                    (int)clipped.X,
+                    (int)clipped.Y,
+                    (int)clipped.Width,
+                    highH,
+                    new Color(255, 140, 160, 170),
+                    new Color(235, 45, 70, 0)
+                );
+                Raylib.DrawLine((int)clipped.X, (int)clipped.Y, (int)(clipped.X + clipped.Width), (int)clipped.Y, new Color(255, 200, 215, 220));
+                break;
+
+            case VisualRole.FillAccent:
+                Raylib.DrawRectangleGradientV(
+                    (int)clipped.X,
+                    (int)clipped.Y,
+                    (int)clipped.Width,
+                    (int)clipped.Height,
+                    new Color(60, 160, 255, 255),
+                    new Color(18, 55, 150, 255)
+                );
+                int highAccentH = Math.Max(2, (int)(clipped.Height * 0.35f));
+                Raylib.DrawRectangleGradientV(
+                    (int)clipped.X,
+                    (int)clipped.Y,
+                    (int)clipped.Width,
+                    highAccentH,
+                    new Color(180, 225, 255, 170),
+                    new Color(60, 160, 255, 0)
+                );
+                Raylib.DrawLine((int)clipped.X, (int)clipped.Y, (int)(clipped.X + clipped.Width), (int)clipped.Y, new Color(210, 240, 255, 220));
+                break;
+
+            case VisualRole.OverlayShade:
+                Raylib.DrawRectangleGradientV(
+                    (int)clipped.X,
+                    (int)clipped.Y,
+                    (int)clipped.Width,
+                    (int)clipped.Height,
+                    new Color(10, 12, 18, 150),
+                    new Color(5, 6, 10, 210)
+                );
+                break;
+
+            default:
+                RenderSurfaceFallback(clipped, key);
+                break;
+        }
     }
+
+    protected override void RenderClipEdgeAccent(Rectangle clipped, VisualKey key, ClipAxis axis) // Hook
+    {
+        switch (key.Role)
+        {
+            case VisualRole.FillDanger:
+                if (axis == ClipAxis.Horizontal && clipped.Width >= 2)
+                {
+                    int edgeX = (int)(clipped.X + clipped.Width - 1);
+                    Raylib.DrawLine(edgeX, (int)clipped.Y, edgeX, (int)(clipped.Y + clipped.Height), new Color(255, 210, 225, 230));
+                }
+                break;
+
+            case VisualRole.FillAccent:
+                if (axis == ClipAxis.Horizontal && clipped.Width >= 2)
+                {
+                    int edgeX = (int)(clipped.X + clipped.Width - 1);
+                    Raylib.DrawLine(edgeX, (int)clipped.Y, edgeX, (int)(clipped.Y + clipped.Height), new Color(220, 245, 255, 230));
+                }
+                break;
+
+            case VisualRole.OverlayShade:
+                float lineY = clipped.Y + clipped.Height - 1;
+                Raylib.DrawLineEx(new Vector2(clipped.X, lineY), new Vector2(clipped.X + clipped.Width, lineY), 1.5f, new Color(255, 255, 255, 140));
+                break;
+        }
+    }
+
+    protected override void RenderTextShadow(string text, int x, int y, int fontSize) =>
+        Raylib.DrawText(text, x + 1, y + 1, fontSize, new Color(15, 15, 20, 230)); // Hook
+
+    protected override void RenderTextForeground(string text, int x, int y, int fontSize) =>
+        Raylib.DrawText(text, x, y, fontSize, new Color(245, 245, 250, 255)); // PrimitiveOperation
 
     public void Dispose()
     {
@@ -115,36 +235,6 @@ public sealed class SpriteRenderer : RendererBase, IDisposable
         Raylib.EndScissorMode();
     }
 
-    private static void DrawSurfaceFallback(Rectangle bounds, VisualKey key)
-    {
-        switch (key.Role)
-        {
-            case VisualRole.Surface:
-                DrawSurfaceStyled(bounds);
-                break;
-
-            case VisualRole.SurfaceHighlight:
-                DrawSurfaceHighlightStyled(bounds);
-                break;
-
-            case VisualRole.FillDanger:
-                DrawFillDangerStyled(bounds);
-                break;
-
-            case VisualRole.FillAccent:
-                DrawFillAccentStyled(bounds);
-                break;
-
-            case VisualRole.OverlayShade:
-                DrawOverlayShadeStyled(bounds);
-                break;
-
-            case VisualRole.Graphic:
-                DrawGraphicStyled(bounds, key.AssetId);
-                break;
-        }
-    }
-
     private static void DrawSurfaceStyled(Rectangle bounds)
     {
         Rectangle shadow = new(bounds.X + 2, bounds.Y + 2, bounds.Width, bounds.Height);
@@ -215,81 +305,6 @@ public sealed class SpriteRenderer : RendererBase, IDisposable
             new Color(15, 18, 25, 160),
             new Color(5, 8, 12, 210)
         );
-    }
-
-    private static void DrawClippedSurfaceFallback(Rectangle clipped, VisualKey key, ClipAxis axis)
-    {
-        switch (key.Role)
-        {
-            case VisualRole.FillDanger:
-                Raylib.DrawRectangleGradientV(
-                    (int)clipped.X,
-                    (int)clipped.Y,
-                    (int)clipped.Width,
-                    (int)clipped.Height,
-                    new Color(235, 45, 70, 255),
-                    new Color(130, 12, 28, 255)
-                );
-                int highH = Math.Max(2, (int)(clipped.Height * 0.35f));
-                Raylib.DrawRectangleGradientV(
-                    (int)clipped.X,
-                    (int)clipped.Y,
-                    (int)clipped.Width,
-                    highH,
-                    new Color(255, 140, 160, 170),
-                    new Color(235, 45, 70, 0)
-                );
-                Raylib.DrawLine((int)clipped.X, (int)clipped.Y, (int)(clipped.X + clipped.Width), (int)clipped.Y, new Color(255, 200, 215, 220));
-                if (axis == ClipAxis.Horizontal && clipped.Width >= 2)
-                {
-                    int edgeX = (int)(clipped.X + clipped.Width - 1);
-                    Raylib.DrawLine(edgeX, (int)clipped.Y, edgeX, (int)(clipped.Y + clipped.Height), new Color(255, 210, 225, 230));
-                }
-                break;
-
-            case VisualRole.FillAccent:
-                Raylib.DrawRectangleGradientV(
-                    (int)clipped.X,
-                    (int)clipped.Y,
-                    (int)clipped.Width,
-                    (int)clipped.Height,
-                    new Color(60, 160, 255, 255),
-                    new Color(18, 55, 150, 255)
-                );
-                int highAccentH = Math.Max(2, (int)(clipped.Height * 0.35f));
-                Raylib.DrawRectangleGradientV(
-                    (int)clipped.X,
-                    (int)clipped.Y,
-                    (int)clipped.Width,
-                    highAccentH,
-                    new Color(180, 225, 255, 170),
-                    new Color(60, 160, 255, 0)
-                );
-                Raylib.DrawLine((int)clipped.X, (int)clipped.Y, (int)(clipped.X + clipped.Width), (int)clipped.Y, new Color(210, 240, 255, 220));
-                if (axis == ClipAxis.Horizontal && clipped.Width >= 2)
-                {
-                    int edgeX = (int)(clipped.X + clipped.Width - 1);
-                    Raylib.DrawLine(edgeX, (int)clipped.Y, edgeX, (int)(clipped.Y + clipped.Height), new Color(220, 245, 255, 230));
-                }
-                break;
-
-            case VisualRole.OverlayShade:
-                Raylib.DrawRectangleGradientV(
-                    (int)clipped.X,
-                    (int)clipped.Y,
-                    (int)clipped.Width,
-                    (int)clipped.Height,
-                    new Color(10, 12, 18, 150),
-                    new Color(5, 6, 10, 210)
-                );
-                float lineY = clipped.Y + clipped.Height - 1;
-                Raylib.DrawLineEx(new Vector2(clipped.X, lineY), new Vector2(clipped.X + clipped.Width, lineY), 1.5f, new Color(255, 255, 255, 140));
-                break;
-
-            default:
-                DrawSurfaceFallback(clipped, key);
-                break;
-        }
     }
 
     private static void DrawGraphicStyled(Rectangle bounds, string assetId)

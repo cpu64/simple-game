@@ -3,7 +3,7 @@ namespace Client.UI.Rendering;
 using System;
 using Raylib_cs;
 
-public class PrimitiveRenderer : RendererBase
+public class PrimitiveRenderer : RendererBase // ConcreteClass
 {
     private static readonly Color SurfaceFillColor = new(35, 35, 40, 255);
     private static readonly Color SurfaceWireColor = new(160, 160, 170, 255);
@@ -27,7 +27,7 @@ public class PrimitiveRenderer : RendererBase
 
     private static readonly Color DefaultTextColor = Color.White;
 
-    protected override void RenderSurface(Rectangle bounds, VisualKey key)
+    protected override void RenderSurfaceFallback(Rectangle bounds, VisualKey key) // PrimitiveOperation
     {
         switch (key.Role)
         {
@@ -85,7 +85,7 @@ public class PrimitiveRenderer : RendererBase
         }
     }
 
-    protected override void RenderClippedSurface(Rectangle bounds, Rectangle clipped, VisualKey key, ClipAxis axis) => RenderSurface(clipped, key);
+    protected override void RenderClippedFill(Rectangle clipped, VisualKey key) => RenderSurfaceFallback(clipped, key); // PrimitiveOperation
 
-    protected override void RenderText(string text, int x, int y, int fontSize) => Raylib.DrawText(text, x, y, fontSize, DefaultTextColor);
+    protected override void RenderTextForeground(string text, int x, int y, int fontSize) => Raylib.DrawText(text, x, y, fontSize, DefaultTextColor); // PrimitiveOperation
 }

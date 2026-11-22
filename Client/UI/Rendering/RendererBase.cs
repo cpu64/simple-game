@@ -3,23 +3,28 @@ namespace Client.UI.Rendering;
 using System;
 using Raylib_cs;
 
-public abstract class RendererBase : IRenderer
+public abstract class RendererBase : IRenderer // AbstractClass
 {
-    protected virtual float TextHorizontalPadding => 2.0f;
+    protected virtual float TextHorizontalPadding => 2.0f; // Hook
 
-    protected virtual int MeasureTextWidth(string text, int fontSize) => Raylib.MeasureText(text, fontSize);
+    protected virtual int MeasureTextWidth(string text, int fontSize) => Raylib.MeasureText(text, fontSize); // Hook
 
-    public void DrawSurface(Rectangle bounds, VisualKey key)
+    public void DrawSurface(Rectangle bounds, VisualKey key) // TemplateMethod
     {
         if (!(bounds.Width > 0 && bounds.Height > 0))
         {
             return;
         }
 
-        RenderSurface(bounds, key);
+        if (TryRenderAsset(bounds, key))
+        {
+            return;
+        }
+
+        RenderSurfaceFallback(bounds, key);
     }
 
-    public void DrawClippedSurface(Rectangle bounds, VisualKey key, float ratio, ClipAxis axis)
+    public void DrawClippedSurface(Rectangle bounds, VisualKey key, float ratio, ClipAxis axis) // TemplateMethod
     {
         if (!(bounds.Width > 0 && bounds.Height > 0))
         {
@@ -46,10 +51,16 @@ public abstract class RendererBase : IRenderer
             return;
         }
 
-        RenderClippedSurface(bounds, clipped, key, axis);
+        if (TryRenderClippedAsset(bounds, clipped, key))
+        {
+            return;
+        }
+
+        RenderClippedFill(clipped, key);
+        RenderClipEdgeAccent(clipped, key, axis);
     }
 
-    public void DrawText(Rectangle bounds, string text, TextAlign align, TextSize size)
+    public void DrawText(Rectangle bounds, string text, TextAlign align, TextSize size) // TemplateMethod
     {
         if (string.IsNullOrEmpty(text) || !(bounds.Width > 0 && bounds.Height > 0))
         {
@@ -69,12 +80,23 @@ public abstract class RendererBase : IRenderer
         };
         float y = bounds.Y + (bounds.Height - fontSize) * 0.5f;
 
-        RenderText(text, (int)Math.Round(x), (int)Math.Round(y), fontSize);
+        int ix = (int)Math.Round(x);
+        int iy = (int)Math.Round(y);
+        RenderTextShadow(text, ix, iy, fontSize);
+        RenderTextForeground(text, ix, iy, fontSize);
     }
 
-    protected abstract void RenderSurface(Rectangle bounds, VisualKey key);
+    protected virtual bool TryRenderAsset(Rectangle bounds, VisualKey key) => false; // Hook
 
-    protected abstract void RenderClippedSurface(Rectangle bounds, Rectangle clipped, VisualKey key, ClipAxis axis);
+    protected abstract void RenderSurfaceFallback(Rectangle bounds, VisualKey key); // PrimitiveOperation
 
-    protected abstract void RenderText(string text, int x, int y, int fontSize);
+    protected virtual bool TryRenderClippedAsset(Rectangle bounds, Rectangle clipped, VisualKey key) => false; // Hook
+
+    protected abstract void RenderClippedFill(Rectangle clipped, VisualKey key); // PrimitiveOperation
+
+    protected virtual void RenderClipEdgeAccent(Rectangle clipped, VisualKey key, ClipAxis axis) { } // Hook
+
+    protected virtual void RenderTextShadow(string text, int x, int y, int fontSize) { } // Hook
+
+    protected abstract void RenderTextForeground(string text, int x, int y, int fontSize); // PrimitiveOperation
 }
