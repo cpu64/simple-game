@@ -4,7 +4,7 @@ using System;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public class ItemSlot : Widget
+public class ItemSlot : Widget // Leaf
 {
     private float _cooldownRatio;
 
@@ -29,7 +29,7 @@ public class ItemSlot : Widget
         CooldownRatio = 0.0f;
     }
 
-    protected override void Render()
+    protected override void Render() // Operation
     {
         if (Bounds.Width <= 0 || Bounds.Height <= 0)
         {

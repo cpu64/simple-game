@@ -4,7 +4,7 @@ using System;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public class ProgressBar : Widget
+public class ProgressBar : Widget // Leaf
 {
     public float Value { get; set; }
     public float MaxValue { get; set; }
@@ -50,7 +50,7 @@ public class ProgressBar : Widget
         }
     }
 
-    protected override void Render()
+    protected override void Render() // Operation
     {
         RenderBar(Bounds);
     }

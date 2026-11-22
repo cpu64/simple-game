@@ -4,7 +4,7 @@ using System;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public class PlayerHealthBar : ProgressBar
+public class PlayerHealthBar : ProgressBar // Leaf
 {
     public Func<Player?> PlayerSupplier { get; }
     public float WarningThresholdRatio { get; set; } = 0.25f;
@@ -26,7 +26,7 @@ public class PlayerHealthBar : ProgressBar
     public PlayerHealthBar(Rectangle bounds, IRenderer renderer, Func<Player?> playerSupplier)
         : this(bounds, renderer, playerSupplier, null, null) { }
 
-    protected override void Render()
+    protected override void Render() // Operation
     {
         Player? player = null;
         try

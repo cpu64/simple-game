@@ -5,16 +5,16 @@ using System.Collections.Generic;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public class WidgetContainer : Widget
+public class WidgetContainer : Widget // Composite
 {
-    private readonly List<Widget> _children = new();
+    private readonly List<Widget> _children = new(); // Children
 
     public IReadOnlyList<Widget> Children => _children;
 
     public WidgetContainer(Rectangle bounds, IRenderer renderer)
         : base(bounds, renderer) { }
 
-    public virtual void Add(Widget child)
+    public virtual void Add(Widget child) // Add
     {
         ArgumentNullException.ThrowIfNull(child);
         if (ReferenceEquals(child, this))
@@ -35,7 +35,7 @@ public class WidgetContainer : Widget
         _children.Add(child);
     }
 
-    public virtual bool Remove(Widget child)
+    public virtual bool Remove(Widget child) // Remove
     {
         if (child is null)
         {
@@ -45,7 +45,7 @@ public class WidgetContainer : Widget
         return _children.Remove(child);
     }
 
-    public override void SetRenderer(IRenderer newRenderer)
+    public override void SetRenderer(IRenderer newRenderer) // Operation
     {
         base.SetRenderer(newRenderer);
         foreach (Widget child in _children)
@@ -54,7 +54,7 @@ public class WidgetContainer : Widget
         }
     }
 
-    protected override void Render()
+    protected override void Render() // Operation
     {
         foreach (Widget child in _children)
         {

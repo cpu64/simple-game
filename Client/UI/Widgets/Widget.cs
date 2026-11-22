@@ -4,7 +4,7 @@ using System;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public abstract class Widget
+public abstract class Widget // Component
 {
     public Rectangle Bounds { get; set; }
     public IRenderer Renderer { get; private set; }
@@ -16,16 +16,16 @@ public abstract class Widget
         Renderer = renderer;
     }
 
-    public virtual void SetRenderer(IRenderer newRenderer)
+    public virtual void SetRenderer(IRenderer newRenderer) // Operation
     {
         ArgumentNullException.ThrowIfNull(newRenderer);
         Renderer = newRenderer;
     }
 
-    public void Draw()
+    public void Draw() // Operation
     {
         Render();
     }
 
-    protected abstract void Render();
+    protected abstract void Render(); // Operation
 }

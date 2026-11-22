@@ -2,17 +2,17 @@ namespace Client.UI.Widgets;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using global::Client.UI.Rendering;
 using Raylib_cs;
 
-public class Hotbar : WidgetContainer
+public class Hotbar : WidgetContainer // Composite
 {
-    private readonly List<ItemSlot> _slots = new();
     private int _nextSlotIndex = 1;
 
     public float SlotSize { get; }
     public float SlotGap { get; }
-    public IReadOnlyList<ItemSlot> Slots => _slots;
+    public IReadOnlyList<ItemSlot> Slots => Children.OfType<ItemSlot>().ToList();
     public int SelectedIndex { get; private set; } = -1;
 
     public Hotbar(Rectangle bounds, IRenderer renderer, float slotSize = 48.0f, float slotGap = 8.0f)
@@ -34,77 +34,106 @@ public class Hotbar : WidgetContainer
 
     public ItemSlot AddSlot(string itemName, string assetId)
     {
-        int index = _slots.Count;
-        float x = Bounds.X + index * (SlotSize + SlotGap);
-        Rectangle slotBounds = new(x, Bounds.Y, SlotSize, SlotSize);
-        var slot = new ItemSlot(slotBounds, Renderer, _nextSlotIndex++, itemName, assetId);
-
-        _slots.Add(slot);
+        var slot = new ItemSlot(new Rectangle(Bounds.X, Bounds.Y, SlotSize, SlotSize), Renderer, _nextSlotIndex++, itemName, assetId);
         Add(slot);
-        UpdateBounds();
+        return slot;
+    }
 
-        if (_slots.Count == 1)
+    public override void Add(Widget child) // Add
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        if (child is not ItemSlot slot)
+        {
+            throw new ArgumentException("Hotbar only accepts ItemSlot children.", nameof(child));
+        }
+
+        int countBefore = Children.Count;
+        base.Add(child);
+        if (Children.Count == countBefore)
+        {
+            return;
+        }
+
+        Relayout();
+
+        if (Children.Count == 1)
         {
             SelectSlot(0);
         }
-
-        return slot;
+        else
+        {
+            slot.IsSelected = false;
+        }
     }
 
     public void SelectSlot(int index)
     {
-        if (index < 0 || index >= _slots.Count)
+        if (index < 0 || index >= Children.Count)
         {
             return;
         }
 
         SelectedIndex = index;
-        for (int i = 0; i < _slots.Count; i++)
+        for (int i = 0; i < Children.Count; i++)
         {
-            _slots[i].IsSelected = i == index;
+            if (Children[i] is ItemSlot slot)
+            {
+                slot.IsSelected = i == index;
+            }
         }
     }
 
-    public override bool Remove(Widget child)
+    public override bool Remove(Widget child) // Remove
     {
         if (!base.Remove(child))
         {
             return false;
         }
 
-        if (child is ItemSlot slot && _slots.Remove(slot))
+        if (child is ItemSlot removedSlot)
         {
-            for (int i = 0; i < _slots.Count; i++)
+            removedSlot.IsSelected = false;
+        }
+
+        Relayout();
+
+        if (Children.Count == 0)
+        {
+            SelectedIndex = -1;
+        }
+        else
+        {
+            int selectedIdx = -1;
+            for (int i = 0; i < Children.Count; i++)
             {
-                _slots[i].Bounds = new Rectangle(Bounds.X + i * (SlotSize + SlotGap), Bounds.Y, SlotSize, SlotSize);
+                if (Children[i] is ItemSlot slot && slot.IsSelected)
+                {
+                    selectedIdx = i;
+                    break;
+                }
             }
 
-            UpdateBounds();
-
-            if (_slots.Count == 0)
+            if (selectedIdx >= 0)
             {
-                SelectedIndex = -1;
+                SelectedIndex = selectedIdx;
             }
             else
             {
-                int selectedIdx = _slots.FindIndex(s => s.IsSelected);
-                if (selectedIdx >= 0)
-                {
-                    SelectedIndex = selectedIdx;
-                }
-                else
-                {
-                    SelectSlot(Math.Clamp(SelectedIndex, 0, _slots.Count - 1));
-                }
+                SelectSlot(Math.Clamp(SelectedIndex, 0, Children.Count - 1));
             }
         }
 
         return true;
     }
 
-    private void UpdateBounds()
+    private void Relayout()
     {
-        float totalWidth = _slots.Count > 0 ? _slots.Count * SlotSize + (_slots.Count - 1) * SlotGap : 0.0f;
+        for (int i = 0; i < Children.Count; i++)
+        {
+            Children[i].Bounds = new Rectangle(Bounds.X + i * (SlotSize + SlotGap), Bounds.Y, SlotSize, SlotSize);
+        }
+
+        float totalWidth = Children.Count > 0 ? Children.Count * SlotSize + (Children.Count - 1) * SlotGap : 0.0f;
         Bounds = new Rectangle(Bounds.X, Bounds.Y, totalWidth, SlotSize);
     }
 }

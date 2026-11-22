@@ -28,7 +28,7 @@ public static class GameWindow
         hotbar.AddSlot("Platforms", "Platforms");
         hotbar.AddSlot("Ropes", "Ropes");
 
-        var hudRoot = new WidgetContainer(new Rectangle(0, 0, 800, 600), currentRenderer);
+        var hudRoot = new WidgetContainer(new Rectangle(0, 0, 800, 600), currentRenderer); // Client
         hudRoot.Add(healthBar);
         hudRoot.Add(hotbar);
 
