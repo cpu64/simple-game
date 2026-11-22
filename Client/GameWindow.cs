@@ -22,21 +22,15 @@ public static class GameWindow
 
         var healthBar = new PlayerHealthBar(new Rectangle(16, 16, 220, 26), currentRenderer, () => server.GetLocalPlayer(playerId));
 
-        var itemSlots = new ItemSlot[4]
-        {
-            new ItemSlot(new Rectangle(292, 536, 48, 48), currentRenderer, 1, "Pickaxe", "Pickaxe") { IsSelected = true },
-            new ItemSlot(new Rectangle(348, 536, 48, 48), currentRenderer, 2, "Sword", "Sword"),
-            new ItemSlot(new Rectangle(404, 536, 48, 48), currentRenderer, 3, "Platforms", "Platforms"),
-            new ItemSlot(new Rectangle(460, 536, 48, 48), currentRenderer, 4, "Ropes", "Ropes"),
-        };
+        var hotbar = new Hotbar(new Rectangle(292, 536, 0, 48), currentRenderer);
+        hotbar.AddSlot("Pickaxe", "Pickaxe");
+        hotbar.AddSlot("Sword", "Sword");
+        hotbar.AddSlot("Platforms", "Platforms");
+        hotbar.AddSlot("Ropes", "Ropes");
 
-        void SelectSlot(int index)
-        {
-            for (int i = 0; i < itemSlots.Length; i++)
-            {
-                itemSlots[i].IsSelected = (i == index);
-            }
-        }
+        var hudRoot = new WidgetContainer(new Rectangle(0, 0, 800, 600), currentRenderer);
+        hudRoot.Add(healthBar);
+        hudRoot.Add(hotbar);
 
         try
         {
@@ -51,21 +45,17 @@ public static class GameWindow
                     if (Raylib.IsKeyPressed(KeyboardKey.F1))
                     {
                         currentRenderer = (currentRenderer == primitiveRenderer) ? spriteRenderer : primitiveRenderer;
-                        healthBar.SetRenderer(currentRenderer);
-                        for (int i = 0; i < itemSlots.Length; i++)
-                        {
-                            itemSlots[i].SetRenderer(currentRenderer);
-                        }
+                        hudRoot.SetRenderer(currentRenderer);
                     }
 
                     if (Raylib.IsKeyPressed(KeyboardKey.One))
-                        SelectSlot(0);
+                        hotbar.SelectSlot(0);
                     else if (Raylib.IsKeyPressed(KeyboardKey.Two))
-                        SelectSlot(1);
+                        hotbar.SelectSlot(1);
                     else if (Raylib.IsKeyPressed(KeyboardKey.Three))
-                        SelectSlot(2);
+                        hotbar.SelectSlot(2);
                     else if (Raylib.IsKeyPressed(KeyboardKey.Four))
-                        SelectSlot(3);
+                        hotbar.SelectSlot(3);
 
                     world = renderWorldUpdater.UpdateRenderWorld(world);
 
@@ -83,11 +73,7 @@ public static class GameWindow
                     float alphaStep = 1.0f / (GameConstants.TargetFrameRate / GameConstants.SimulationTickRate);
                     world.Alpha += alphaStep;
 
-                    healthBar.Draw();
-                    for (int i = 0; i < itemSlots.Length; i++)
-                    {
-                        itemSlots[i].Draw();
-                    }
+                    hudRoot.Draw();
                 }
 
                 Raylib.EndDrawing();

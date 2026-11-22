@@ -16,7 +16,7 @@ public abstract class Widget
         Renderer = renderer;
     }
 
-    public void SetRenderer(IRenderer newRenderer)
+    public virtual void SetRenderer(IRenderer newRenderer)
     {
         ArgumentNullException.ThrowIfNull(newRenderer);
         Renderer = newRenderer;
