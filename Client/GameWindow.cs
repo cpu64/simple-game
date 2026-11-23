@@ -22,14 +22,27 @@ public static class GameWindow
 
         var healthBar = new PlayerHealthBar(new Rectangle(16, 16, 220, 26), currentRenderer, () => server.GetLocalPlayer(playerId));
 
-        var hotbar = new Hotbar(new Rectangle(292, 536, 0, 48), currentRenderer);
+        var manaBar = new ProgressBar(
+            new Rectangle(16, 48, 220, 14),
+            currentRenderer,
+            75f,
+            100f,
+            new VisualKey(VisualRole.Surface),
+            new VisualKey(VisualRole.FillAccent)
+        );
+        var statusPanel = new WidgetContainer(new Rectangle(16, 16, 220, 46), currentRenderer);
+        statusPanel.Add(healthBar);
+        statusPanel.Add(manaBar);
+
+        var hotbar = new Hotbar(new Rectangle(264, 536, 0, 48), currentRenderer);
         hotbar.AddSlot("Pickaxe", "Pickaxe");
         hotbar.AddSlot("Sword", "Sword");
         hotbar.AddSlot("Platforms", "Platforms");
         hotbar.AddSlot("Ropes", "Ropes");
+        hotbar.AddSlot("Gem", "Gem");
 
         var hudRoot = new WidgetContainer(new Rectangle(0, 0, 800, 600), currentRenderer); // Client
-        hudRoot.Add(healthBar);
+        hudRoot.Add(statusPanel);
         hudRoot.Add(hotbar);
 
         try
@@ -48,6 +61,12 @@ public static class GameWindow
                         hudRoot.SetRenderer(currentRenderer);
                     }
 
+                    if (Raylib.IsKeyPressed(KeyboardKey.F2))
+                        statusPanel.IsVisible = !statusPanel.IsVisible;
+
+                    if (Raylib.IsKeyPressed(KeyboardKey.Tab))
+                        hotbar.IsVisible = !hotbar.IsVisible;
+
                     if (Raylib.IsKeyPressed(KeyboardKey.One))
                         hotbar.SelectSlot(0);
                     else if (Raylib.IsKeyPressed(KeyboardKey.Two))
@@ -56,6 +75,8 @@ public static class GameWindow
                         hotbar.SelectSlot(2);
                     else if (Raylib.IsKeyPressed(KeyboardKey.Four))
                         hotbar.SelectSlot(3);
+                    else if (Raylib.IsKeyPressed(KeyboardKey.Five))
+                        hotbar.SelectSlot(4);
 
                     world = renderWorldUpdater.UpdateRenderWorld(world);
 

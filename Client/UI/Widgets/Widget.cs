@@ -8,6 +8,7 @@ public abstract class Widget // Component
 {
     public Rectangle Bounds { get; set; }
     public IRenderer Renderer { get; private set; }
+    public bool IsVisible { get; set; } = true;
 
     protected Widget(Rectangle bounds, IRenderer renderer)
     {
@@ -24,6 +25,11 @@ public abstract class Widget // Component
 
     public void Draw() // Operation
     {
+        if (!IsVisible)
+        {
+            return;
+        }
+
         Render();
     }
 
